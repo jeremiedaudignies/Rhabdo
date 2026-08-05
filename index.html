@@ -1,0 +1,2385 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#F94E00">
+<meta name="color-scheme" content="light only">
+<title>RHABDO</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icone-180.png">
+<meta name="apple-mobile-web-app-title" content="Rhabdo">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   RHABDO — jetons de conception
+   Fond clair, cartes blanches, une seule couleur de signal
+   orange. Bascule automatique en sombre la nuit : une app de
+   salle ne doit pas éblouir.
+   ============================================================ */
+:root{
+  --fond:#F4F5F7; --surface:#FFFFFF; --surface-2:#EDEFF3; --filet:#E1E5EA;
+  --texte:#14171C; --texte-2:#5F6A7B; --texte-3:#9AA3B2;
+  --accent:#F94E00; --accent-doux:#FFEDE4;
+  --effort:#F94E00; --recup:#00A08C; --chauffe:#F2A104; --planifie:#4C63D6;
+  --haut:#4C63D6; --bas:#E07B00; --abdo:#00A08C; --mixte:#8B4FD6; --etirement:#0088A8;
+  --ombre:0 1px 2px rgba(20,23,28,.06), 0 4px 14px rgba(20,23,28,.05);
+  --corps:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --r-s:10px; --r-m:16px; --r-l:22px;
+  --safe-b:env(safe-area-inset-bottom,0px); --safe-t:env(safe-area-inset-top,0px);
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%}
+body{background:var(--fond);color-scheme:light;color:var(--texte);font-family:var(--corps);font-size:16px;
+  line-height:1.45;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;font-size:inherit;color:inherit;border:none;background:none;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:16px;color:var(--texte);background:var(--surface);
+  border:1px solid var(--filet);border-radius:var(--r-s);padding:11px 12px;width:100%;appearance:none}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-doux)}
+
+#app{display:flex;flex-direction:column;height:100dvh}
+#entete{flex:0 0 auto;padding:calc(var(--safe-t) + 12px) 16px 12px;display:flex;align-items:center;
+  gap:12px;background:var(--surface);border-bottom:1px solid var(--filet)}
+#entete .glyphe{width:36px;height:36px;flex:0 0 auto;border-radius:var(--r-s);background:var(--accent);
+  color:#fff;display:grid;place-items:center;font-size:17px;font-weight:800}
+#entete .titres{flex:1;min-width:0}
+#entete .eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--accent);font-weight:600}
+#entete h1{margin:0;font-weight:800;font-size:19px;letter-spacing:-.02em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#entete .actions{display:flex;gap:6px}
+#entete .actions button{width:36px;height:36px;border-radius:50%;background:var(--surface-2);
+  display:grid;place-items:center;font-size:15px}
+#vue{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px 28px}
+#barre{flex:0 0 auto;display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);
+  border-top:1px solid var(--filet);padding-bottom:var(--safe-b)}
+#barre button{padding:10px 0 9px;display:flex;flex-direction:column;align-items:center;gap:4px;
+  color:var(--texte-3);transition:color .15s}
+#barre button .ic{font-size:20px;line-height:1;filter:grayscale(1) opacity(.55)}
+#barre button .lb{font-size:10px;font-weight:600;letter-spacing:.01em}
+#barre button[aria-current="page"]{color:var(--accent)}
+#barre button[aria-current="page"] .ic{filter:none}
+
+.etiquette{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--texte-3);font-weight:600;margin:0 0 8px}
+.carte{background:var(--surface);border:1px solid var(--filet);border-radius:var(--r-m);padding:15px;
+  box-shadow:var(--ombre)}
+.pastille{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;padding:4px 9px;border-radius:99px;background:var(--surface-2);color:var(--texte-2)}
+.pastille.haut{color:var(--haut)} .pastille.bas{color:var(--bas)} .pastille.abdo{color:var(--abdo)}
+.pastille.mixte{color:var(--mixte)} .pastille.etirement{color:var(--etirement)}
+.bouton{display:block;width:100%;padding:16px;border-radius:99px;background:var(--surface-2);
+  font-weight:700;font-size:16px;letter-spacing:-.01em;transition:transform .08s,filter .15s}
+.bouton:active{transform:scale(.98)}
+.bouton.principal{background:var(--accent);color:#fff;box-shadow:0 4px 14px rgba(249,78,0,.28)}
+.bouton.effort{background:var(--effort);color:#fff}
+.bouton.recup{background:var(--recup);color:#fff}
+.bouton.chauffe{background:var(--chauffe);color:#231603}
+.bouton.discret{background:transparent;border:1.5px solid var(--filet);color:var(--texte-2);
+  font-weight:600;font-size:14.5px;padding:13px}
+.bouton.danger{background:transparent;border:1.5px solid var(--effort);color:var(--effort);
+  font-weight:600;font-size:14.5px;padding:13px}
+.vide{text-align:center;padding:52px 20px;color:var(--texte-2)}
+.vide .gros{font-size:38px;margin-bottom:12px}
+.vide p{margin:0 0 4px}
+
+/* --- séance en cours --- */
+.fil{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;font-weight:600;
+  color:var(--texte-2);margin-bottom:7px}
+.jauge{height:5px;background:var(--surface-2);border-radius:99px;overflow:hidden;margin-bottom:18px}
+.jauge i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s}
+.cadran{position:relative;width:min(72vw,264px);margin:0 auto 18px;aspect-ratio:1}
+.cadran svg{width:100%;height:100%;transform:rotate(-90deg);display:block}
+.cadran .piste{fill:none;stroke:var(--surface-2);stroke-width:9}
+.cadran .arc{fill:none;stroke:var(--texte-3);stroke-width:9;stroke-linecap:round;
+  stroke-dasharray:552.9;transition:stroke .3s}
+.cadran.effort .arc{stroke:var(--effort)}
+.cadran.recup .arc{stroke:var(--recup)}
+.cadran.chauffe .arc{stroke:var(--chauffe)}
+.cadran .noyau{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:3px}
+.cadran .mode{font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--texte-3)}
+.cadran.effort .mode{color:var(--effort)} .cadran.recup .mode{color:var(--recup)}
+.cadran.chauffe .mode{color:var(--chauffe)}
+.cadran .chiffres{font-family:var(--mono);font-weight:700;font-size:clamp(40px,14vw,58px);
+  letter-spacing:-.04em;font-variant-numeric:tabular-nums;line-height:1}
+.cadran .sous{font-size:12px;color:var(--texte-3);font-weight:500}
+@keyframes souffle{0%,100%{opacity:1}50%{opacity:.45}}
+.cadran.alerte .chiffres{animation:souffle .5s ease-in-out infinite}
+.exo-nom{font-weight:800;font-size:24px;letter-spacing:-.025em;margin:0 0 3px}
+.exo-meta{font-size:13px;color:var(--texte-2);margin:0}
+.compteur{display:flex;align-items:center;justify-content:center;gap:18px;margin:8px 0 4px}
+.compteur button{width:58px;height:58px;border-radius:50%;background:var(--surface-2);font-size:26px;
+  font-weight:600;display:grid;place-items:center}
+.compteur button:active{background:var(--filet)}
+.compteur .val{font-family:var(--mono);font-weight:700;font-size:54px;letter-spacing:-.04em;
+  font-variant-numeric:tabular-nums;min-width:96px;text-align:center}
+.compteur .val.sous-objectif{color:var(--bas)} .compteur .val.sur-objectif{color:var(--recup)}
+.rappel-obj{text-align:center;font-size:11.5px;color:var(--texte-3);font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;margin:0}
+details.reglages{margin-top:12px;border:1px solid var(--filet);border-radius:var(--r-m);
+  background:var(--surface);box-shadow:var(--ombre);overflow:hidden}
+details.reglages summary{padding:14px 15px;font-size:13px;font-weight:600;color:var(--texte-2);
+  list-style:none;display:flex;justify-content:space-between;align-items:center}
+details.reglages summary::-webkit-details-marker{display:none}
+details.reglages summary::after{content:"+";font-size:18px;color:var(--texte-3)}
+details.reglages[open] summary::after{content:"\2013"}
+.reglage{display:flex;align-items:center;gap:10px;padding:10px 15px;border-top:1px solid var(--filet)}
+.reglage .nom{flex:1;font-size:14px;color:var(--texte-2)}
+.reglage .pas{display:flex;align-items:center;gap:8px}
+.reglage .pas button{width:36px;height:36px;border-radius:50%;background:var(--surface-2);font-size:17px;font-weight:600}
+.reglage .pas .v{font-family:var(--mono);font-weight:600;font-size:15px;min-width:62px;text-align:center;
+  font-variant-numeric:tabular-nums}
+.suite{margin-top:12px;padding:13px 15px;border-radius:var(--r-m);background:var(--surface-2);
+  color:var(--texte-2);font-size:13.5px}
+.suite b{color:var(--texte);font-weight:700}
+.zone-action{margin-top:16px;display:flex;flex-direction:column;gap:9px}
+.rangee{display:flex;gap:9px}
+.rangee > *{flex:1}
+
+/* --- listes et bibliothèque --- */
+.item{background:var(--surface);border:1px solid var(--filet);border-radius:var(--r-m);padding:15px;
+  margin-bottom:10px;box-shadow:var(--ombre)}
+.item h3{margin:0 0 3px;font-weight:700;font-size:17px;letter-spacing:-.015em}
+.item .quand{font-size:12.5px;color:var(--texte-2)}
+.item .cmds{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.item .cmds button{padding:9px 14px;border-radius:99px;background:var(--surface-2);font-size:12.5px;
+  font-weight:600;color:var(--texte-2)}
+.item .cmds button.go{background:var(--accent);color:#fff}
+.onglets{display:flex;gap:6px;background:var(--surface-2);padding:4px;border-radius:99px;margin-bottom:14px}
+.onglets button{flex:1;padding:10px;border-radius:99px;font-size:14px;font-weight:600;color:var(--texte-2)}
+.onglets button[aria-selected="true"]{background:var(--surface);color:var(--texte);box-shadow:var(--ombre)}
+.filtres{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none}
+.filtres::-webkit-scrollbar{display:none}
+.filtres button{flex:0 0 auto;padding:8px 14px;border-radius:99px;background:var(--surface);
+  border:1px solid var(--filet);font-size:13px;font-weight:600;color:var(--texte-2);white-space:nowrap}
+.filtres button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.ligne{display:flex;align-items:center;gap:12px;padding:13px 15px;background:var(--surface);
+  border:1px solid var(--filet);border-radius:var(--r-m);margin-bottom:8px;box-shadow:var(--ombre)}
+.ligne .txt{flex:1;min-width:0}
+.ligne .txt b{display:block;font-weight:600;font-size:15px;letter-spacing:-.01em}
+.ligne .txt span{font-size:12px;color:var(--texte-2)}
+.ligne .fleche{color:var(--texte-3);font-size:18px}
+.ajout{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;
+  border-radius:var(--r-m);border:1.5px dashed var(--filet);color:var(--accent);font-weight:700;
+  font-size:15px;margin-bottom:14px}
+
+/* --- formulaires --- */
+.champ{margin-bottom:14px}
+.champ > label{display:block;font-size:12.5px;font-weight:600;color:var(--texte-2);margin-bottom:6px}
+.trio{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.puces{display:flex;flex-wrap:wrap;gap:7px}
+.puces label{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;border-radius:99px;
+  background:var(--surface);border:1px solid var(--filet);font-size:13.5px;font-weight:500;cursor:pointer}
+.puces input{display:none}
+.puces input:checked + span{color:var(--accent);font-weight:700}
+.puces label:has(input:checked){border-color:var(--accent);background:var(--accent-doux)}
+.bloc-exo{background:var(--surface);border:1px solid var(--filet);border-radius:var(--r-m);
+  padding:14px;margin-bottom:10px;box-shadow:var(--ombre)}
+.bloc-exo .tete{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.bloc-exo .tete b{flex:1;font-weight:700;font-size:15.5px;letter-spacing:-.01em}
+.bloc-exo .mini{display:flex;gap:5px}
+.bloc-exo .mini button{width:32px;height:32px;border-radius:var(--r-s);background:var(--surface-2);
+  font-size:13px;display:grid;place-items:center}
+.aide{font-size:12px;color:var(--texte-3);margin:5px 0 0;line-height:1.4}
+.barre-form{display:flex;gap:9px;margin-top:18px;position:sticky;bottom:0;
+  padding:12px 0 4px;background:linear-gradient(to top,var(--fond) 70%,transparent)}
+.barre-form > *{flex:1}
+
+.rappel{position:fixed;left:16px;right:16px;bottom:calc(var(--safe-b) + 76px);background:var(--texte);
+  color:var(--fond);border-radius:var(--r-m);padding:14px 16px;font-size:14px;font-weight:500;z-index:60;
+  box-shadow:0 12px 32px rgba(0,0,0,.28);animation:monte .25s ease-out}
+@keyframes monte{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}
+#bandeau{display:none;padding:11px 16px;background:#FFF4E0;border-bottom:1px solid #F0D9A8;
+  font-size:12.5px;color:#7A5200;line-height:1.35}
+
+.panne{border:1.5px solid var(--effort);border-radius:var(--r-m);padding:16px;background:var(--accent-doux)}
+.panne h2{margin:0 0 6px;font-size:17px;font-weight:800}
+.panne pre{font-family:var(--mono);font-size:11px;white-space:pre-wrap;word-break:break-word;
+  margin:8px 0 12px;max-height:150px;overflow:auto;color:var(--effort)}
+
+/* --- ajouts lots 5 à 8 --- */
+.cadran .serie{font-family:var(--mono);font-weight:700;font-size:clamp(20px,7vw,29px);
+  color:var(--texte);letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1;margin-top:2px}
+.saisie-rangee{display:flex;align-items:stretch;justify-content:center;gap:9px;margin:8px 0 4px}
+.objectif-box{flex:0 0 auto;width:86px;border-radius:var(--r-m);background:var(--surface-2);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:6px 4px}
+.objectif-box .lb{font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--texte-3)}
+.objectif-box .nb{font-family:var(--mono);font-weight:700;font-size:26px;letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums;color:var(--texte-2)}
+.saisie-rangee .rond{flex:0 0 auto;width:56px;border-radius:var(--r-m);background:var(--surface-2);
+  font-size:26px;font-weight:600;display:grid;place-items:center}
+.saisie-rangee .rond:active{background:var(--filet)}
+.saisie-rangee .val{flex:1;min-width:0;border-radius:var(--r-m);background:var(--accent-doux);
+  display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:40px;
+  letter-spacing:-.04em;font-variant-numeric:tabular-nums;padding:10px 4px}
+.saisie-rangee .val.sous-objectif{color:var(--bas)} .saisie-rangee .val.sur-objectif{color:var(--recup)}
+
+.stat-grille{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;text-align:center}
+.stat-grille .n{font-family:var(--mono);font-weight:700;font-size:24px;letter-spacing:-.03em;line-height:1.1}
+.stat-grille .l{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--texte-3);margin-top:3px}
+.serie-active{display:flex;align-items:baseline;gap:10px}
+.serie-active .gros{font-family:var(--mono);font-weight:700;font-size:46px;letter-spacing:-.04em;color:var(--accent)}
+.serie-active .txt{font-size:13.5px;color:var(--texte-2);line-height:1.3}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal .jn{text-align:center;font-size:10.5px;font-weight:700;color:var(--texte-3);padding-bottom:2px}
+.cal .jour{aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:2px;font-size:13px;font-weight:600;background:transparent;color:var(--texte)}
+.cal .jour.hors{color:var(--texte-3);opacity:.4}
+.cal .jour.auj{background:var(--accent-doux);color:var(--accent);font-weight:800}
+.cal .jour .pt{width:7px;height:7px;border-radius:50%}
+.cal .jour .pt.fait{background:var(--accent)} .cal .jour .pt.prev{border:2px solid var(--planifie)}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-nav b{font-size:15px;font-weight:700;text-transform:capitalize}
+.cal-nav button{width:34px;height:34px;border-radius:50%;background:var(--surface-2);font-size:15px}
+.graph{width:100%;height:auto;display:block;overflow:visible}
+.graph .axe{stroke:var(--filet);stroke-width:1}
+.graph .gril{stroke:var(--filet);stroke-width:.5;stroke-dasharray:2 3}
+.graph .lb{font-size:9px;fill:var(--texte-3);font-family:var(--corps)}
+.graph .pt{fill:var(--accent)}
+.graph .courbe{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.graph .aire{fill:var(--accent);opacity:.1}
+.bulles{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;align-items:center;margin:6px 0}
+.bulle{aspect-ratio:1;display:grid;place-items:center}
+.bulle i{display:block;border-radius:50%;background:var(--accent);color:#fff;font-style:normal;
+  font-family:var(--mono);font-size:10px;font-weight:700;display:grid;place-items:center}
+.bulle.vide i{background:var(--filet);width:5px;height:5px}
+.semaine-lg{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;
+  color:var(--texte-2);margin-top:2px}
+.pr{display:flex;align-items:center;gap:11px;padding:11px 0;border-top:1px solid var(--filet)}
+.pr:first-of-type{border-top:none}
+.pr .med{font-size:24px;width:34px;text-align:center}
+.pr .co{flex:1;min-width:0}
+.pr .co b{display:block;font-size:15px;font-weight:700}
+.pr .co span{font-size:12px;color:var(--texte-2)}
+.pr .v{font-family:var(--mono);font-weight:700;font-size:19px}
+.delta{display:flex;justify-content:space-between;align-items:center;padding:9px 0;
+  border-top:1px solid var(--filet);font-size:14px}
+.delta:first-of-type{border-top:none}
+.delta .n{font-family:var(--mono);font-weight:700;font-size:15px}
+.delta .up{color:var(--recup)} .delta .down{color:var(--effort)} .delta .flat{color:var(--texte-3)}
+.corps{display:flex;align-items:flex-start;gap:10px}
+.vue-corps{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center}
+.corps svg{width:100%;height:auto;display:block}
+.corps .lg{display:block;text-align:center;font-size:11.5px;font-weight:700;color:var(--texte-3);margin-top:4px}
+.corps .neutre{fill:var(--fond);stroke:var(--filet);stroke-width:.9;stroke-linejoin:round}
+.corps .mus{fill:var(--surface-2);stroke:var(--surface);stroke-width:.9;stroke-linejoin:round;transition:fill .35s}
+.corps .stri{fill:none;stroke:var(--surface);stroke-width:.75;opacity:.55;stroke-linecap:round}
+.echelle{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:11px;color:var(--texte-3)}
+.echelle .bande{flex:1;height:9px;border-radius:99px;
+  background:linear-gradient(90deg,var(--surface-2),#FFD9C4,#FF9A5E,var(--accent))}
+.mois-tete{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  margin:18px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--filet)}
+.mois-tete b{font-size:15px;font-weight:800;letter-spacing:-.01em;text-transform:capitalize}
+.mois-tete span{font-size:11.5px;color:var(--texte-3);text-align:right}
+.jour-puce{flex:0 0 auto;width:40px;text-align:center;line-height:1.05}
+.jour-puce b{display:block;font-family:var(--mono);font-size:18px;font-weight:700;letter-spacing:-.03em}
+.jour-puce span{font-size:10px;font-weight:600;color:var(--texte-3);text-transform:uppercase}
+.taux{flex:0 0 auto;font-family:var(--mono);font-size:13px;font-weight:700}
+.opt{display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid var(--filet)}
+.opt:first-of-type{border-top:none}
+.opt .co{flex:1;min-width:0}
+.opt .co b{display:block;font-size:15px;font-weight:600}
+.opt .co span{font-size:12.5px;color:var(--texte-2);line-height:1.35;display:block;margin-top:2px}
+.bascule{flex:0 0 auto;width:50px;height:30px;border-radius:99px;background:var(--filet);position:relative;
+  transition:background .2s}
+.bascule[aria-pressed="true"]{background:var(--accent)}
+.bascule i{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;
+  transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.bascule[aria-pressed="true"] i{transform:translateX(20px)}
+.opt input[type=number]{width:74px;flex:0 0 auto;text-align:center;padding:9px}
+.retour{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--accent);
+  margin-bottom:14px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="entete">
+    <div class="glyphe" id="glyphe">R</div>
+    <div class="titres">
+      <div class="eyebrow" id="eyebrow">Rhabdo</div>
+      <h1 id="titre">Accueil</h1>
+    </div>
+    <div class="actions">
+      <button id="btnProfil" aria-label="Profil">&#128100;</button>
+      <button id="btnParams" aria-label="Param&egrave;tres">&#9881;&#65039;</button>
+    </div>
+  </header>
+  <div id="bandeau"></div>
+  <div id="bandeau2" style="display:none;padding:11px 16px;background:var(--accent-doux);
+    border-bottom:1px solid var(--filet);font-size:12.5px;color:var(--texte-2);line-height:1.4">
+    Fichier ouvert en local : iOS ne propose pas « Sur l’écran d’accueil » dans ce mode.
+    Voir Paramètres &rsaquo; Installer sur l’écran d’accueil.
+  </div>
+  <main id="vue"></main>
+  <nav id="barre">
+    <button data-onglet="seance"><span class="ic">&#9654;&#65039;</span><span class="lb">S&eacute;ance</span></button>
+    <button data-onglet="biblio"><span class="ic">&#128218;</span><span class="lb">Biblioth&egrave;que</span></button>
+    <button data-onglet="planif"><span class="ic">&#128197;</span><span class="lb">Planning</span></button>
+    <button data-onglet="accueil"><span class="ic">&#128200;</span><span class="lb">Statistiques</span></button>
+  </nav>
+</div>
+<script>
+"use strict";
+
+/* ============================================================
+   0. FILET DE SÉCURITÉ
+   ============================================================ */
+let dernierePanne = null;
+function noterPanne(err){
+  dernierePanne = (err && err.message ? err.message : String(err)) + '\n' +
+    (err && err.stack ? (err.stack.split('\n')[1] || '') : '');
+  try{ rendre(); }catch(e){}
+}
+window.addEventListener('error', e => {
+  dernierePanne = (e.message||'Erreur inconnue') + '\n' + (e.filename||'') + ':' + (e.lineno||'');
+  try{ rendre(); }catch(_){}
+});
+window.addEventListener('unhandledrejection', e => {
+  dernierePanne = 'Promesse rejetée : ' + (e.reason && e.reason.message ? e.reason.message : e.reason);
+});
+
+/* ============================================================
+   1. STOCKAGE
+   ============================================================ */
+const Store = (() => {
+  const P='rhabdo_v1_', memoire={};
+  let dispo=true;
+  try{ localStorage.setItem(P+'t','1'); localStorage.removeItem(P+'t'); }catch(e){ dispo=false; }
+  return {
+    get dispo(){ return dispo; },
+    lire(cle,defaut){
+      try{
+        const brut = dispo ? localStorage.getItem(P+cle) : memoire[cle];
+        return brut==null ? defaut : JSON.parse(brut);
+      }catch(e){ return defaut; }
+    },
+    ecrire(cle,val){
+      const brut=JSON.stringify(val);
+      try{ dispo ? localStorage.setItem(P+cle,brut) : (memoire[cle]=brut); }catch(e){ memoire[cle]=brut; }
+    },
+    effacer(cle){ try{ dispo ? localStorage.removeItem(P+cle) : delete memoire[cle]; }catch(e){} },
+    toutEffacer(){ ['exercices','modeles','planifiees','journal','reglages','seanceEnCours']
+      .forEach(c=>this.effacer(c)); },
+    exporter(){
+      const o={version:1, exporteLe:new Date().toISOString()};
+      ['exercices','modeles','planifiees','journal','reglages'].forEach(c=>o[c]=this.lire(c,null));
+      return JSON.stringify(o,null,2);
+    }
+  };
+})();
+
+/* ============================================================
+   2. MODÈLE DE DONNÉES
+   ============================================================ */
+const GROUPES = {
+  pectoraux:'Pectoraux', dos:'Dos', epaules:'Épaules', biceps:'Biceps', triceps:'Triceps',
+  abdo:'Abdo/Gainage', fessiers:'Fessiers', quadriceps:'Quadriceps',
+  ischios:'Ischio-jambiers', mollets:'Mollets', hanche:'Hanche'
+};
+const CATEGORIES = { haut:'Haut', bas:'Bas', abdo:'Abdo/Gainage', mixte:'Mixte', etirement:'Étirement' };
+const CAT_EXO = { haut:'Haut', bas:'Bas', abdo:'Abdo/Gainage', etirement:'Étirement' };
+
+const slug = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+  .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+
+function exercicesParDefaut(){
+  const e=(nom,cat,z1,z2,mode,extra)=>Object.assign({
+    id:'exo-'+slug(nom), nom, categorie:cat, zone1:z1, zone2:z2||[], modeEffort:mode||'reps',
+    ecartementCm:null, hauteurCm:null, lestageKg:0, objSeries:6, objReps:mode==='temps'?30:10,
+    repsInitiales:null,          /* point de départ ; null = on part de l'objectif */
+    evolPlus:1, evolToutesLesN:3, compteurReussites:0, remarque:''
+  }, extra||{});
+  return [
+    e('Pompes serrées','haut',['pectoraux'],['triceps'],'reps',{ecartementCm:30}),
+    e('Pompes larges','haut',['pectoraux'],['abdo'],'reps',{ecartementCm:70}),
+    e('Dips','haut',['triceps'],['pectoraux']),
+    e('Traction pronation serrée','haut',['dos'],['biceps'],'reps',{ecartementCm:40}),
+    e('Traction pronation large','haut',['dos'],['epaules'],'reps',{ecartementCm:80}),
+    e('Traction supination serrée','haut',['biceps'],['dos'],'reps',{ecartementCm:30}),
+    e('Traction supination large','haut',['dos'],['biceps'],'reps',{ecartementCm:60}),
+    e('Biceps','haut',['biceps'],[]),
+    e('Triceps','haut',['triceps'],['epaules']),
+    e('Superman','haut',['dos'],['fessiers']),
+    e('Squat','bas',['quadriceps'],['fessiers']),
+    e('Flexion latérale','bas',['quadriceps'],[]),
+    e('Mollets','bas',['mollets'],[]),
+    e('Abduction hanche','bas',['hanche'],['fessiers']),
+    e('Adduction hanche','bas',['hanche'],[]),
+    e('Pont','bas',['fessiers'],['ischios']),
+    e('Crunch','abdo',['abdo'],[]),
+    e('Abdominaux chaise romaine','abdo',['abdo'],['dos']),
+    e('Gainage horizontal','abdo',['abdo'],[],'temps',{objSeries:3,objReps:45,evolPlus:5}),
+    e('Gainage latéral','abdo',['abdo'],[],'temps',{objSeries:4,objReps:30,evolPlus:5}),
+    e('Étirement dos','etirement',['dos'],[],'temps',{objSeries:2,objReps:30,evolPlus:0}),
+    e('Étirement épaule','etirement',['epaules'],[],'temps',{objSeries:2,objReps:30,evolPlus:0}),
+    e('Étirement bras','etirement',['biceps'],[],'temps',{objSeries:2,objReps:30,evolPlus:0}),
+    e('Étirement jambes','etirement',['ischios'],[],'temps',{objSeries:2,objReps:30,evolPlus:0}),
+    e('Étirement chevilles','etirement',['mollets'],[],'temps',{objSeries:2,objReps:30,evolPlus:0}),
+    e('Étirement cou','etirement',['epaules'],[],'temps',{objSeries:2,objReps:20,evolPlus:0})
+  ];
+}
+function modelesParDefaut(){
+  const b=(nom,series,reps,recup,recupFin)=>({
+    exerciceId:'exo-'+slug(nom), nbSeries:series, nbReps:reps,
+    recupSerieSec:recup, recupFinSec:recupFin==null?120:recupFin,
+    repsInitiales:null,          /* null = hérite de l'exercice */
+    evolPlus:null, evolToutesLesN:null
+  });
+  const m=(nom,type,chauffe,blocs)=>({id:'seance-'+slug(nom),nom,type,echauffementMin:chauffe,blocs});
+  return [
+    m('Routine Haut','haut',10,[ b('Pompes serrées',6,10,60), b('Traction pronation large',6,6,90),
+      b('Dips',5,8,75), b('Biceps',4,10,60), b('Triceps',4,10,60) ]),
+    m('Routine Bas','bas',10,[ b('Squat',6,15,60), b('Pont',4,15,45),
+      b('Abduction hanche',4,15,45), b('Mollets',4,20,45) ]),
+    m('Routine Abdo/Gainage','abdo',5,[ b('Gainage horizontal',3,45,60), b('Gainage latéral',4,30,45),
+      b('Crunch',4,20,45), b('Abdominaux chaise romaine',4,12,60) ]),
+    m('Routine Étirements','etirement',0,[ b('Étirement dos',2,30,15,30), b('Étirement épaule',2,30,15,30),
+      b('Étirement bras',2,30,15,30), b('Étirement jambes',2,30,15,30),
+      b('Étirement chevilles',2,30,15,30), b('Étirement cou',2,20,15,30) ]),
+    m('Routine Mixte','mixte',10,[ b('Pompes larges',5,12,60), b('Squat',5,15,60),
+      b('Traction supination large',5,6,90), b('Gainage horizontal',3,45,45) ]),
+    m('Lafay Niv II','mixte',10,[]),
+    m('Lafay Niv III','mixte',10,[])
+  ];
+}
+
+const DB = {
+  exercices:[], modeles:[], planifiees:[], journal:[], reglages:{},
+  charger(){
+    this.exercices = Store.lire('exercices',null);
+    if(!Array.isArray(this.exercices)||!this.exercices.length){
+      this.exercices = exercicesParDefaut(); Store.ecrire('exercices',this.exercices); }
+    this.modeles = Store.lire('modeles',null);
+    if(!Array.isArray(this.modeles)||!this.modeles.length){
+      this.modeles = modelesParDefaut(); Store.ecrire('modeles',this.modeles); }
+    this.planifiees = Store.lire('planifiees',[])||[];
+    this.journal = Store.lire('journal',[])||[];
+    this.reglages = Object.assign({ voix:true, bips:true, ecranAllume:true,
+      enchainementAuto:true, seancesParSemaine:2, semainesCarto:4,
+      seuils:[600,300,180,120,60,30,15,10,5,4,3,2,1], dernierBip:3 }, Store.lire('reglages',{})||{});
+  },
+  sauver(cle){ Store.ecrire(cle,this[cle]); },
+  exercice(id){ return this.exercices.find(e=>e.id===id)||null; },
+  modele(id){ return this.modeles.find(m=>m.id===id)||null; },
+  /* Répétitions de départ : le réglage de la séance l'emporte sur
+     celui de l'exercice ; à défaut on part de l'objectif. */
+  repsDepart(exo,bloc){
+    if(bloc && bloc.repsInitiales!=null) return {val:bloc.repsInitiales, source:'seance'};
+    if(exo && exo.repsInitiales!=null)   return {val:exo.repsInitiales, source:'exercice'};
+    return {val:(bloc?bloc.nbReps:(exo?exo.objReps:0)), source:'objectif'};
+  },
+  /* Maximum encodé pour cet exercice lors de la DERNIÈRE réalisation
+     de cette séance. C'est lui qui prime sur tout le reste. */
+  dernierMax(modeleId,exerciceId){
+    for(let i=DB.journal.length-1;i>=0;i--){
+      const a=DB.journal[i];
+      if(a.modeleId!==modeleId) continue;
+      const vals=(a.series||[]).filter(s=>s.exerciceId===exerciceId).map(s=>s.repsRealisees);
+      if(!vals.length) return null;      /* la séance existe mais sans cet exercice */
+      return Math.max.apply(null,vals);
+    }
+    return null;
+  },
+  regleEvolution(exo,bloc){
+    return {
+      plus:(bloc&&bloc.evolPlus!=null)?bloc.evolPlus:(exo?exo.evolPlus:0),
+      tous:(bloc&&bloc.evolToutesLesN!=null)?bloc.evolToutesLesN:(exo?exo.evolToutesLesN:0),
+      herite:!(bloc&&bloc.evolPlus!=null)
+    };
+  },
+  idLibre(prefixe,nom,liste){
+    let base = prefixe+slug(nom), id=base, n=2;
+    while(liste.some(x=>x.id===id)){ id = base+'-'+(n++); }
+    return id;
+  },
+  modelesUtilisant(exoId){
+    return this.modeles.filter(m=>(m.blocs||[]).some(b=>b.exerciceId===exoId));
+  }
+};
+
+/* ============================================================
+   3. VOIX ET SONS
+   ============================================================ */
+const Voix = {
+  ok:false, voix:null, ctx:null,
+  init(){
+    if(!('speechSynthesis' in window)) return;
+    const choisir = () => {
+      const d = speechSynthesis.getVoices()||[];
+      this.voix = d.find(v=>v.lang==='fr-FR' && /Thomas|Am[ée]lie|Audrey|Marie/i.test(v.name))
+               || d.find(v=>v.lang==='fr-FR') || d.find(v=>(v.lang||'').startsWith('fr')) || null;
+    };
+    choisir(); speechSynthesis.onvoiceschanged = choisir;
+  },
+  debloquer(){
+    if(this.ok) return;
+    try{ const AC=window.AudioContext||window.webkitAudioContext; if(AC){ this.ctx=new AC(); this.ctx.resume(); } }catch(e){}
+    try{ if('speechSynthesis' in window){ const u=new SpeechSynthesisUtterance(' '); u.volume=0; speechSynthesis.speak(u); } }catch(e){}
+    this.ok=true;
+  },
+  dire(texte,couper){
+    if(!DB.reglages.voix||!('speechSynthesis' in window)) return;
+    try{
+      if(couper) speechSynthesis.cancel();
+      const u=new SpeechSynthesisUtterance(texte);
+      u.lang='fr-FR'; u.rate=1.05;
+      if(this.voix) u.voice=this.voix;
+      speechSynthesis.speak(u);
+    }catch(e){}
+  },
+  bip(freq,duree,gain){
+    if(!DB.reglages.bips||!this.ctx) return;
+    freq=freq||880; duree=duree||0.09; gain=gain||0.22;
+    try{
+      const t=this.ctx.currentTime,o=this.ctx.createOscillator(),g=this.ctx.createGain();
+      o.type='sine'; o.frequency.value=freq;
+      g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(gain,t+0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+duree);
+      o.connect(g); g.connect(this.ctx.destination); o.start(t); o.stop(t+duree+0.02);
+    }catch(e){}
+  },
+  gong(){ this.bip(523,0.14); setTimeout(()=>this.bip(784,0.22,0.26),130); }
+};
+const Ecran = {
+  verrou:null,
+  prendre(){
+    if(!DB.reglages.ecranAllume||!('wakeLock' in navigator)) return;
+    navigator.wakeLock.request('screen').then(v=>this.verrou=v).catch(()=>{});
+  },
+  relacher(){ try{ this.verrou&&this.verrou.release(); }catch(e){} this.verrou=null; }
+};
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&Seance.active&&!Ecran.verrou) Ecran.prendre();
+});
+
+/* ============================================================
+   4. MOTEUR DE CHRONO
+   ------------------------------------------------------------
+   surTick ne redessine PLUS toute la vue : il met à jour les
+   seuls nœuds du cadran. Reconstruire le HTML 60 fois par
+   seconde détruisait les boutons sous le doigt, ce qui faisait
+   avaler les taps — c'était la cause du bouton Pause inerte.
+   ============================================================ */
+function direDuree(sec){
+  if(sec>=60 && sec%60===0){ const m=sec/60; return m===1?'une minute':m+' minutes'; }
+  if(sec>10) return sec+' secondes';
+  return String(sec);
+}
+const Chrono = {
+  mode:'repos', debutMs:0, cibleSec:null, pauseMs:0, pauseDebut:0,
+  boucle:null, annonces:new Set(), surFin:null,
+  lancer(mode,cibleSec,cbs){
+    this.arreter(); cbs=cbs||{};
+    this.mode=mode; this.cibleSec=cibleSec; this.debutMs=Date.now();
+    this.pauseMs=0; this.pauseDebut=0; this.annonces.clear(); this.surFin=cbs.surFin||null;
+    this._tourner();
+  },
+  ecouleSec(){
+    if(!this.debutMs) return 0;
+    const fige=this.pauseDebut||Date.now();
+    return (fige-this.debutMs-this.pauseMs)/1000;
+  },
+  restantSec(){ return this.cibleSec==null?null:Math.max(0,this.cibleSec-this.ecouleSec()); },
+  basculerPause(){
+    if(this.mode==='repos') return;
+    if(this.pauseDebut){ this.pauseMs+=Date.now()-this.pauseDebut; this.pauseDebut=0; }
+    else this.pauseDebut=Date.now();
+  },
+  enPause(){ return !!this.pauseDebut; },
+  actif(){ return this.mode!=='repos'; },
+  arreter(){
+    if(this.boucle) cancelAnimationFrame(this.boucle);
+    this.boucle=null; this.mode='repos'; this.cibleSec=null;
+    this.debutMs=0; this.pauseDebut=0; this.pauseMs=0;
+  },
+  _tourner(){
+    const pas=()=>{
+      if(this.mode==='repos') return;
+      if(!this.enPause() && this.cibleSec!=null){
+        const reste=this.restantSec();
+        this._annoncer(Math.ceil(reste));
+        if(reste<=0){ const fin=this.surFin; this.arreter(); if(fin) fin(); return; }
+      }
+      rafraichirCadran();
+      this.boucle=requestAnimationFrame(pas);
+    };
+    this.boucle=requestAnimationFrame(pas);
+  },
+  _annoncer(sec){
+    if(sec<=0||this.annonces.has(sec)) return;
+    if((DB.reglages.seuils||[]).indexOf(sec)===-1) return;
+    this.annonces.add(sec);
+    if(sec<=(DB.reglages.dernierBip||3)){ Voix.bip(sec===1?1320:880,0.1); Voix.dire(String(sec),true); }
+    else Voix.dire(direDuree(sec),true);
+  }
+};
+const mmss = s => { s=Math.max(0,Math.floor(s));
+  return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); };
+
+/* ============================================================
+   5. SÉANCE EN COURS
+   échauffement-prêt → échauffement → prêt → effort → saisie
+   → récup → prêt … → terminé
+   ============================================================ */
+const Seance = {
+  active:null, etat:'pret', iBloc:0, iSerie:1, repsSaisies:0, effortEcoule:0, progressions:[],
+
+  demarrer(modele){
+    const blocs=(modele.blocs||[]).filter(b=>DB.exercice(b.exerciceId));
+    if(!blocs.length){ toast('Cette séance ne contient aucun exercice. Ajoute-lui des exercices depuis la bibliothèque.'); return; }
+    this.active={
+      id:uid(), modeleId:modele.id, nom:modele.nom, type:modele.type,
+      debut:new Date().toISOString(), echauffementMin:modele.echauffementMin||0,
+      echauffementSec:0, blocs:blocs.map(b=>Object.assign({},b)), series:[]
+    };
+    this.iBloc=0; this.iSerie=1; this.progressions=[];
+    /* Valeur proposée au compteur, par ordre de priorité :
+       1. le maximum encodé à la dernière réalisation de CETTE séance
+       2. les répétitions de départ (réglage séance, puis exercice)
+       3. l'objectif de la série */
+    this.active.blocs.forEach(b=>{
+      const exo=DB.exercice(b.exerciceId);
+      const max=DB.dernierMax(modele.id,b.exerciceId);
+      b.derniereSaisie = (max!=null) ? max : DB.repsDepart(exo,b).val;
+    });
+    this._preparerSaisie(); Ecran.prendre(); ongletCourant='seance'; edition=null;
+    /* l'échauffement ne démarre PAS tout seul : le premier tap
+       lance le décompte et débloque l'audio du même geste. */
+    this.etat = this.active.echauffementMin>0 ? 'echauffement-pret' : 'pret';
+    this.persister(); rendre();
+    if(this.etat==='pret')
+      Voix.dire(modele.nom+'. '+this._exo().nom+', série 1 sur '+this._bloc().nbSeries+'.');
+  },
+
+  lancerEchauffement(){
+    const sec=this.active.echauffementMin*60;
+    this.etat='echauffement'; this.persister(); rendre();
+    Voix.gong();
+    Voix.dire('Échauffement, '+direDuree(sec)+', tapis de course.');
+    Chrono.lancer('chauffe',sec,{ surFin:()=>this.finEchauffement(false) });
+  },
+  finEchauffement(passe){
+    this.active.echauffementSec = passe ? Math.round(Chrono.ecouleSec()) : this.active.echauffementMin*60;
+    Chrono.arreter();
+    this.etat='pret'; this._preparerSaisie(); this.persister();
+    Voix.gong();
+    Voix.dire('Échauffement terminé. '+this._exo().nom+', série 1 sur '+this._bloc().nbSeries+
+      '. Objectif '+this._bloc().nbReps+' '+(this._exo().modeEffort==='temps'?'secondes':'répétitions')+'.');
+    rendre();
+  },
+
+  reprendre(){
+    const s=Store.lire('seanceEnCours',null);
+    if(!s||!s.active||!Array.isArray(s.active.blocs)) return false;
+    const blocs=s.active.blocs.filter(b=>DB.exercice(b.exerciceId));
+    if(!blocs.length){ Store.effacer('seanceEnCours'); return false; }
+    s.active.blocs=blocs;
+    const iBloc=Math.min(Math.max(0,s.iBloc|0),blocs.length-1);
+    const iSerie=Math.min(Math.max(1,s.iSerie|0),blocs[iBloc].nbSeries);
+    this.active=s.active; this.iBloc=iBloc; this.iSerie=iSerie; this.progressions=[];
+    /* on ne relance jamais un chrono tout seul au chargement */
+    this.etat = (s.etat==='echauffement'||s.etat==='echauffement-pret') ? 'echauffement-pret'
+      : (s.etat==='recup-termine' ? 'recup-termine' : 'pret');
+    this._preparerSaisie();
+    return true;
+  },
+  persister(){
+    if(!this.active){ Store.effacer('seanceEnCours'); return; }
+    Store.ecrire('seanceEnCours',{active:this.active,iBloc:this.iBloc,iSerie:this.iSerie,etat:this.etat});
+  },
+
+  _bloc(){ return this.active.blocs[this.iBloc]; },
+  _exo(){ const b=this._bloc(); return b?DB.exercice(b.exerciceId):null; },
+  _blocSuivant(){ return this.active.blocs[this.iBloc+1]||null; },
+  _preparerSaisie(){
+    const b=this._bloc(), exo=this._exo();
+    if(!b||!exo) return;
+    if(b.ecartementCm===undefined) b.ecartementCm=exo.ecartementCm;
+    if(b.hauteurCm===undefined) b.hauteurCm=exo.hauteurCm;
+    if(b.lestageKg===undefined) b.lestageKg=exo.lestageKg||0;
+    /* la saisie de la série précédente devient la proposition par défaut */
+    this.repsSaisies = (b.derniereSaisie!=null) ? b.derniereSaisie : b.nbReps;
+  },
+
+  demarrerSerie(){
+    const exo=this._exo(), b=this._bloc();
+    this.etat='effort'; this.persister();
+    Voix.gong();
+    Chrono.lancer('effort', exo.modeEffort==='temps'?b.nbReps:null, {
+      surFin:()=>{ this.effortEcoule=b.nbReps; this._versSaisie(); }
+    });
+    rendre();
+  },
+  terminerSerie(){ this.effortEcoule=Chrono.ecouleSec(); Chrono.arreter(); this._versSaisie(); },
+  _versSaisie(){
+    const exo=this._exo();
+    this.etat='saisie';
+    const b0=this._bloc();
+    this.repsSaisies = exo.modeEffort==='temps'
+      ? Math.round(this.effortEcoule)
+      : ((b0.derniereSaisie!=null) ? b0.derniereSaisie : b0.nbReps);
+    this.persister(); Voix.dire('Série terminée.'); rendre();
+  },
+  validerSerie(){
+    const b=this._bloc();
+    this.active.series.push({
+      exerciceId:b.exerciceId, indexBloc:this.iBloc, numeroSerie:this.iSerie,
+      repsObjectif:b.nbReps, repsRealisees:this.repsSaisies,
+      ecartementCm:b.ecartementCm, hauteurCm:b.hauteurCm, lestageKg:b.lestageKg,
+      effortSec:Math.round(this.effortEcoule), recupSec:0, ts:new Date().toISOString()
+    });
+    b.derniereSaisie=this.repsSaisies;
+    const derniereSerie=this.iSerie>=b.nbSeries, dernierBloc=!this._blocSuivant();
+    if(derniereSerie&&dernierBloc){ this._terminer(); return; }
+    const recup = derniereSerie ? (b.recupFinSec||b.recupSerieSec) : b.recupSerieSec;
+    this.etat='recup'; this.persister();
+    Voix.dire((derniereSerie?'Exercice terminé. ':'')+'Récupération, '+direDuree(recup)+'.');
+    Chrono.lancer('recup',recup,{ surFin:()=>this.recupTerminee() });
+    rendre();
+  },
+
+  /* ce que sera la prochaine série, sans encore y aller */
+  prochaine(){
+    const b=this._bloc();
+    if(this.iSerie<b.nbSeries){
+      const exo=this._exo();
+      return {iBloc:this.iBloc, iSerie:this.iSerie+1, nbSeries:b.nbSeries,
+              exo:exo, nbReps:b.nbReps, memeExercice:true};
+    }
+    const suiv=this._blocSuivant();
+    if(!suiv) return null;
+    return {iBloc:this.iBloc+1, iSerie:1, nbSeries:suiv.nbSeries,
+            exo:DB.exercice(suiv.exerciceId), nbReps:suiv.nbReps, memeExercice:false};
+  },
+
+  /* Correction 2 : à la fin du décompte, la série suivante part
+     seule. On annonce d'abord, puis on lance après un court délai
+     pour que la voix ait le temps de commencer. */
+  recupTerminee(){
+    const der=this.active.series[this.active.series.length-1];
+    if(der) der.recupSec=Math.round(Chrono.cibleSec||0);
+    Chrono.arreter();
+    const p=this.prochaine();
+    if(!p){ this._terminer(); return; }
+    Voix.dire('Récupération terminée. '+p.exo.nom+', série '+p.iSerie+' sur '+p.nbSeries+
+      '. Objectif '+p.nbReps+' '+(p.exo.modeEffort==='temps'?'secondes':'répétitions')+'.');
+    if(DB.reglages.enchainementAuto === false){
+      this.etat='recup-termine'; this.persister(); Voix.gong(); rendre(); return;
+    }
+    this._avancer(); this.etat='pret'; this.persister(); rendre();
+    const cible=this.active.series.length;
+    setTimeout(()=>{
+      if(Seance.active && Seance.etat==='pret' && Seance.active.series.length===cible)
+        Seance.demarrerSerie();
+    }, 1500);
+  },
+
+  _avancer(){
+    const b=this._bloc();
+    if(this.iSerie>=b.nbSeries){ this.iBloc++; this.iSerie=1; } else this.iSerie++;
+    this._preparerSaisie(); this.persister();
+  },
+  /* depuis l'écran « récupération terminée » : on avance ET on lance */
+  avancerEtDemarrer(){ this._avancer(); this.demarrerSerie(); },
+
+  /* Abandonne les séries restantes de l'exercice courant et passe au
+     suivant. Les séries déjà réalisées restent au journal. */
+  passerExercice(){
+    Chrono.arreter();
+    if(!this._blocSuivant()){
+      if(this.active.series.length) this._terminer();
+      else { this.abandonner(); toast('Séance annulée.'); }
+      return;
+    }
+    this.iBloc++; this.iSerie=1;
+    this.etat='pret'; this._preparerSaisie(); this.persister();
+    const exo=this._exo(), b=this._bloc();
+    Voix.dire('Exercice suivant. '+exo.nom+', série 1 sur '+b.nbSeries+'.');
+    rendre();
+  },
+
+  /* raccourci pendant la récup : on saute le reste du décompte */
+  passerRecup(){
+    const der=this.active.series[this.active.series.length-1];
+    if(der) der.recupSec=Math.round(Chrono.ecouleSec());
+    Chrono.arreter(); this._avancer();
+    this.etat='pret'; this.persister();
+    Voix.gong();
+    const exo=this._exo(), nb=this._bloc();
+    Voix.dire(exo.nom+', série '+this.iSerie+' sur '+nb.nbSeries+'.');
+    rendre();
+  },
+
+  _appliquerEvolution(){
+    const parExo={};
+    this.active.series.forEach(s=>(parExo[s.exerciceId]=parExo[s.exerciceId]||[]).push(s));
+    Object.keys(parExo).forEach(id=>{
+      const exo=DB.exercice(id); if(!exo) return;
+      const bloc=this.active.blocs.find(b=>b.exerciceId===id);
+      const regle=DB.regleEvolution(exo,bloc);
+      if(!regle.plus||!regle.tous) return;
+      const reussi=parExo[id].every(s=>s.repsRealisees>=s.repsObjectif);
+      exo.compteurReussites = reussi ? (exo.compteurReussites||0)+1 : 0;
+      if(reussi && exo.compteurReussites>=regle.tous){
+        exo.compteurReussites=0; exo.objReps+=regle.plus;
+        const modele=DB.modele(this.active.modeleId);
+        if(modele){ const bm=(modele.blocs||[]).find(b=>b.exerciceId===id); if(bm) bm.nbReps+=regle.plus; }
+        this.progressions.push(exo.nom+' : objectif porté à '+exo.objReps+(exo.modeEffort==='temps'?' s':' reps'));
+      }
+    });
+    DB.sauver('exercices'); DB.sauver('modeles');
+  },
+  _terminer(){
+    Chrono.arreter(); Ecran.relacher();
+    const a=this.active;
+    a.fin=new Date().toISOString();
+    a.dureeSec=Math.round((new Date(a.fin)-new Date(a.debut))/1000);
+    this._appliquerEvolution();
+    DB.journal.push(a); DB.sauver('journal');
+    const p=DB.planifiees.find(p=>p.modeleId===a.modeleId&&p.statut==='planifiee');
+    if(p){ p.statut='realisee'; DB.sauver('planifiees'); }
+    this.etat='termine'; Store.effacer('seanceEnCours');
+    Voix.gong(); Voix.dire('Séance terminée. Bravo.'); rendre();
+  },
+  abandonner(){
+    Chrono.arreter(); Ecran.relacher();
+    this.active=null; this.etat='pret'; Store.effacer('seanceEnCours'); rendre();
+  },
+  ajusterReps(d){
+    const exo=this._exo();
+    this.repsSaisies=Math.max(0,this.repsSaisies+d*(exo.modeEffort==='temps'?5:1));
+    /* le conteneur s'appelle .saisie-rangee depuis que l'objectif est
+       passé à gauche ; si le nœud manque, on redessine plutôt que de
+       laisser l'écran mentir sur la valeur réelle. */
+    const n=document.querySelector('.saisie-rangee .val');
+    if(!n){ rendre(); return; }
+    n.textContent=this.repsSaisies;
+    const o=this._bloc().nbReps;
+    n.className='val'+(this.repsSaisies<o?' sous-objectif':this.repsSaisies>o?' sur-objectif':'');
+  },
+  ajusterReglage(champ,d,noeud){
+    const b=this._bloc();
+    b[champ]=Math.max(0,Math.round(((b[champ]==null?0:b[champ])+d)*10)/10);
+    this.persister();
+    if(noeud){ const v=noeud.parentNode.querySelector('.v');
+      if(v) v.textContent=b[champ]+' '+(champ==='lestageKg'?'kg':'cm'); }
+  },
+  progression(){
+    const total=this.active.blocs.reduce((n,b)=>n+b.nbSeries,0), faites=this.active.series.length;
+    return {faites,total,pct: total?Math.round(faites/total*100):0};
+  }
+};
+
+/* ============================================================
+   6. ÉTAT DE NAVIGATION
+   ============================================================ */
+let ongletCourant='seance';
+let sousOnglet='exercices';
+let filtreBiblio='tous';
+let edition=null;            /* {type:'exo'|'seance', data, nouveau} */
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const METAS = {
+  accueil:{glyphe:'\u{1F4C8}', eyebrow:'Rhabdo', titre:'Statistiques'},
+  biblio:{glyphe:'\u{1F4DA}', eyebrow:'Bibliothèque', titre:'Exercices & séances'},
+  planif:{glyphe:'\u{1F4C5}', eyebrow:'Planning', titre:'Calendrier'},
+  seance:{glyphe:'\u25B6', eyebrow:'Entraînement', titre:'Réaliser une séance'}
+};
+function aller(o){ ongletCourant=o; edition=null; rendre(); }
+function toast(msg){
+  const d=document.createElement('div');
+  d.className='rappel'; d.textContent=msg;
+  document.body.appendChild(d);
+  setTimeout(()=>d.remove(),4000);
+}
+
+/* ------------------------------------------------------------
+   Rafraîchissement ciblé du cadran : aucun innerHTML, donc
+   aucun bouton détruit sous le doigt.
+   ------------------------------------------------------------ */
+function rafraichirCadran(){
+  const cadran=document.getElementById('cadran');
+  if(!cadran) return;
+  const etat=etatCadran();
+  cadran.className='cadran '+etat.cls;
+  const c=cadran.querySelector('.chiffres'), s=cadran.querySelector('.sous'),
+        m=cadran.querySelector('.mode'), a=cadran.querySelector('.arc');
+  const se=cadran.querySelector('.serie');
+  if(c && c.textContent!==String(etat.gros)) c.textContent=etat.gros;
+  if(s && s.textContent!==etat.sous) s.textContent=etat.sous;
+  if(m && m.textContent!==etat.mode) m.textContent=etat.mode;
+  if(se && se.textContent!==etat.serie) se.textContent=etat.serie;
+  if(a) a.style.strokeDashoffset=etat.arc;
+}
+
+/* source unique de vérité pour ce qu'affiche le cadran */
+function etatCadran(){
+  const C=552.9;
+  if(!Seance.active) return {cls:'',mode:'',gros:'',sous:'',serie:'',arc:0};
+  if(Seance.etat==='echauffement-pret'||Seance.etat==='echauffement'){
+    const cible=Seance.active.echauffementMin*60;
+    const r=Seance.etat==='echauffement-pret'?cible:(Chrono.restantSec()==null?cible:Chrono.restantSec());
+    return {
+      cls:'chauffe'+(Seance.etat==='echauffement'&&r<=10?' alerte':''),
+      mode: Seance.etat==='echauffement-pret'?'Prêt à démarrer':(Chrono.enPause()?'Échauffement · en pause':'Échauffement'),
+      gros:mmss(r), sous:'sur '+Seance.active.echauffementMin+' min', serie:'', arc:C*(1-r/cible)
+    };
+  }
+  const b=Seance._bloc(), exo=Seance._exo();
+  if(!b||!exo) return {cls:'',mode:'',gros:'',sous:'',serie:'',arc:0};
+  const parTemps=exo.modeEffort==='temps';
+  const serieEnCours='Série '+Seance.iSerie+'/'+b.nbSeries;
+
+  if(Seance.etat==='recup-termine'){
+    const p=Seance.prochaine();
+    return {cls:'recup', mode:'Récupération terminée', gros:'00',
+      sous: p ? (p.memeExercice?'même exercice':'exercice suivant') : 'fin de séance',
+      serie: p ? 'Série '+p.iSerie+'/'+p.nbSeries : '', arc:C};
+  }
+  if(Seance.etat==='effort'){
+    if(parTemps){
+      const r=Chrono.restantSec()==null?b.nbReps:Chrono.restantSec();
+      return {cls:'effort'+(r<=5?' alerte':''), mode:Chrono.enPause()?'Effort · en pause':'Effort',
+        gros:Math.ceil(r), sous:'sur '+b.nbReps+' s', serie:serieEnCours, arc:C*(1-r/b.nbReps)};
+    }
+    return {cls:'effort', mode:Chrono.enPause()?'Effort · en pause':'Effort',
+      gros:mmss(Chrono.ecouleSec()), sous:'objectif '+b.nbReps+' reps', serie:serieEnCours, arc:0};
+  }
+  if(Seance.etat==='recup'){
+    const r=Chrono.restantSec()||0, cible=Chrono.cibleSec||1;
+    return {cls:'recup'+(r<=5?' alerte':''), mode:Chrono.enPause()?'Récupération · en pause':'Récupération',
+      gros:Math.ceil(r), sous:'sur '+cible+' s', serie:serieEnCours, arc:C*(1-r/cible)};
+  }
+  if(Seance.etat==='saisie')
+    return {cls:'', mode:'Série terminée', gros:mmss(Seance.effortEcoule),
+      sous:'temps sous tension', serie:serieEnCours, arc:0};
+  return {cls:'', mode:'Prêt', gros:b.nbReps,
+    sous:parTemps?'secondes à tenir':'répétitions visées', serie:serieEnCours, arc:0};
+}
+
+function cadranHTML(){
+  const e=etatCadran();
+  return '<div class="cadran '+e.cls+'" id="cadran"><svg viewBox="0 0 200 200" aria-hidden="true">'+
+    '<circle class="piste" cx="100" cy="100" r="88"></circle>'+
+    '<circle class="arc" cx="100" cy="100" r="88" style="stroke-dashoffset:'+e.arc+'"></circle></svg>'+
+    '<div class="noyau"><span class="mode">'+e.mode+'</span>'+
+    '<span class="chiffres">'+e.gros+'</span>'+
+    (e.serie?'<span class="serie">'+e.serie+'</span>':'')+
+    '<span class="sous">'+e.sous+'</span></div></div>';
+}
+
+/* ============================================================
+   7. VUES
+   ============================================================ */
+function rendre(){
+  const enCours = ongletCourant==='seance' && Seance.active;
+  const m = METAS[ongletCourant]||METAS.accueil;
+  $('#glyphe').textContent = enCours?'\u{1F3CB}':m.glyphe;
+  $('#eyebrow').textContent = enCours?'Entraînement':m.eyebrow;
+  $('#titre').textContent = enCours?Seance.active.nom:m.titre;
+  document.querySelectorAll('#barre button').forEach(b=>
+    b.setAttribute('aria-current', b.dataset.onglet===ongletCourant?'page':'false'));
+  const v=$('#vue');
+  try{
+    if(dernierePanne){ v.innerHTML=vuePanne(); return; }
+    if(detailSeanceId){ v.innerHTML=vueDetailSeance(); return; }
+    if(ecranParams){ v.innerHTML=vueParametres(); return; }
+    if(vueSpecialeCarto){ v.innerHTML=vueCartographie(); colorierCorps(); return; }
+    if(vueSpecialeHisto){ v.innerHTML=vueHistorique(); return; }
+    if(planif){ v.innerHTML=vuePlanificateur(); return; }
+    if(ongletCourant==='seance') v.innerHTML = Seance.active?vueSeanceEnCours():vueListeSeances();
+    else if(ongletCourant==='biblio') v.innerHTML = edition?vueEditeur():vueBiblio();
+    else if(ongletCourant==='accueil') v.innerHTML = vueAccueil();
+    else v.innerHTML = vuePlanif();
+  }catch(err){ noterPanneSansBoucle(err); v.innerHTML=vuePanne(); }
+}
+function noterPanneSansBoucle(err){
+  dernierePanne=(err&&err.message?err.message:String(err))+'\n'+(err&&err.stack?(err.stack.split('\n')[1]||''):'');
+}
+function vuePanne(){
+  return '<div class="panne"><h2>Quelque chose a cassé</h2>'+
+    '<p style="margin:0;font-size:13.5px">Voici le message exact, à me transmettre tel quel.</p>'+
+    '<pre>'+esc(dernierePanne)+'</pre>'+
+    '<button class="bouton discret" data-act="oublier-panne">Continuer quand même</button>'+
+    '<button class="bouton danger" style="margin-top:8px" data-act="reset">Réinitialiser toutes les données</button></div>';
+}
+function vueBientot(titre,quoi,lot){
+  return '<div class="vide"><div class="gros">\u{1F6E0}</div>'+
+    '<p style="font-weight:800;font-size:20px;color:var(--texte);letter-spacing:-.02em">'+titre+'</p>'+
+    '<p style="max-width:32ch;margin:6px auto 14px">'+quoi+'</p><span class="pastille mixte">'+lot+'</span></div>';
+}
+
+/* ---------- page 5 : liste des séances à réaliser ---------- */
+function vueListeSeances(){
+  const planif=DB.planifiees.filter(p=>p.statut==='planifiee')
+    .sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const lp=planif.map(p=>{
+    const m=DB.modele(p.modeleId); if(!m) return '';
+    const d=new Date(p.date), auj=new Date(); auj.setHours(0,0,0,0);
+    const retard=d<auj;
+    return '<div class="item"><h3>'+esc(p.nom||m.nom)+'</h3>'+
+      '<div class="quand"'+(retard?' style="color:var(--effort);font-weight:600"':'')+'>'+
+      (retard?'En retard depuis le ':'Prévue le ')+d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})+'</div>'+
+      '<div class="cmds"><button class="go" data-go="'+m.id+'">Débuter</button>'+
+      '<button data-reporter="'+p.id+'">Reporter</button>'+
+      '<button data-suppr-p="'+p.id+'">Supprimer</button></div></div>';
+  }).join('');
+  const lm=DB.modeles.map(m=>{
+    const n=(m.blocs||[]).length;
+    const series=(m.blocs||[]).reduce((s,b)=>s+b.nbSeries,0);
+    return '<div class="item">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">'+
+      '<div style="min-width:0"><h3>'+esc(m.nom)+'</h3><div class="quand">'+
+      (n?n+' exercice'+(n>1?'s':'')+' \u00B7 '+series+' séries':'Aucun exercice — à compléter')+
+      (m.echauffementMin?' \u00B7 échauffement '+m.echauffementMin+' min':'')+'</div></div>'+
+      '<span class="pastille '+m.type+'">'+CATEGORIES[m.type]+'</span></div>'+
+      '<div class="cmds">'+(n?'<button class="go" data-go="'+m.id+'">Débuter</button>':'')+
+      '<button data-planifier="'+m.id+'">Planifier</button>'+
+      '<button data-editer-s="'+m.id+'">Modifier</button></div></div>';
+  }).join('');
+  return (planif.length?'<p class="etiquette">À faire</p>'+lp:'')+
+    '<p class="etiquette" style="margin-top:'+(planif.length?'24px':'0')+'">Toutes les séances</p>'+lm;
+}
+
+/* ---------- lot 3 et 4 : bibliothèque ---------- */
+function vueBiblio(){
+  const ong='<div class="onglets">'+
+    '<button data-sous="exercices" aria-selected="'+(sousOnglet==='exercices')+'">Exercices</button>'+
+    '<button data-sous="seances" aria-selected="'+(sousOnglet==='seances')+'">Séances</button></div>';
+  return ong + (sousOnglet==='exercices'?listeExercices():listeSeances());
+}
+function boutonsFiltre(cles,libelles){
+  return '<div class="filtres"><button data-filtre="tous" aria-pressed="'+(filtreBiblio==='tous')+'">Tous</button>'+
+    cles.map(c=>'<button data-filtre="'+c+'" aria-pressed="'+(filtreBiblio===c)+'">'+libelles[c]+'</button>').join('')+'</div>';
+}
+function listeExercices(){
+  const liste=DB.exercices.filter(e=>filtreBiblio==='tous'||e.categorie===filtreBiblio)
+    .sort((a,b)=>a.nom.localeCompare(b.nom,'fr'));
+  return boutonsFiltre(Object.keys(CAT_EXO),CAT_EXO)+
+    '<button class="ajout" data-nouvel-exo="1">+ Créer un exercice</button>'+
+    (liste.length ? liste.map(e=>
+      '<div class="ligne" data-editer-e="'+e.id+'"><div class="txt"><b>'+esc(e.nom)+'</b><span>'+
+      e.zone1.map(z=>GROUPES[z]).join(', ')+
+      (e.zone2.length?' \u2192 '+e.zone2.map(z=>GROUPES[z]).join(', '):'')+
+      ' \u00B7 '+e.objSeries+'\u00D7'+e.objReps+(e.modeEffort==='temps'?' s':'')+
+      '</span></div><span class="fleche">\u203A</span></div>').join('')
+      : '<div class="vide"><p>Aucun exercice dans ce filtre.</p></div>');
+}
+function listeSeances(){
+  const liste=DB.modeles.filter(m=>filtreBiblio==='tous'||m.type===filtreBiblio);
+  return boutonsFiltre(Object.keys(CATEGORIES),CATEGORIES)+
+    '<button class="ajout" data-nouvelle-seance="1">+ Créer une séance</button>'+
+    (liste.length ? liste.map(m=>{
+      const n=(m.blocs||[]).length;
+      return '<div class="ligne" data-editer-s="'+m.id+'"><div class="txt"><b>'+esc(m.nom)+'</b><span>'+
+        (n?n+' exercice'+(n>1?'s':''):'vide')+
+        (m.echauffementMin?' \u00B7 échauffement '+m.echauffementMin+' min':'')+
+        '</span></div><span class="pastille '+m.type+'">'+CATEGORIES[m.type]+'</span>'+
+        '<span class="fleche">\u203A</span></div>';
+    }).join('') : '<div class="vide"><p>Aucune séance dans ce filtre.</p></div>');
+}
+
+function vueEditeur(){ return edition.type==='exo'?editeurExercice():editeurSeance(); }
+
+/* --- page 3 : création / modification d'exercice --- */
+function editeurExercice(){
+  const d=edition.data;
+  const puces=(cle,sel)=>Object.keys(GROUPES).map(g=>
+    '<label><input type="checkbox" data-groupe="'+cle+'" value="'+g+'"'+
+    (sel.indexOf(g)>=0?' checked':'')+'><span>'+GROUPES[g]+'</span></label>').join('');
+  const optCat=Object.keys(CAT_EXO).map(c=>
+    '<option value="'+c+'"'+(d.categorie===c?' selected':'')+'>'+CAT_EXO[c]+'</option>').join('');
+  const utilise=d.id?DB.modelesUtilisant(d.id):[];
+  return '<p class="etiquette">'+(edition.nouveau?'Nouvel exercice':'Modifier l’exercice')+'</p>'+
+    '<div class="carte">'+
+    '<div class="champ"><label>Nom</label><input data-champ="nom" value="'+esc(d.nom)+'" placeholder="Pompes serrées"></div>'+
+    '<div class="champ"><label>Catégorie</label><select data-champ="categorie">'+optCat+'</select></div>'+
+    '<div class="champ"><label>Type d’effort</label><select data-champ="modeEffort">'+
+    '<option value="reps"'+(d.modeEffort==='reps'?' selected':'')+'>Répétitions</option>'+
+    '<option value="temps"'+(d.modeEffort==='temps'?' selected':'')+'>Temps (gainage, étirement)</option></select>'+
+    '<p class="aide">En mode temps, le chrono décompte au lieu de monter.</p></div>'+
+    '<div class="champ"><label>Réglages de référence</label><div class="trio">'+
+    '<input data-champ="ecartementCm" data-num="1" type="number" inputmode="numeric" placeholder="Écart. cm" value="'+(d.ecartementCm==null?'':d.ecartementCm)+'">'+
+    '<input data-champ="hauteurCm" data-num="1" type="number" inputmode="numeric" placeholder="Haut. cm" value="'+(d.hauteurCm==null?'':d.hauteurCm)+'">'+
+    '<input data-champ="lestageKg" data-num="1" type="number" inputmode="decimal" placeholder="Lest kg" value="'+(d.lestageKg==null?'':d.lestageKg)+'"></div>'+
+    '<p class="aide">Écartement, hauteur, lestage. Repris à chaque séance, modifiables série par série.</p></div>'+
+    '</div>'+
+    '<p class="etiquette" style="margin-top:18px">Groupe musculaire prioritaire</p>'+
+    '<div class="carte"><div class="puces">'+puces('zone1',d.zone1)+'</div></div>'+
+    '<p class="etiquette" style="margin-top:18px">Groupe musculaire secondaire</p>'+
+    '<div class="carte"><div class="puces">'+puces('zone2',d.zone2)+'</div>'+
+    '<p class="aide">Laisse vide si non applicable.</p></div>'+
+    '<p class="etiquette" style="margin-top:18px">Objectif et progression</p>'+
+    '<div class="carte">'+
+    '<div class="champ"><label>Objectif par défaut</label><div class="trio" style="grid-template-columns:1fr auto 1fr;align-items:center">'+
+    '<input data-champ="objSeries" data-num="1" type="number" inputmode="numeric" value="'+d.objSeries+'">'+
+    '<span style="text-align:center;color:var(--texte-2);font-size:13px">séries de</span>'+
+    '<input data-champ="objReps" data-num="1" type="number" inputmode="numeric" value="'+d.objReps+'"></div>'+
+    '<p class="aide">'+(d.modeEffort==='temps'?'Secondes à tenir.':'Répétitions.')+'</p></div>'+
+    '<div class="champ"><label>Répétitions au départ</label>'+
+    '<input data-champ="repsInitiales" data-num="1" type="number" inputmode="numeric" '+
+    'placeholder="par défaut : l’objectif ('+d.objReps+')" value="'+(d.repsInitiales==null?'':d.repsInitiales)+'">'+
+    '<p class="aide">Valeur proposée au compteur la première fois. Ensuite, l’app reprend '+
+    'automatiquement le maximum de ta dernière réalisation. Laisse vide pour partir de l’objectif.</p></div>'+
+    '<div class="champ"><label>Règle de progression</label><div class="trio" style="grid-template-columns:1fr auto 1fr;align-items:center">'+
+    '<input data-champ="evolPlus" data-num="1" type="number" inputmode="numeric" value="'+d.evolPlus+'">'+
+    '<span style="text-align:center;color:var(--texte-2);font-size:13px">toutes les</span>'+
+    '<input data-champ="evolToutesLesN" data-num="1" type="number" inputmode="numeric" value="'+d.evolToutesLesN+'"></div>'+
+    '<p class="aide">Ajouter ce nombre à l’objectif toutes les N séances où toutes les séries ont été réussies. '+
+    'Cette règle vaut partout où l’exercice apparaît ; chaque séance peut la remplacer. Mettre 0 pour ne pas progresser.</p></div>'+
+    '<div class="champ"><label>Remarque</label><textarea data-champ="remarque" rows="2" '+
+    'placeholder="Diminuer l’écartement de 5 cm une fois 15 répétitions atteintes">'+esc(d.remarque)+'</textarea></div>'+
+    '</div>'+
+    (utilise.length?'<p class="aide" style="margin-top:12px">Utilisé dans : '+
+      utilise.map(m=>esc(m.nom)).join(', ')+'.</p>':'')+
+    '<div class="barre-form"><button class="bouton discret" data-act="annuler-edition">Annuler</button>'+
+    '<button class="bouton principal" data-act="sauver-exo">Enregistrer</button></div>'+
+    (edition.nouveau?'':'<button class="bouton danger" style="margin-top:8px" data-act="suppr-exo">Supprimer cet exercice</button>');
+}
+
+/* --- page 4 : création / modification de séance --- */
+function editeurSeance(){
+  const d=edition.data;
+  const optType=Object.keys(CATEGORIES).map(c=>
+    '<option value="'+c+'"'+(d.type===c?' selected':'')+'>'+CATEGORIES[c]+'</option>').join('');
+  const optExos=Object.keys(CAT_EXO).map(cat=>
+    '<optgroup label="'+CAT_EXO[cat]+'">'+
+    DB.exercices.filter(e=>e.categorie===cat).sort((a,b)=>a.nom.localeCompare(b.nom,'fr'))
+      .map(e=>'<option value="'+e.id+'">'+esc(e.nom)+'</option>').join('')+'</optgroup>').join('');
+
+  const blocs=(d.blocs||[]).map((b,i)=>{
+    const exo=DB.exercice(b.exerciceId);
+    if(!exo) return '';
+    const surcharge=b.evolPlus!=null;
+    const regle=DB.regleEvolution(exo,b);
+    const pas=(champ,val,unite,step)=>
+      '<div class="reglage" style="padding:8px 0"><span class="nom">'+champ.lib+'</span><span class="pas">'+
+      '<button data-inc="blocs.'+i+'.'+champ.cle+'" data-pas="'+(-step)+'" data-min="'+(champ.min||0)+'" data-unite="'+unite+'">\u2212</button>'+
+      '<span class="v">'+val+' '+unite+'</span>'+
+      '<button data-inc="blocs.'+i+'.'+champ.cle+'" data-pas="'+step+'" data-min="'+(champ.min||0)+'" data-unite="'+unite+'">+</button></span></div>';
+    return '<div class="bloc-exo"><div class="tete"><b>'+esc(exo.nom)+'</b><div class="mini">'+
+      (i>0?'<button data-bloc-monter="'+i+'" aria-label="Monter">\u2191</button>':'')+
+      (i<d.blocs.length-1?'<button data-bloc-descendre="'+i+'" aria-label="Descendre">\u2193</button>':'')+
+      '<button data-bloc-dupliquer="'+i+'" aria-label="Dupliquer">\u29C9</button>'+
+      '<button data-bloc-suppr="'+i+'" aria-label="Supprimer" style="color:var(--effort)">\u00D7</button></div></div>'+
+      pas({lib:'Nombre de séries',cle:'nbSeries',min:1},b.nbSeries,'','1'.length?1:1)+
+      pas({lib:exo.modeEffort==='temps'?'Durée par série':'Répétitions',cle:'nbReps',min:1},b.nbReps,exo.modeEffort==='temps'?'s':'reps',exo.modeEffort==='temps'?5:1)+
+      pas({lib:'Récup. entre séries',cle:'recupSerieSec',min:0},b.recupSerieSec,'s',15)+
+      pas({lib:'Récup. fin d’exercice',cle:'recupFinSec',min:0},b.recupFinSec,'s',15)+
+      '<div class="champ" style="margin:10px 0 0"><label>Répétitions au départ, pour cette séance</label>'+
+      '<input data-champ="blocs.'+i+'.repsInitiales" data-num="1" type="number" inputmode="numeric" '+
+      'placeholder="hérite de l’exercice ('+DB.repsDepart(exo,null).val+')" value="'+
+      (b.repsInitiales==null?'':b.repsInitiales)+'">'+
+      '<p class="aide">Ce réglage l’emporte sur celui de l’exercice.</p></div>'+
+      '<label style="display:flex;align-items:center;gap:9px;margin-top:10px;font-size:13px;color:var(--texte-2)">'+
+      '<input type="checkbox" data-surcharge="'+i+'"'+(surcharge?' checked':'')+' style="width:auto">'+
+      'Règle de progression propre à cette séance</label>'+
+      (surcharge
+        ? '<div class="trio" style="grid-template-columns:1fr auto 1fr;align-items:center;margin-top:8px">'+
+          '<input data-champ="blocs.'+i+'.evolPlus" data-num="1" type="number" inputmode="numeric" value="'+b.evolPlus+'">'+
+          '<span style="text-align:center;color:var(--texte-2);font-size:13px">toutes les</span>'+
+          '<input data-champ="blocs.'+i+'.evolToutesLesN" data-num="1" type="number" inputmode="numeric" value="'+b.evolToutesLesN+'"></div>'
+        : '<p class="aide">Hérite de l’exercice : '+(regle.plus?'+'+regle.plus+' toutes les '+regle.tous+' séances réussies':'aucune progression')+'.</p>')+
+      '</div>';
+  }).join('');
+
+  const total=(d.blocs||[]).reduce((s,b)=>s+b.nbSeries,0);
+  return '<p class="etiquette">'+(edition.nouveau?'Nouvelle séance':'Modifier la séance')+'</p>'+
+    '<div class="carte">'+
+    '<div class="champ"><label>Nom</label><input data-champ="nom" value="'+esc(d.nom)+'" placeholder="Routine Haut"></div>'+
+    '<div class="champ"><label>Type</label><select data-champ="type">'+optType+'</select></div>'+
+    '<div class="champ"><label>Échauffement (minutes, tapis de course)</label>'+
+    '<input data-champ="echauffementMin" data-num="1" type="number" inputmode="numeric" value="'+(d.echauffementMin||0)+'">'+
+    '<p class="aide">0 pour aucun échauffement. Sinon c’est une étape à part entière, avec son décompte annoncé.</p></div>'+
+    '</div>'+
+    '<p class="etiquette" style="margin-top:20px">Exercices'+
+    (total?' \u00B7 '+d.blocs.length+' exercice'+(d.blocs.length>1?'s':'')+', '+total+' séries':'')+'</p>'+
+    blocs+
+    '<div class="carte" style="margin-bottom:10px"><label style="display:block;font-size:12.5px;font-weight:600;color:var(--texte-2);margin-bottom:6px">Ajouter un exercice</label>'+
+    '<select id="choixExo"><option value="">Choisir…</option>'+optExos+'</select>'+
+    '<button class="bouton discret" style="margin-top:10px" data-act="ajouter-bloc">+ Ajouter à la séance</button></div>'+
+    '<div class="barre-form"><button class="bouton discret" data-act="annuler-edition">Annuler</button>'+
+    '<button class="bouton principal" data-act="sauver-seance">Enregistrer</button></div>'+
+    (edition.nouveau?'':'<button class="bouton danger" style="margin-top:8px" data-act="suppr-seance">Supprimer cette séance</button>');
+}
+
+/* ============================================================
+   VUE : SÉANCE EN COURS
+   ============================================================ */
+function vueSeanceEnCours(){
+  if(Seance.etat==='termine') return vueBilan();
+  const a=Seance.active;
+
+  /* --- échauffement --- */
+  if(Seance.etat==='echauffement-pret'||Seance.etat==='echauffement'){
+    const premier=DB.exercice(a.blocs[0].exerciceId)||{nom:'?'};
+    const pret=Seance.etat==='echauffement-pret';
+    const action = pret
+      ? '<button class="bouton principal" data-act="lancer-chauffe">Débuter la séance</button>'+
+        '<button class="bouton discret" data-act="finChauffe">Passer l’échauffement</button>'
+      : '<div class="rangee">'+
+        '<button class="bouton discret" data-act="pause">'+(Chrono.enPause()?'Reprendre':'Pause')+'</button>'+
+        '<button class="bouton chauffe" data-act="finChauffe">Passer l’échauffement</button></div>';
+    return '<div class="fil"><span>Étape 1 sur '+(a.blocs.length+1)+' \u00B7 Échauffement</span><span>0 %</span></div>'+
+      '<div class="jauge"><i style="width:0%"></i></div>'+cadranHTML()+
+      '<h2 class="exo-nom">Tapis de course</h2>'+
+      '<p class="exo-meta">'+(pret?'Touche « Débuter la séance » pour lancer le décompte':'Mise en route')+'</p>'+
+      '<div class="zone-action">'+action+'</div>'+
+      '<div class="suite">Premier exercice : <b>'+esc(premier.nom)+'</b></div>'+
+      '<button class="bouton discret" style="margin-top:14px" data-act="terminer">Annuler la séance</button>';
+  }
+
+  const b=Seance._bloc(), exo=Seance._exo();
+  if(!b||!exo){ Seance.abandonner(); return vueListeSeances(); }
+  const prog=Seance.progression(), parTemps=exo.modeEffort==='temps';
+  const unite=parTemps?'s':'reps';
+
+  /* Correction 5 : « Exercice suivant » désigne bien l'exercice
+     suivant, jamais la prochaine série de l'exercice en cours. */
+  const bs=Seance._blocSuivant();
+  const exoSuivant = bs ? (DB.exercice(bs.exerciceId)||{nom:'?'}) : null;
+  const restantes = b.nbSeries - Seance.iSerie;
+  const ligneSuite = exoSuivant
+    ? 'Exercice suivant : <b>'+esc(exoSuivant.nom)+'</b>'+
+      (restantes>0 ? ' <span style="color:var(--texte-3)">— encore '+restantes+' série'+(restantes>1?'s':'')+' ici</span>' : '')
+    : 'Dernier exercice de la séance'+
+      (restantes>0 ? ' <span style="color:var(--texte-3)">— encore '+restantes+' série'+(restantes>1?'s':'')+'</span>' : ' <b>— dernière série</b>');
+
+  let action='';
+  if(Seance.etat==='pret'){
+    action='<button class="bouton principal" data-act="demarrer">Démarrer la série '+Seance.iSerie+'</button>';
+  } else if(Seance.etat==='recup-termine'){
+    action='<button class="bouton principal" data-act="enchainer">Lancer la série suivante</button>';
+  } else if(Seance.etat==='effort'){
+    action='<div class="rangee">'+
+      (parTemps?'<button class="bouton discret" data-act="pause">'+(Chrono.enPause()?'Reprendre':'Pause')+'</button>':'')+
+      '<button class="bouton effort" data-act="finSerie">Série terminée</button></div>';
+  } else if(Seance.etat==='saisie'){
+    /* Correction 4 : l'objectif est un cadre à gauche du compteur,
+       de même hauteur que les commandes. */
+    const c=Seance.repsSaisies<b.nbReps?'sous-objectif':Seance.repsSaisies>b.nbReps?'sur-objectif':'';
+    action='<div class="carte">'+
+      '<p class="rappel-obj">'+(parTemps?'Temps tenu':'Répétitions réalisées')+'</p>'+
+      '<div class="saisie-rangee">'+
+      '<div class="objectif-box"><span class="lb">Objectif</span><span class="nb">'+b.nbReps+'</span></div>'+
+      '<button class="rond" data-act="reps-" aria-label="Retirer">\u2212</button>'+
+      '<span class="val '+c+'">'+Seance.repsSaisies+'</span>'+
+      '<button class="rond" data-act="reps+" aria-label="Ajouter">+</button></div>'+
+      '<p class="rappel-obj">'+(parTemps?'secondes':'répétitions')+'</p></div>'+
+      '<button class="bouton principal" data-act="valider">Valider et récupérer</button>';
+  } else if(Seance.etat==='recup'){
+    action='<div class="rangee">'+
+      '<button class="bouton discret" data-act="pause">'+(Chrono.enPause()?'Reprendre':'Pause')+'</button>'+
+      '<button class="bouton recup" data-act="passer">Passer à la suite</button></div>';
+  }
+
+  const regle=DB.regleEvolution(exo,b);
+  return '<div class="fil"><span>Exercice '+(Seance.iBloc+1)+'/'+a.blocs.length+'</span>'+
+    '<span>'+prog.pct+' %</span></div>'+
+    '<div class="jauge"><i style="width:'+prog.pct+'%"></i></div>'+cadranHTML()+
+    '<h2 class="exo-nom">'+esc(exo.nom)+'</h2>'+
+    '<p class="exo-meta">'+exo.zone1.map(z=>GROUPES[z]).join(' \u00B7 ')+
+    (exo.zone2.length?' \u2192 '+exo.zone2.map(z=>GROUPES[z]).join(' \u00B7 '):'')+'</p>'+
+    '<div class="zone-action">'+action+'</div>'+
+    '<details class="reglages"><summary>Réglages de l’exercice</summary>'+
+    reglageHTML('Écartement','ecartementCm',b.ecartementCm,'cm',1)+
+    reglageHTML('Hauteur','hauteurCm',b.hauteurCm,'cm',1)+
+    reglageHTML('Lestage','lestageKg',b.lestageKg,'kg',0.5)+
+    '<div class="reglage"><span class="nom">Progression<br><span style="font-size:11.5px;color:var(--texte-3)">'+
+    (regle.plus?'+'+regle.plus+' toutes les '+regle.tous+' séances réussies':'aucune')+
+    ' \u00B7 '+(regle.herite?'héritée de l’exercice':'propre à cette séance')+'</span></span></div>'+
+    (exo.remarque?'<div class="reglage"><span class="nom" style="font-size:13px">'+esc(exo.remarque)+'</span></div>':'')+
+    '</details>'+
+    '<div class="suite">'+ligneSuite+'</div>'+
+    '<div class="rangee" style="margin-top:14px">'+
+    (bs?'<button class="bouton discret" data-act="passer-exo">Passer l’exercice</button>':'')+
+    '<button class="bouton discret" data-act="terminer">Terminer la séance</button></div>';
+}
+
+function reglageHTML(nom,champ,val,unite,pas){
+  return '<div class="reglage"><span class="nom">'+nom+'</span><span class="pas">'+
+    '<button data-reg="'+champ+'" data-pas="'+(-pas)+'">\u2212</button>'+
+    '<span class="v">'+(val==null?'\u2014':val+' '+unite)+'</span>'+
+    '<button data-reg="'+champ+'" data-pas="'+pas+'">+</button></span></div>';
+}
+
+function vueBilan(){
+  const a=DB.journal[DB.journal.length-1];
+  if(!a) return '<div class="vide"><p>Aucune séance enregistrée.</p></div>';
+  const totalReps=a.series.reduce((n,s)=>n+s.repsRealisees,0);
+  const atteints=a.series.filter(s=>s.repsRealisees>=s.repsObjectif).length;
+  const stats=[[mmss(a.dureeSec),'durée'],[totalReps,'répétitions'],[atteints+'/'+a.series.length,'objectifs']];
+  const prog=Seance.progressions.length
+    ? '<div class="carte" style="margin-top:12px;border-color:var(--accent)">'+
+      '<p class="etiquette" style="color:var(--accent)">Progression déclenchée</p>'+
+      Seance.progressions.map(p=>'<div style="font-size:14.5px;font-weight:500">\u2197 '+esc(p)+'</div>').join('')+'</div>'
+    : '';
+  return '<div style="text-align:center;padding:26px 0 18px"><div style="font-size:46px">\u{1F3C5}</div>'+
+    '<h2 style="font-weight:800;font-size:25px;letter-spacing:-.025em;margin:8px 0 2px">Séance terminée</h2>'+
+    '<p style="color:var(--texte-2);margin:0">'+esc(a.nom)+'</p></div>'+
+    '<div class="carte stat-grille">'+
+    stats.map(s=>'<div><div class="n">'+s[0]+'</div><div class="l">'+s[1]+'</div></div>').join('')+'</div>'+prog+
+    '<button class="bouton principal" style="margin-top:16px" data-act="retour">Retour aux séances</button>'+
+    '<button class="bouton discret" style="margin-top:8px" data-detail="'+a.id+'">Voir le détail série par série</button>';
+}
+
+/* ============================================================
+   ÉDITION : écriture dans le modèle sans redessiner
+   ============================================================ */
+function ecrireChemin(obj,chemin,val){
+  const p=chemin.split('.'); let o=obj;
+  for(let i=0;i<p.length-1;i++) o=o[p[i]];
+  o[p[p.length-1]]=val;
+}
+function lireChemin(obj,chemin){ return chemin.split('.').reduce((o,k)=>o==null?o:o[k],obj); }
+function nouvelExercice(){
+  return {id:null,nom:'',categorie:'haut',zone1:[],zone2:[],modeEffort:'reps',
+    ecartementCm:null,hauteurCm:null,lestageKg:0,objSeries:4,objReps:10,
+    evolPlus:1,evolToutesLesN:3,compteurReussites:0,remarque:''};
+}
+function ouvrirExo(id){
+  const e=id?DB.exercice(id):null;
+  edition={type:'exo',nouveau:!e,data:e?JSON.parse(JSON.stringify(e)):nouvelExercice()};
+  ongletCourant='biblio'; ecranParams=false; detailSeanceId=null; rendre();
+}
+function ouvrirSeance(id){
+  const m=id?DB.modele(id):null;
+  edition={type:'seance',nouveau:!m,
+    data:m?JSON.parse(JSON.stringify(m)):{id:null,nom:'',type:'mixte',echauffementMin:10,blocs:[]}};
+  ongletCourant='biblio'; ecranParams=false; detailSeanceId=null; rendre();
+}
+function sauverExo(){
+  const d=edition.data;
+  if(!String(d.nom).trim()){ toast('Donne un nom à l’exercice.'); return; }
+  if(!d.zone1.length){ toast('Choisis au moins un groupe musculaire prioritaire.'); return; }
+  ['objSeries','objReps','evolPlus','evolToutesLesN'].forEach(k=>d[k]=Math.max(0,parseInt(d[k],10)||0));
+  d.repsInitiales = (d.repsInitiales==null||d.repsInitiales==='') ? null : Math.max(0,parseInt(d.repsInitiales,10)||0);
+  if(!d.id) d.id=DB.idLibre('exo-',d.nom,DB.exercices);
+  const i=DB.exercices.findIndex(x=>x.id===d.id);
+  if(i>=0) DB.exercices[i]=d; else DB.exercices.push(d);
+  DB.sauver('exercices'); edition=null; rendre(); toast('Exercice enregistré.');
+}
+function sauverSeance(){
+  const d=edition.data;
+  if(!String(d.nom).trim()){ toast('Donne un nom à la séance.'); return; }
+  d.echauffementMin=Math.max(0,parseInt(d.echauffementMin,10)||0);
+  (d.blocs||[]).forEach(b=>{
+    ['nbSeries','nbReps','recupSerieSec','recupFinSec'].forEach(k=>b[k]=Math.max(0,parseInt(b[k],10)||0));
+    if(b.nbSeries<1) b.nbSeries=1;
+    b.repsInitiales = (b.repsInitiales==null||b.repsInitiales==='') ? null : Math.max(0,parseInt(b.repsInitiales,10)||0);
+    if(b.evolPlus!=null) b.evolPlus=Math.max(0,parseInt(b.evolPlus,10)||0);
+    if(b.evolToutesLesN!=null) b.evolToutesLesN=Math.max(1,parseInt(b.evolToutesLesN,10)||1);
+  });
+  if(!d.id) d.id=DB.idLibre('seance-',d.nom,DB.modeles);
+  const i=DB.modeles.findIndex(x=>x.id===d.id);
+  if(i>=0) DB.modeles[i]=d; else DB.modeles.push(d);
+  DB.sauver('modeles'); edition=null; sousOnglet='seances'; rendre(); toast('Séance enregistrée.');
+}
+
+/* ============================================================
+   LOT 6 — STATISTIQUES : calculs
+   ============================================================ */
+let ecranParams=false, detailSeanceId=null, moisAffiche=null, jourSelectionne=null;
+let vueSpecialeCarto=false, vueSpecialeHisto=false, filtreHisto='tous', limiteHisto=25;
+let planif=null;   /* écran de planification : {modeleId,date,mode,jours,occurrences} */
+let periodeCharge='3m', filtreCharge='tous', semainesJournal=3, uniteCharge='reps', uniteCarto='reps';
+
+const MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const memeJour=(a,b)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
+function lundiDe(d){ const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x; }
+function cleSemaine(d){ return lundiDe(d).toISOString().slice(0,10); }
+function isoJour(d){ const z=new Date(d.getTime()-d.getTimezoneOffset()*60000); return z.toISOString().slice(0,10); }
+
+const PERIODES={'7j':7,'1m':30,'3m':91,'6m':183,'annee':null,'1an':365};
+const LIB_PERIODES={'7j':'7 jours','1m':'1 mois','3m':'3 mois','6m':'6 mois','annee':'Année en cours','1an':'1 an'};
+function debutPeriode(cle){
+  const d=new Date();
+  if(cle==='annee') return new Date(d.getFullYear(),0,1).getTime();
+  const n=PERIODES[cle]||91;
+  return d.getTime()-n*86400000;
+}
+
+/* ------------------------------------------------------------
+   DEUX UNITÉS, JAMAIS MÉLANGÉES
+   Les exercices en répétitions (pompes, squat…) se comptent en
+   répétitions. Les exercices en temps (gainage, étirements) se
+   comptent en secondes. Aucune conversion entre les deux : le
+   ratio « 3 s = 1 rép. » était arbitraire, il a disparu.
+   ------------------------------------------------------------ */
+const UNITES={reps:{cle:'reps',lib:'Répétitions',court:'rép.',axe:'répétitions'},
+              temps:{cle:'temps',lib:'Durée',court:'min',axe:'minutes'}};
+
+function categorieSerie(s){ const e=DB.exercice(s.exerciceId); return e?e.categorie:'haut'; }
+function uniteSerie(s){ const e=DB.exercice(s.exerciceId); return (e&&e.modeEffort==='temps')?'temps':'reps'; }
+/* valeur d'une série dans SON unité : répétitions, ou secondes */
+function valeurSerie(s){ return s.repsRealisees; }
+/* la série compte-t-elle pour l'unité demandée ? */
+function serieDansUnite(s,unite){ return uniteSerie(s)===unite; }
+
+/* catégories proposées aux filtres, étirements compris */
+const CATS_STAT=[['tous','Tout'],['haut','Haut du corps'],['abdo','Abdo/Gainage'],
+                 ['bas','Bas du corps'],['etirement','Étirements']];
+/* unité naturelle d'une catégorie : les étirements se lisent en durée */
+function uniteNaturelle(cat){ return cat==='etirement'?'temps':'reps'; }
+
+/* bilan d'une séance archivée, chaque unité de son côté */
+function bilanSeance(a){
+  let reps=0, sec=0, atteints=0;
+  (a.series||[]).forEach(s=>{
+    if(uniteSerie(s)==='temps') sec+=valeurSerie(s); else reps+=valeurSerie(s);
+    if(s.repsRealisees>=s.repsObjectif) atteints++;
+  });
+  return {reps:Math.round(reps), sec:Math.round(sec), min:Math.round(sec/60),
+          series:(a.series||[]).length, atteints, duree:a.dureeSec||0};
+}
+function resumeChiffre(b){
+  const p=[];
+  if(b.reps) p.push(b.reps+' rép.');
+  if(b.min)  p.push(b.min+' min de tenue');
+  if(!p.length) p.push(b.series+' séries');
+  return p.join(' \u00B7 ');
+}
+
+function serieActivites(){
+  const N=Math.max(1,DB.reglages.seancesParSemaine||2);
+  const parSem={};
+  DB.journal.forEach(a=>{ const k=cleSemaine(new Date(a.debut)); parSem[k]=(parSem[k]||0)+1; });
+  let semaines=0,total=0;
+  const cur=lundiDe(new Date());
+  const cetteSemaine=parSem[cur.toISOString().slice(0,10)]||0;
+  const d=new Date(cur);
+  for(let i=0;i<520;i++){
+    const k=d.toISOString().slice(0,10), n=parSem[k]||0;
+    /* la semaine en cours n'est pas finie : elle ne casse pas la série */
+    if(i===0 && n<N){ d.setDate(d.getDate()-7); continue; }
+    if(n>=N){ semaines++; total+=n; d.setDate(d.getDate()-7); } else break;
+  }
+  return {semaines,total,objectif:N,cetteSemaine};
+}
+
+function seancesPeriode(cle,filtre,unite){
+  const t0=debutPeriode(cle);
+  return DB.journal.filter(a=>new Date(a.debut).getTime()>=t0)
+    .map(a=>{
+      const series=(a.series||[]).filter(x=>
+        serieDansUnite(x,unite) && (filtre==='tous'||categorieSerie(x)===filtre));
+      const brut=series.reduce((n,x)=>n+valeurSerie(x),0);
+      return {date:new Date(a.debut), nom:a.nom, id:a.id, nb:series.length,
+              val: unite==='temps' ? Math.round(brut/60) : Math.round(brut)};
+    })
+    .filter(x=>x.nb>0)
+    .sort((a,b)=>a.date-b.date);
+}
+
+function meilleursEfforts(){
+  const best={};
+  DB.journal.forEach(a=>(a.series||[]).forEach(s=>{
+    const c=categorieSerie(s), u=uniteSerie(s);
+    const k=(u==='temps')?(c==='etirement'?'etirement':'gainage'):c;
+    const v=Math.round(valeurSerie(s));
+    if(!best[k]||v>best[k].v) best[k]={v,unite:u,exo:s.exerciceId,date:a.debut,seanceId:a.id};
+  }));
+  return best;
+}
+
+function deltaPeriode(cle,unite){
+  const n=PERIODES[cle]||91;
+  const fin=Date.now(), deb=cle==='annee'?debutPeriode('annee'):fin-n*86400000;
+  const duree=fin-deb, debPrec=deb-duree;
+  const cats = unite==='temps' ? ['abdo','etirement'] : ['haut','bas','abdo'];
+  const somme=(t0,t1)=>{
+    const r={}; cats.forEach(c=>r[c]=0);
+    DB.journal.forEach(a=>{
+      const t=new Date(a.debut).getTime();
+      if(t<t0||t>=t1) return;
+      (a.series||[]).forEach(s=>{
+        if(!serieDansUnite(s,unite)) return;
+        const c=categorieSerie(s);
+        if(r[c]!=null) r[c]+=valeurSerie(s);
+      });
+    });
+    return r;
+  };
+  const act=somme(deb,fin), prec=somme(debPrec,deb);
+  const conv=v=>unite==='temps'?Math.round(v/60):Math.round(v);
+  return cats.map(c=>{
+    const a=conv(act[c]), p=conv(prec[c]);
+    const pct = p>0 ? Math.round((a-p)/p*100) : (a>0?null:0);
+    return {cat:c, actuel:a, precedent:p, delta:a-p, pct};
+  });
+}
+
+function volumeParGroupe(semaines,unite){
+  const t0=Date.now()-semaines*7*86400000, vol={};
+  Object.keys(GROUPES).forEach(g=>vol[g]=0);
+  DB.journal.forEach(a=>{
+    if(new Date(a.debut).getTime()<t0) return;
+    (a.series||[]).forEach(s=>{
+      if(!serieDansUnite(s,unite)) return;
+      const e=DB.exercice(s.exerciceId); if(!e) return;
+      const v=valeurSerie(s);
+      (e.zone1||[]).forEach(g=>{ if(vol[g]!=null) vol[g]+=v; });
+      (e.zone2||[]).forEach(g=>{ if(vol[g]!=null) vol[g]+=v*0.5; });
+    });
+  });
+  if(unite==='temps') Object.keys(vol).forEach(g=>vol[g]=vol[g]/60);
+  return vol;
+}
+
+/* ============================================================
+   Graphique : nuage + courbe, SVG à la main
+   ============================================================ */
+function graphCharge(pts,unite){
+  if(pts.length<1) return '<div class="vide" style="padding:30px"><p>Pas encore de données sur cette période.</p></div>';
+  const L=320,H=150,mg={g:34,d:8,h:12,b:22};
+  const maxY=Math.max(unite==='temps'?5:10,...pts.map(p=>p.val));
+  const t0=pts[0].date.getTime(), t1=pts[pts.length-1].date.getTime();
+  const etendue=Math.max(1,t1-t0);
+  const x=p=>mg.g+(L-mg.g-mg.d)*((p.date.getTime()-t0)/etendue);
+  const y=v=>mg.h+(H-mg.h-mg.b)*(1-v/maxY);
+  const chemin=pts.map((p,i)=>(i?'L':'M')+x(p).toFixed(1)+' '+y(p.val).toFixed(1)).join(' ');
+  const aire=pts.length>1 ? chemin+' L'+x(pts[pts.length-1]).toFixed(1)+' '+(H-mg.b)+' L'+x(pts[0]).toFixed(1)+' '+(H-mg.b)+' Z' : '';
+  const ticks=[0,Math.round(maxY/2),maxY];
+  const grilles=ticks.map(v=>'<line class="gril" x1="'+mg.g+'" y1="'+y(v)+'" x2="'+(L-mg.d)+'" y2="'+y(v)+'"/>'+
+    '<text class="lb" x="'+(mg.g-5)+'" y="'+(y(v)+3)+'" text-anchor="end">'+v+'</text>').join('');
+  const dates=[pts[0],pts[pts.length-1]].filter((p,i,t)=>i===0||t[0]!==p).map((p,i)=>
+    '<text class="lb" x="'+x(p)+'" y="'+(H-6)+'" text-anchor="'+(i?'end':'start')+'">'+
+    p.date.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+'</text>').join('');
+  return '<svg class="graph" viewBox="0 0 '+L+' '+H+'" role="img" aria-label="Charge d’entraînement">'+
+    grilles+
+    (aire?'<path class="aire" d="'+aire+'"/>':'')+
+    (pts.length>1?'<path class="courbe" d="'+chemin+'"/>':'')+
+    pts.map(p=>'<circle class="pt" cx="'+x(p).toFixed(1)+'" cy="'+y(p.val).toFixed(1)+'" r="3.5"/>').join('')+
+    '<line class="axe" x1="'+mg.g+'" y1="'+(H-mg.b)+'" x2="'+(L-mg.d)+'" y2="'+(H-mg.b)+'"/>'+
+    dates+'</svg>';
+}
+
+/* ============================================================
+   LOT 6 — VUE ACCUEIL
+   ============================================================ */
+function vueAccueil(){
+  const sa=serieActivites();
+  /* les étirements ne se lisent qu'en durée : on force l'unité */
+  if(filtreCharge==='etirement') uniteCharge='temps';
+  const pts=seancesPeriode(periodeCharge,filtreCharge,uniteCharge);
+  const best=meilleursEfforts();
+  const deltas=deltaPeriode(periodeCharge,uniteCharge);
+  const U=UNITES[uniteCharge];
+
+  const auj=new Date();
+  const cal='<div class="cal">'+['L','M','M','J','V','S','D'].map(j=>'<div class="jn">'+j+'</div>').join('')+
+    grilleMois(auj).map(d=>{
+      const a=activiteDuJour(d), hors=d.getMonth()!==auj.getMonth();
+      let pt='';
+      if(a.faites.length) pt='<span class="pt fait"></span>';
+      else if(a.prevues.length) pt='<span class="pt prev"></span>';
+      return '<button class="jour'+(hors?' hors':'')+(memeJour(d,auj)?' auj':'')+'"'+
+        (a.faites.length?' data-detail="'+a.faites[0].id+'"':'')+'>'+d.getDate()+pt+'</button>';
+    }).join('')+'</div>';
+
+  const blocSerie='<div class="carte"><p class="etiquette">Votre série d’activités</p>'+
+    '<div class="serie-active"><span class="gros">'+sa.semaines+'</span>'+
+    '<span class="txt"><b>semaine'+(sa.semaines>1?'s':'')+' consécutive'+(sa.semaines>1?'s':'')+'</b><br>'+
+    'avec au moins '+sa.objectif+' entraînement'+(sa.objectif>1?'s':'')+
+    '</span></div><div style="margin-top:14px">'+cal+'</div></div>';
+
+  /* --- charge : l'unité se choisit, elle ne se devine pas --- */
+  const bU=['reps','temps'].map(u=>
+    '<button data-unite="'+u+'" aria-selected="'+(uniteCharge===u)+'">'+UNITES[u].lib+'</button>').join('');
+  const bP=Object.keys(LIB_PERIODES).map(k=>
+    '<button data-periode="'+k+'" aria-pressed="'+(periodeCharge===k)+'">'+LIB_PERIODES[k]+'</button>').join('');
+  const bF=CATS_STAT.filter(c=>uniteCharge==='reps'?c[0]!=='etirement':true).map(c=>
+    '<button data-fcharge="'+c[0]+'" aria-pressed="'+(filtreCharge===c[0])+'">'+c[1]+'</button>').join('');
+  const noteU = uniteCharge==='temps'
+    ? 'Gainage et étirements, en minutes tenues.'
+    : 'Exercices comptés en répétitions. Gainage et étirements sont exclus : ils se lisent en durée.';
+  const blocCharge='<div class="onglets" style="margin-top:22px">'+bU+'</div>'+
+    '<p class="etiquette">Charge d’entraînement \u00B7 '+U.axe+'</p>'+
+    '<div class="filtres">'+bP+'</div>'+
+    '<div class="carte">'+graphCharge(pts,uniteCharge)+
+    '<p class="aide" style="margin-top:8px">'+noteU+'</p></div>'+
+    '<div class="filtres" style="margin-top:10px">'+bF+'</div>';
+
+  const blocJournal=journalBulles();
+
+  /* --- meilleurs efforts : répétitions et tenues, séparés --- */
+  const med={haut:'\u{1F947}',bas:'\u{1F948}',abdo:'\u{1F949}'};
+  const ligne=(k,titre,icone,suffixe)=>{
+    const p=best[k];
+    if(!p) return '<div class="pr"><span class="med">'+icone+'</span><div class="co"><b>'+titre+'</b>'+
+      '<span>aucune série enregistrée</span></div><span class="v" style="color:var(--texte-3)">\u2014</span></div>';
+    const e=DB.exercice(p.exo);
+    return '<div class="pr" data-detail="'+p.seanceId+'"><span class="med">'+icone+'</span>'+
+      '<div class="co"><b>'+esc(e?e.nom:'?')+'</b><span>'+titre+' \u00B7 '+
+      new Date(p.date).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})+'</span></div>'+
+      '<span class="v">'+p.v+'<span style="font-size:12px;color:var(--texte-3);font-weight:500"> '+suffixe+'</span></span></div>';
+  };
+  const blocPR='<p class="etiquette" style="margin-top:22px">Meilleures répétitions sur une série</p>'+
+    '<div class="carte">'+['haut','bas','abdo'].map(c=>ligne(c,CATEGORIES[c],med[c],'rép.')).join('')+'</div>'+
+    '<p class="etiquette" style="margin-top:16px">Meilleures tenues</p>'+
+    '<div class="carte">'+ligne('gainage','Gainage','\u{1F9CD}','s')+
+    ligne('etirement','Étirement','\u{1F9D8}','s')+'</div>';
+
+  /* --- évolution, dans l'unité choisie --- */
+  const lignesD=deltas.map(d=>{
+    const cls=d.delta>0?'up':d.delta<0?'down':'flat';
+    const fl=d.delta>0?'\u25B2':d.delta<0?'\u25BC':'=';
+    const pct=d.pct==null?'nouveau':(d.pct>0?'+':'')+d.pct+' %';
+    return '<div class="delta"><span>'+CATEGORIES[d.cat]+'</span>'+
+      '<span class="n '+cls+'">'+fl+' '+(d.delta>0?'+':'')+d.delta+' '+U.court+' \u00B7 '+pct+'</span></div>';
+  }).join('');
+  const blocD='<p class="etiquette" style="margin-top:22px">Évolution sur '+
+    LIB_PERIODES[periodeCharge].toLowerCase()+' \u00B7 '+U.axe+'</p>'+
+    '<div class="carte">'+lignesD+
+    '<p class="aide" style="margin-top:8px">Comparaison avec la période précédente de même durée.</p></div>';
+
+  return blocSerie+blocCharge+blocJournal+blocPR+blocD+
+    '<button class="bouton discret" style="margin-top:20px" data-act="histo">'+
+    'Historique complet des séances \u203A</button>'+
+    '<button class="bouton discret" style="margin-top:8px" data-act="carto">'+
+    'Cartographie musculaire \u203A</button>';
+}
+
+function journalBulles(){
+  const auj=new Date();
+  let html='<p class="etiquette" style="margin-top:22px">Journal d’entraînement</p>';
+  const maxDuree=Math.max(1,...DB.journal.map(a=>a.dureeSec||0));
+  for(let w=0;w<semainesJournal;w++){
+    const lundi=lundiDe(auj); lundi.setDate(lundi.getDate()-7*w);
+    const dim=new Date(lundi); dim.setDate(dim.getDate()+6);
+    const tot={haut:0,bas:0,abdo:0}, tps={gainage:0,etirement:0};
+    const cells=[];
+    for(let i=0;i<7;i++){
+      const d=new Date(lundi); d.setDate(lundi.getDate()+i);
+      const faites=DB.journal.filter(a=>memeJour(new Date(a.debut),d));
+      if(!faites.length){ cells.push('<div class="bulle vide"><i></i></div>'); continue; }
+      const duree=faites.reduce((n,a)=>n+(a.dureeSec||0),0);
+      faites.forEach(a=>(a.series||[]).forEach(s=>{
+        const c=categorieSerie(s);
+        if(uniteSerie(s)==='temps'){ tps[c==='etirement'?'etirement':'gainage']+=valeurSerie(s); }
+        else if(tot[c]!=null) tot[c]+=valeurSerie(s);
+      }));
+      const taille=Math.round(16+22*Math.sqrt(duree/maxDuree));
+      cells.push('<div class="bulle" data-detail="'+faites[0].id+'">'+
+        '<i style="width:'+taille+'px;height:'+taille+'px">'+Math.round(duree/60)+'</i></div>');
+    }
+    html+='<div class="carte" style="margin-bottom:9px">'+
+      '<div class="semaine-lg"><b style="color:var(--texte);font-size:13px">'+
+      lundi.getDate()+' '+MOIS[lundi.getMonth()].slice(0,4)+'. \u2013 '+dim.getDate()+' '+MOIS[dim.getMonth()].slice(0,4)+'.</b></div>'+
+      '<div class="bulles">'+cells.join('')+'</div>'+
+      '<div class="semaine-lg" style="font-size:11.5px">'+
+      '<span>Haut '+Math.round(tot.haut)+' rép.</span><span>Bas '+Math.round(tot.bas)+' rép.</span>'+
+      '<span>Abdo '+Math.round(tot.abdo)+' rép.</span></div>'+
+      ((tps.gainage||tps.etirement)?'<div class="semaine-lg" style="font-size:11.5px;color:var(--texte-3)">'+
+        '<span>Gainage '+Math.round(tps.gainage/60)+' min</span>'+
+        '<span>Étirements '+Math.round(tps.etirement/60)+' min</span></div>':'')+
+      '</div>';
+  }
+  html+='<div class="rangee"><button class="bouton discret" data-act="plus-semaines">3 semaines de plus</button>'+
+    '<button class="bouton discret" data-act="histo">Tout l\u2019historique</button></div>'+
+    '<p class="aide" style="margin-top:6px;text-align:center">Taille de la bulle = durée de la séance. '+
+    'Le chiffre est la durée en minutes.</p>';
+  return html;
+}
+
+/* ============================================================
+   PLANIFICATEUR — date unique ou récurrence
+   ============================================================ */
+const MODES_PLANIF=[['unique','Une seule date'],['hebdo','Chaque semaine'],
+                    ['mensuel','Chaque mois'],['trimestriel','Chaque trimestre']];
+const JOURS_COURTS=['L','M','M','J','V','S','D'];
+
+function ouvrirPlanificateur(modeleId, date){
+  const d = date || jourSelectionne || new Date();
+  planif={ modeleId:modeleId||'', date:isoJour(d), mode:'unique',
+           jours:[(d.getDay()+6)%7], occurrences:8 };
+  ecranParams=false; detailSeanceId=null; vueSpecialeCarto=false; vueSpecialeHisto=false;
+  ongletCourant='planif'; rendre();
+}
+
+/* Calcule les dates engendrées par le réglage courant. */
+function datesPlanifiees(p){
+  if(!p || !p.date) return [];
+  const d0=new Date(p.date+'T09:00:00');
+  if(isNaN(d0)) return [];
+  if(p.mode==='unique') return [d0];
+  const n=Math.max(1,Math.min(52,parseInt(p.occurrences,10)||8));
+  const out=[];
+  if(p.mode==='hebdo'){
+    const jours=(p.jours&&p.jours.length?p.jours.slice():[(d0.getDay()+6)%7]).sort((a,b)=>a-b);
+    const lundi=lundiDe(d0);
+    const plancher=new Date(d0.getFullYear(),d0.getMonth(),d0.getDate());
+    for(let w=0; w<n && out.length<120; w++){
+      jours.forEach(j=>{
+        const d=new Date(lundi); d.setDate(lundi.getDate()+7*w+j); d.setHours(9,0,0,0);
+        if(d>=plancher) out.push(d);
+      });
+    }
+    return out;
+  }
+  const pas = p.mode==='mensuel' ? 1 : 3;
+  for(let i=0;i<n;i++){
+    const d=new Date(d0.getFullYear(), d0.getMonth()+pas*i, 1, 9, 0, 0);
+    /* si le quantième n'existe pas dans le mois, on prend le dernier jour */
+    const dernier=new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
+    d.setDate(Math.min(d0.getDate(), dernier));
+    out.push(d);
+  }
+  return out;
+}
+
+function vuePlanificateur(){
+  const p=planif;
+  const dispo=DB.modeles.filter(m=>(m.blocs||[]).length);
+  const opt=dispo.map(m=>'<option value="'+m.id+'"'+(p.modeleId===m.id?' selected':'')+'>'+
+    esc(m.nom)+'</option>').join('');
+  const modes='<div class="onglets" style="flex-wrap:wrap">'+MODES_PLANIF.map(m=>
+    '<button data-pmode="'+m[0]+'" aria-selected="'+(p.mode===m[0])+'" '+
+    'style="flex:1 1 44%;padding:9px 4px;font-size:13px">'+m[1]+'</button>').join('')+'</div>';
+
+  let reglage='';
+  if(p.mode==='hebdo'){
+    reglage='<div class="champ"><label>Jours de la semaine</label>'+
+      '<div class="filtres">'+JOURS_COURTS.map((j,i)=>
+        '<button data-pjour="'+i+'" aria-pressed="'+(p.jours.indexOf(i)>=0)+'" '+
+        'style="min-width:42px;justify-content:center">'+j+'</button>').join('')+'</div></div>'+
+      '<div class="champ"><label>Pendant combien de semaines ?</label>'+
+      '<input data-planifchamp="occurrences" type="number" inputmode="numeric" min="1" max="52" value="'+p.occurrences+'"></div>';
+  } else if(p.mode!=='unique'){
+    reglage='<div class="champ"><label>Nombre d’occurrences</label>'+
+      '<input data-planifchamp="occurrences" type="number" inputmode="numeric" min="1" max="52" value="'+p.occurrences+'"></div>'+
+      '<p class="aide">Même quantième chaque '+(p.mode==='mensuel'?'mois':'trimestre')+
+      '. Si le jour n’existe pas dans le mois, la séance tombe le dernier jour.</p>';
+  }
+
+  const dates=datesPlanifiees(p);
+  const apercu = !p.modeleId
+    ? '<p style="margin:0;color:var(--texte-2);font-size:13.5px">Choisis d’abord une séance.</p>'
+    : !dates.length
+      ? '<p style="margin:0;color:var(--texte-2);font-size:13.5px">Aucune date engendrée.</p>'
+      : dates.slice(0,8).map(d=>'<div class="delta"><span>'+
+          d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})+'</span>'+
+          '<span class="n" style="color:var(--texte-3);font-weight:500">9 h 00</span></div>').join('')+
+        (dates.length>8?'<p class="aide" style="margin-top:8px">…et '+(dates.length-8)+
+          ' autre'+(dates.length-8>1?'s':'')+'.</p>':'');
+
+  return '<button class="retour" data-act="fermer-planif">\u2039 Retour</button>'+
+    '<h2 style="font-weight:800;font-size:22px;letter-spacing:-.02em;margin:0 0 12px">Planifier une séance</h2>'+
+    '<div class="carte">'+
+    '<div class="champ"><label>Séance</label><select data-planifchamp="modeleId">'+
+    '<option value="">Choisir…</option>'+opt+'</select>'+
+    (dispo.length?'':'<p class="aide">Aucune séance ne contient d’exercice. Complète-les dans la bibliothèque.</p>')+
+    '</div>'+
+    '<div class="champ"><label>Première date</label>'+
+    '<input data-planifchamp="date" type="date" value="'+p.date+'"></div>'+
+    '<div class="champ"><label>Répétition</label>'+modes+'</div>'+
+    reglage+'</div>'+
+    '<p class="etiquette" style="margin-top:20px">Dates créées ('+dates.length+')</p>'+
+    '<div class="carte">'+apercu+'</div>'+
+    '<div class="barre-form">'+
+    '<button class="bouton discret" data-act="fermer-planif">Annuler</button>'+
+    '<button class="bouton principal" data-act="valider-planif">Ajouter au calendrier</button></div>';
+}
+
+/* ============================================================
+   HISTORIQUE DES SÉANCES
+   ============================================================ */
+const TYPES_HISTO=[['tous','Toutes'],['haut','Haut'],['bas','Bas'],
+                   ['abdo','Abdo/Gainage'],['mixte','Mixte'],['etirement','Étirements']];
+
+function vueHistorique(){
+  const toutes=DB.journal.slice().sort((a,b)=>new Date(b.debut)-new Date(a.debut));
+  const liste=toutes.filter(a=>filtreHisto==='tous'||a.type===filtreHisto);
+  const filtres='<div class="filtres">'+TYPES_HISTO.map(t=>
+    '<button data-fhisto="'+t[0]+'" aria-pressed="'+(filtreHisto===t[0])+'">'+t[1]+'</button>').join('')+'</div>';
+
+  if(!liste.length){
+    return '<button class="retour" data-act="fermer-histo">\u2039 Retour</button>'+
+      '<h2 style="font-weight:800;font-size:22px;letter-spacing:-.02em;margin:0 0 12px">Historique</h2>'+
+      filtres+'<div class="vide"><div class="gros">\u{1F4CB}</div>'+
+      '<p>'+(toutes.length?'Aucune séance de ce type.':'Aucune séance enregistrée pour l’instant.')+'</p></div>';
+  }
+
+  /* regroupement par mois, avec le total du mois en tête */
+  const groupes=[];
+  liste.forEach(a=>{
+    const d=new Date(a.debut), cle=d.getFullYear()+'-'+d.getMonth();
+    let g=groupes.find(x=>x.cle===cle);
+    if(!g){ g={cle, libelle:MOIS[d.getMonth()]+' '+d.getFullYear(), seances:[]}; groupes.push(g); }
+    g.seances.push(a);
+  });
+
+  let restant=limiteHisto, corps='';
+  for(const g of groupes){
+    if(restant<=0) break;
+    const tot=g.seances.reduce((t,a)=>{ const b=bilanSeance(a);
+      return {n:t.n+1, duree:t.duree+b.duree, reps:t.reps+b.reps, min:t.min+b.min}; },
+      {n:0,duree:0,reps:0,min:0});
+    corps+='<div class="mois-tete"><b>'+g.libelle+'</b><span>'+tot.n+' séance'+(tot.n>1?'s':'')+
+      ' \u00B7 '+mmss(tot.duree)+(tot.reps?' \u00B7 '+tot.reps+' rép.':'')+
+      (tot.min?' \u00B7 '+tot.min+' min':'')+'</span></div>';
+    for(const a of g.seances){
+      if(restant--<=0) break;
+      const b=bilanSeance(a), d=new Date(a.debut);
+      const taux=b.series?Math.round(b.atteints/b.series*100):0;
+      const coul=taux>=100?'var(--recup)':taux>=70?'var(--chauffe)':'var(--texte-3)';
+      corps+='<div class="ligne" data-detail="'+a.id+'">'+
+        '<div class="jour-puce"><b>'+d.getDate()+'</b><span>'+
+        ['dim','lun','mar','mer','jeu','ven','sam'][d.getDay()]+'</span></div>'+
+        '<div class="txt"><b>'+esc(a.nom)+'</b><span>'+mmss(b.duree)+' \u00B7 '+resumeChiffre(b)+'</span></div>'+
+        '<span class="taux" style="color:'+coul+'">'+taux+'%</span>'+
+        '<span class="fleche">\u203A</span></div>';
+    }
+  }
+  const reste=liste.length-Math.min(limiteHisto,liste.length);
+  return '<button class="retour" data-act="fermer-histo">\u2039 Retour</button>'+
+    '<h2 style="font-weight:800;font-size:22px;letter-spacing:-.02em;margin:0 0 3px">Historique</h2>'+
+    '<p style="color:var(--texte-2);margin:0 0 12px;font-size:13.5px">'+liste.length+' séance'+
+    (liste.length>1?'s':'')+' enregistrée'+(liste.length>1?'s':'')+
+    ' \u00B7 le pourcentage indique les objectifs atteints.</p>'+
+    filtres+corps+
+    (reste>0?'<button class="bouton discret" style="margin-top:10px" data-act="plus-histo">'+
+      'Afficher '+Math.min(25,reste)+' séance'+(reste>1?'s':'')+' de plus</button>':'');
+}
+
+/* ============================================================
+   LOT 5 — PLANIFICATION
+   ============================================================ */
+function grilleMois(base){
+  const p=new Date(base.getFullYear(),base.getMonth(),1);
+  const debut=new Date(p); debut.setDate(1-((p.getDay()+6)%7));
+  const j=[];
+  for(let i=0;i<42;i++){ const d=new Date(debut); d.setDate(debut.getDate()+i); j.push(d); }
+  return j;
+}
+function activiteDuJour(d){
+  return {
+    faites:DB.journal.filter(a=>memeJour(new Date(a.debut),d)),
+    prevues:DB.planifiees.filter(p=>p.statut==='planifiee'&&memeJour(new Date(p.date),d))
+  };
+}
+function vuePlanif(){
+  if(!moisAffiche) moisAffiche=new Date();
+  const base=moisAffiche, auj=new Date();
+  const cases=grilleMois(base).map(d=>{
+    const a=activiteDuJour(d), hors=d.getMonth()!==base.getMonth();
+    let pt='';
+    if(a.faites.length) pt='<span class="pt fait"></span>';
+    else if(a.prevues.length) pt='<span class="pt prev"></span>';
+    return '<button class="jour'+(hors?' hors':'')+(memeJour(d,auj)?' auj':'')+
+      (jourSelectionne&&memeJour(d,jourSelectionne)?' auj':'')+
+      '" data-jour="'+isoJour(d)+'">'+d.getDate()+pt+'</button>';
+  }).join('');
+  const aVenir=DB.planifiees.filter(p=>p.statut==='planifiee').sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const liste=aVenir.length?aVenir.map(p=>{
+    const m=DB.modele(p.modeleId), d=new Date(p.date), a0=new Date(); a0.setHours(0,0,0,0);
+    return '<div class="item"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">'+
+      '<div style="min-width:0"><h3>'+esc(p.nom||(m?m.nom:'Séance supprimée'))+'</h3>'+
+      '<div class="quand"'+(d<a0?' style="color:var(--effort);font-weight:600"':'')+'>'+
+      d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})+'</div></div>'+
+      (m?'<span class="pastille '+m.type+'">'+CATEGORIES[m.type]+'</span>':'')+'</div><div class="cmds">'+
+      (m&&(m.blocs||[]).length?'<button class="go" data-go="'+m.id+'">Débuter</button>':'')+
+      '<button data-decaler="'+p.id+'" data-n="1">+1 jour</button>'+
+      '<button data-decaler="'+p.id+'" data-n="7">+1 sem.</button>'+
+      '<button data-dupliquer-p="'+p.id+'">Dupliquer</button>'+
+      '<button data-suppr-p="'+p.id+'">Supprimer</button></div></div>';
+  }).join('')
+   :'<div class="vide" style="padding:26px"><p>Rien de planifié.</p>'+
+    '<p style="font-size:13.5px">Touche un jour, puis choisis une séance ci-dessous.</p></div>';
+  return '<div class="carte"><div class="cal-nav">'+
+    '<button data-mois="-1" aria-label="Mois précédent">\u2039</button>'+
+    '<b>'+MOIS[base.getMonth()]+' '+base.getFullYear()+'</b>'+
+    '<button data-mois="1" aria-label="Mois suivant">\u203A</button></div>'+
+    '<div class="cal">'+['L','M','M','J','V','S','D'].map(j=>'<div class="jn">'+j+'</div>').join('')+cases+'</div>'+
+    '<p class="aide" style="margin-top:10px">Point plein : séance réalisée. Cercle : séance planifiée.</p></div>'+
+    (jourSelectionne?panneauJour():'')+
+    '<button class="ajout" style="margin-top:12px" data-act="ouvrir-planif">+ Planifier une séance</button>'+
+    '<p class="etiquette" style="margin-top:22px">Programmé</p>'+liste;
+}
+function panneauJour(){
+  const d=jourSelectionne, a=activiteDuJour(d);
+  const faites=a.faites.map(x=>'<div class="ligne" data-detail="'+x.id+'"><div class="txt"><b>'+esc(x.nom)+'</b>'+
+    '<span>réalisée \u00B7 '+mmss(x.dureeSec||0)+' \u00B7 '+(x.series||[]).length+' séries</span></div>'+
+    '<span class="fleche">\u203A</span></div>').join('');
+  const prev=a.prevues.map(p=>{
+    const m=DB.modele(p.modeleId);
+    return '<div class="ligne"><div class="txt"><b>'+esc(p.nom||(m?m.nom:'?'))+'</b><span>planifiée</span></div>'+
+      '<button data-suppr-p="'+p.id+'" style="color:var(--texte-3);font-size:20px;padding:0 8px">\u00D7</button></div>';
+  }).join('');
+  return '<div class="carte" style="margin-top:12px;border-color:var(--accent)">'+
+    '<p class="etiquette" style="color:var(--accent)">'+
+    d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})+'</p>'+
+    (faites+prev||'<p style="color:var(--texte-2);font-size:13.5px;margin:0">Rien ce jour-là.</p>')+'</div>';
+}
+
+/* --- détail d'une séance réalisée --- */
+function vueDetailSeance(){
+  const a=DB.journal.find(x=>x.id===detailSeanceId);
+  if(!a) return '<div class="vide"><p>Séance introuvable.</p>'+
+    '<button class="bouton discret" data-act="fermer-detail">Retour</button></div>';
+  const parBloc={};
+  (a.series||[]).forEach(s=>(parBloc[s.indexBloc]=parBloc[s.indexBloc]||[]).push(s));
+  const blocs=Object.keys(parBloc).sort((x,y)=>x-y).map(k=>{
+    const ss=parBloc[k], e=DB.exercice(ss[0].exerciceId);
+    const lignes=ss.map(s=>'<div class="delta"><span>Série '+s.numeroSerie+'</span>'+
+      '<span class="n '+(s.repsRealisees>=s.repsObjectif?'up':'down')+'">'+s.repsRealisees+' / '+s.repsObjectif+
+      ' <span style="color:var(--texte-3);font-weight:400">\u00B7 '+mmss(s.effortSec||0)+'</span></span></div>').join('');
+    return '<p class="etiquette" style="margin-top:16px">'+esc(e?e.nom:'Exercice supprimé')+'</p>'+
+      '<div class="carte">'+lignes+'</div>';
+  }).join('');
+  const totalReps=(a.series||[]).reduce((n,s)=>n+s.repsRealisees,0);
+  return '<button class="retour" data-act="fermer-detail">\u2039 Retour</button>'+
+    '<h2 style="font-weight:800;font-size:22px;letter-spacing:-.02em;margin:0 0 2px">'+esc(a.nom)+'</h2>'+
+    '<p style="color:var(--texte-2);margin:0 0 14px;font-size:13.5px">'+
+    new Date(a.debut).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+
+    ' \u00B7 '+new Date(a.debut).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+'</p>'+
+    '<div class="carte stat-grille">'+
+    [[mmss(a.dureeSec||0),'durée'],[totalReps,'répétitions'],[(a.series||[]).length,'séries']]
+      .map(s=>'<div><div class="n">'+s[0]+'</div><div class="l">'+s[1]+'</div></div>').join('')+'</div>'+
+    (a.echauffementSec?'<p class="aide" style="margin-top:8px">Échauffement : '+mmss(a.echauffementSec)+'</p>':'')+
+    blocs+
+    '<button class="bouton danger" style="margin-top:20px" data-suppr-seance-journal="'+a.id+'">'+
+    'Supprimer cette séance de l\u2019historique</button>';
+}
+
+/* ============================================================
+   LOT 7 — CARTOGRAPHIE MUSCULAIRE
+   Silhouette schématique face / dos. Chaque forme porte son
+   groupe ; la teinte est proportionnelle au volume travaillé.
+   ============================================================ */
+function teinteVolume(part){
+  if(part<=0) return '';
+  /* rampe en trois paliers : sable, saumon, orange plein */
+  const p=Math.max(0.10,Math.min(1,Math.pow(part,0.7)));
+  const r=Math.round(252-(252-249)*p), g=Math.round(216-(216-78)*p), b=Math.round(186-(186-0)*p);
+  return 'rgb('+r+','+g+','+b+')';
+}
+function silhouetteFace(){
+  return '<div class="vue-corps"><svg viewBox="0 0 200 470" role="img" aria-label="Vue de face">'+
+    '<path class="neutre" d="M100 10 C86 10 79 22 79 38 C79 54 88 66 100 66 Z"/><path class="neutre" d="M100 10 C86 10 79 22 79 38 C79 54 88 66 100 66 Z" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M100 58 C94 58 91 62 90 68 C90 74 94 78 100 80 Z"/><path class="neutre" d="M100 58 C94 58 91 62 90 68 C90 74 94 78 100 80 Z" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M100 62 C93 62 88 65 85 70 C76 74 66 82 60 90 C64 104 66 124 67 140 C69 158 71 180 73 200 C74 210 73 220 72 228 C71 240 72 252 74 262 C75 280 76 296 77 310 C79 330 81 344 82 354 C83 372 80 384 80 396 C80 420 84 434 87 444 L97 446 C97 420 96 400 97 380 C98 350 99 310 100 262 Z"/><path class="neutre" d="M100 62 C93 62 88 65 85 70 C76 74 66 82 60 90 C64 104 66 124 67 140 C69 158 71 180 73 200 C74 210 73 220 72 228 C71 240 72 252 74 262 C75 280 76 296 77 310 C79 330 81 344 82 354 C83 372 80 384 80 396 C80 420 84 434 87 444 L97 446 C97 420 96 400 97 380 C98 350 99 310 100 262 Z" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M63 84 C50 88 41 100 39 116 C37 132 38 150 41 168 C43 186 46 204 48 220 C50 236 49 250 51 262 C53 274 62 274 64 262 C66 248 63 236 63 222 C64 204 66 186 67 168 C68 150 69 130 69 112 C69 100 67 89 65 84 Z"/><path class="neutre" d="M63 84 C50 88 41 100 39 116 C37 132 38 150 41 168 C43 186 46 204 48 220 C50 236 49 250 51 262 C53 274 62 274 64 262 C66 248 63 236 63 222 C64 204 66 186 67 168 C68 150 69 130 69 112 C69 100 67 89 65 84 Z" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M80 440 C72 450 68 460 72 464 C80 466 92 464 96 458 C98 452 97 446 97 444 Z"/><path class="neutre" d="M80 440 C72 450 68 460 72 464 C80 466 92 464 96 458 C98 452 97 446 97 444 Z" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="dos" d="M97 62 C95 68 92 73 88 76 C91 79 96 78 98 74 C99 70 99 65 99 62 Z"/><path class="mus" data-g="dos" d="M97 62 C95 68 92 73 88 76 C91 79 96 78 98 74 C99 70 99 65 99 62 Z" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="dos" d="M96 70 C88 71 78 75 68 82 C65 84 63 86 62 88 C70 90 80 87 88 82 C93 79 96 75 97 72 Z"/><path class="mus" data-g="dos" d="M96 70 C88 71 78 75 68 82 C65 84 63 86 62 88 C70 90 80 87 88 82 C93 79 96 75 97 72 Z" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="epaules" d="M64 88 C52 93 44 103 42 117 C41 129 44 139 49 145 C56 144 61 137 63 126 C65 113 66 97 66 89 Z"/><path class="mus" data-g="epaules" d="M64 88 C52 93 44 103 42 117 C41 129 44 139 49 145 C56 144 61 137 63 126 C65 113 66 97 66 89 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M53 97 C49 107 48 118 50 128"/><path class="stri" d="M53 97 C49 107 48 118 50 128" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M60 93 C57 104 56 116 57 128"/><path class="stri" d="M60 93 C57 104 56 116 57 128" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="pectoraux" d="M99 84 C90 84 79 87 71 93 C66 98 65 108 67 118 C69 128 75 135 83 137 C91 138 97 135 99 131 Z"/><path class="mus" data-g="pectoraux" d="M99 84 C90 84 79 87 71 93 C66 98 65 108 67 118 C69 128 75 135 83 137 C91 138 97 135 99 131 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M96 90 C87 90 78 94 72 100"/><path class="stri" d="M96 90 C87 90 78 94 72 100" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M97 103 C88 103 80 107 73 113"/><path class="stri" d="M97 103 C88 103 80 107 73 113" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M97 118 C90 119 83 123 78 129"/><path class="stri" d="M97 118 C90 119 83 123 78 129" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="biceps" d="M47 133 C42 143 41 157 43 170 C45 182 50 190 56 192 C61 190 63 181 62 170 C61 155 58 141 55 132 Z"/><path class="mus" data-g="biceps" d="M47 133 C42 143 41 157 43 170 C45 182 50 190 56 192 C61 190 63 181 62 170 C61 155 58 141 55 132 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M48 143 C45 155 45 168 48 180"/><path class="stri" d="M48 143 C45 155 45 168 48 180" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M55 140 C53 153 53 167 55 179"/><path class="stri" d="M55 140 C53 153 53 167 55 179" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M44 175 C41 188 42 203 46 216 C49 227 52 234 55 238 C60 237 62 230 61 220 C60 206 57 190 53 178 Z"/><path class="neutre" d="M44 175 C41 188 42 203 46 216 C49 227 52 234 55 238 C60 237 62 230 61 220 C60 206 57 190 53 178 Z" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M50 240 C47 250 47 259 50 265 C54 271 60 271 63 265 C65 258 64 249 61 241 Z"/><path class="neutre" d="M50 240 C47 250 47 259 50 265 C54 271 60 271 63 265 C65 258 64 249 61 241 Z" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="abdo" d="M100 136 C93 136 88 139 86 145 C84 156 84 174 85 189 C86 202 89 211 93 215 C97 219 103 219 107 215 C111 211 114 202 115 189 C116 174 116 156 114 145 C112 139 107 136 100 136 Z"/><path class="stri" d="M87 154 L113 154"/><path class="stri" d="M87 171 L113 171"/><path class="stri" d="M87 188 L113 188"/><path class="stri" d="M100 138 L100 213"/><path class="mus" data-g="abdo" d="M85 142 C78 146 74 156 73 168 C72 182 74 196 78 206 C82 211 85 210 86 204 C84 190 83 172 84 156 Z"/><path class="mus" data-g="abdo" d="M85 142 C78 146 74 156 73 168 C72 182 74 196 78 206 C82 211 85 210 86 204 C84 190 83 172 84 156 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M79 156 C76 170 76 188 79 200"/><path class="stri" d="M79 156 C76 170 76 188 79 200" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="quadriceps" d="M78 268 C73 280 71 296 73 314 C75 332 79 346 84 354 C89 358 94 355 94 347 C94 326 93 300 91 284 C89 272 84 265 80 265 Z"/><path class="mus" data-g="quadriceps" d="M78 268 C73 280 71 296 73 314 C75 332 79 346 84 354 C89 358 94 355 94 347 C94 326 93 300 91 284 C89 272 84 265 80 265 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M77 282 C74 300 75 322 80 340"/><path class="stri" d="M77 282 C74 300 75 322 80 340" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M87 274 C87 298 88 322 89 344"/><path class="stri" d="M87 274 C87 298 88 322 89 344" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="hanche" d="M99 266 C93 268 89 276 88 288 C87 302 89 316 92 326 C95 332 99 331 99 324 Z"/><path class="mus" data-g="hanche" d="M99 266 C93 268 89 276 88 288 C87 302 89 316 92 326 C95 332 99 331 99 324 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M94 276 C92 290 93 308 95 320"/><path class="stri" d="M94 276 C92 290 93 308 95 320" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M83 352 C79 356 78 364 80 370 C85 373 91 372 93 367 C94 360 92 353 89 350 Z"/><path class="neutre" d="M83 352 C79 356 78 364 80 370 C85 373 91 372 93 367 C94 360 92 353 89 350 Z" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="mollets" d="M84 370 C79 382 77 398 79 414 C80 427 83 437 86 442 C90 444 93 441 93 433 C93 414 92 392 90 378 C89 372 87 368 85 368 Z"/><path class="mus" data-g="mollets" d="M84 370 C79 382 77 398 79 414 C80 427 83 437 86 442 C90 444 93 441 93 433 C93 414 92 392 90 378 C89 372 87 368 85 368 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M83 384 C81 400 82 420 85 434"/><path class="stri" d="M83 384 C81 400 82 420 85 434" transform="translate(200,0) scale(-1,1)"/>'+
+    '</svg><span class="lg">Face</span></div>';
+}
+function silhouetteDos(){
+  return '<div class="vue-corps"><svg viewBox="0 0 200 470" role="img" aria-label="Vue de dos">'+
+    '<path class="neutre" d="M100 10 C86 10 79 22 79 38 C79 54 88 66 100 66 Z"/><path class="neutre" d="M100 10 C86 10 79 22 79 38 C79 54 88 66 100 66 Z" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M100 58 C94 58 91 62 90 68 C90 74 94 78 100 80 Z"/><path class="neutre" d="M100 58 C94 58 91 62 90 68 C90 74 94 78 100 80 Z" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M100 62 C93 62 88 65 85 70 C76 74 66 82 60 90 C64 104 66 124 67 140 C69 158 71 180 73 200 C74 210 73 220 72 228 C71 240 72 252 74 262 C75 280 76 296 77 310 C79 330 81 344 82 354 C83 372 80 384 80 396 C80 420 84 434 87 444 L97 446 C97 420 96 400 97 380 C98 350 99 310 100 262 Z"/><path class="neutre" d="M100 62 C93 62 88 65 85 70 C76 74 66 82 60 90 C64 104 66 124 67 140 C69 158 71 180 73 200 C74 210 73 220 72 228 C71 240 72 252 74 262 C75 280 76 296 77 310 C79 330 81 344 82 354 C83 372 80 384 80 396 C80 420 84 434 87 444 L97 446 C97 420 96 400 97 380 C98 350 99 310 100 262 Z" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M63 84 C50 88 41 100 39 116 C37 132 38 150 41 168 C43 186 46 204 48 220 C50 236 49 250 51 262 C53 274 62 274 64 262 C66 248 63 236 63 222 C64 204 66 186 67 168 C68 150 69 130 69 112 C69 100 67 89 65 84 Z"/><path class="neutre" d="M63 84 C50 88 41 100 39 116 C37 132 38 150 41 168 C43 186 46 204 48 220 C50 236 49 250 51 262 C53 274 62 274 64 262 C66 248 63 236 63 222 C64 204 66 186 67 168 C68 150 69 130 69 112 C69 100 67 89 65 84 Z" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M80 440 C74 450 72 458 76 462 C84 465 93 463 96 457 C98 451 97 446 97 444 Z"/><path class="neutre" d="M80 440 C74 450 72 458 76 462 C84 465 93 463 96 457 C98 451 97 446 97 444 Z" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="dos" d="M99 64 C90 65 79 70 68 78 C64 81 62 85 61 88 C70 91 81 88 89 84 C92 98 95 118 98 140 C99 148 99 152 99 152 Z"/><path class="mus" data-g="dos" d="M99 64 C90 65 79 70 68 78 C64 81 62 85 61 88 C70 91 81 88 89 84 C92 98 95 118 98 140 C99 148 99 152 99 152 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M93 70 C85 76 76 82 68 86"/><path class="stri" d="M93 70 C85 76 76 82 68 86" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M95 86 C90 98 87 112 86 126"/><path class="stri" d="M95 86 C90 98 87 112 86 126" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M97 104 C94 118 93 132 93 144"/><path class="stri" d="M97 104 C94 118 93 132 93 144" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="epaules" d="M63 86 C51 91 43 102 42 116 C41 128 44 138 49 144 C56 143 61 136 63 125 C65 112 65 95 65 87 Z"/><path class="mus" data-g="epaules" d="M63 86 C51 91 43 102 42 116 C41 128 44 138 49 144 C56 143 61 136 63 125 C65 112 65 95 65 87 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M52 96 C48 106 47 117 49 127"/><path class="stri" d="M52 96 C48 106 47 117 49 127" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="dos" d="M98 146 C89 147 79 153 73 163 C68 173 67 189 69 202 C71 212 75 218 80 220 C87 217 93 207 96 192 C98 176 99 160 98 146 Z"/><path class="mus" data-g="dos" d="M98 146 C89 147 79 153 73 163 C68 173 67 189 69 202 C71 212 75 218 80 220 C87 217 93 207 96 192 C98 176 99 160 98 146 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M94 154 C85 158 77 166 73 176"/><path class="stri" d="M94 154 C85 158 77 166 73 176" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M94 170 C86 175 79 184 76 194"/><path class="stri" d="M94 170 C86 175 79 184 76 194" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M93 186 C87 192 82 200 80 208"/><path class="stri" d="M93 186 C87 192 82 200 80 208" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="dos" d="M99 204 C93 205 88 210 86 218 C85 226 87 234 90 238 C94 240 98 238 99 234 Z"/><path class="mus" data-g="dos" d="M99 204 C93 205 88 210 86 218 C85 226 87 234 90 238 C94 240 98 238 99 234 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M95 212 C92 220 92 230 94 236"/><path class="stri" d="M95 212 C92 220 92 230 94 236" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="triceps" d="M46 132 C41 143 40 157 42 170 C44 182 49 190 55 192 C60 190 62 181 61 170 C60 155 57 141 54 131 Z"/><path class="mus" data-g="triceps" d="M46 132 C41 143 40 157 42 170 C44 182 49 190 55 192 C60 190 62 181 61 170 C60 155 57 141 54 131 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M47 143 C44 156 44 169 47 180"/><path class="stri" d="M47 143 C44 156 44 169 47 180" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M54 140 C52 154 52 168 54 179"/><path class="stri" d="M54 140 C52 154 52 168 54 179" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M43 175 C40 188 41 203 45 216 C48 227 51 234 54 238 C59 237 61 230 60 220 C59 206 56 190 52 178 Z"/><path class="neutre" d="M43 175 C40 188 41 203 45 216 C48 227 51 234 54 238 C59 237 61 230 60 220 C59 206 56 190 52 178 Z" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M49 240 C46 250 46 259 49 265 C53 271 59 271 62 265 C64 258 63 249 60 241 Z"/><path class="neutre" d="M49 240 C46 250 46 259 49 265 C53 271 59 271 62 265 C64 258 63 249 60 241 Z" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="fessiers" d="M99 232 C88 233 79 240 76 252 C73 264 76 274 82 279 C89 283 97 281 99 274 Z"/><path class="mus" data-g="fessiers" d="M99 232 C88 233 79 240 76 252 C73 264 76 274 82 279 C89 283 97 281 99 274 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M94 240 C86 245 80 253 78 262"/><path class="stri" d="M94 240 C86 245 80 253 78 262" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="ischios" d="M79 284 C73 296 71 314 73 332 C75 344 79 352 84 356 C90 357 95 352 95 342 C96 322 94 300 91 286 C88 280 83 279 79 283 Z"/><path class="mus" data-g="ischios" d="M79 284 C73 296 71 314 73 332 C75 344 79 352 84 356 C90 357 95 352 95 342 C96 322 94 300 91 286 C88 280 83 279 79 283 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M78 298 C75 316 76 334 80 348"/><path class="stri" d="M78 298 C75 316 76 334 80 348" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M88 292 C88 312 89 330 90 344"/><path class="stri" d="M88 292 C88 312 89 330 90 344" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="mollets" d="M84 366 C77 375 74 390 75 406 C76 419 80 429 85 433 C90 434 94 429 94 421 C94 404 92 385 90 374 C89 368 86 365 84 365 Z"/><path class="mus" data-g="mollets" d="M84 366 C77 375 74 390 75 406 C76 419 80 429 85 433 C90 434 94 429 94 421 C94 404 92 385 90 374 C89 368 86 365 84 365 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M80 378 C77 393 78 412 82 426"/><path class="stri" d="M80 378 C77 393 78 412 82 426" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M100 370 L100 428"/><path class="neutre" d="M87 434 C84 439 84 444 86 447 L95 448 C96 442 96 437 95 433 Z"/><path class="neutre" d="M87 434 C84 439 84 444 86 447 L95 448 C96 442 96 437 95 433 Z" transform="translate(200,0) scale(-1,1)"/>'+
+    '</svg>';
+}
+
+function vueCartographie(){
+  const sem=Math.max(1,DB.reglages.semainesCarto||4);
+  const vol=volumeParGroupe(sem,uniteCarto);
+  const max=Math.max(1,...Object.values(vol));
+  const unite = uniteCarto==='temps' ? 'min' : 'rép.';
+  const classement=Object.keys(GROUPES).map(g=>({g,v:Math.round(vol[g])})).sort((a,b)=>b.v-a.v);
+  const oublies=classement.filter(x=>x.v===0);
+  const lignes=classement.filter(x=>x.v>0).map(x=>
+    '<div class="delta"><span>'+GROUPES[x.g]+'</span>'+
+    '<span class="n">'+x.v+' <span style="color:var(--texte-3);font-weight:400">'+unite+'</span></span></div>').join('');
+  const bU=['reps','temps'].map(u=>
+    '<button data-ucarto="'+u+'" aria-selected="'+(uniteCarto===u)+'">'+UNITES[u].lib+'</button>').join('');
+  const bS=[2,4,8,12].map(n=>
+    '<button data-carto="'+n+'" aria-pressed="'+(sem===n)+'">'+n+' semaines</button>').join('');
+  const note = uniteCarto==='temps'
+    ? 'Gainage et étirements uniquement, en minutes tenues.'
+    : 'Exercices en répétitions uniquement. Le gainage et les étirements ont leur propre carte, en durée.';
+  return '<button class="retour" data-act="fermer-carto">\u2039 Retour</button>'+
+    '<h2 style="font-weight:800;font-size:22px;letter-spacing:-.02em;margin:0 0 3px">Cartographie musculaire</h2>'+
+    '<p style="color:var(--texte-2);margin:0 0 12px;font-size:13.5px">'+
+    'Volume travaillé sur les '+sem+' dernières semaines.</p>'+
+    '<div class="onglets">'+bU+'</div>'+
+    '<div class="filtres">'+bS+'</div>'+
+    '<div class="carte"><div class="corps" id="corps">'+silhouetteFace()+silhouetteDos()+'</div>'+
+    '<div class="echelle"><span>0</span><span class="bande"></span><span>'+Math.round(max)+' '+unite+'</span></div>'+
+    '<p class="aide" style="margin-top:8px">Groupe prioritaire compté à 100 %, secondaire à 50 %. '+note+'</p></div>'+
+    (oublies.length?'<div class="carte" style="margin-top:12px;border-color:var(--chauffe)">'+
+      '<p class="etiquette" style="color:var(--chauffe)">Non sollicités sur la période</p>'+
+      '<p style="margin:0;font-size:14px">'+oublies.map(x=>GROUPES[x.g]).join(', ')+'</p></div>':'')+
+    '<p class="etiquette" style="margin-top:20px">Détail par groupe</p>'+
+    '<div class="carte">'+(lignes||'<p style="margin:0;color:var(--texte-2);font-size:13.5px">Rien sur la période dans cette unité.</p>')+'</div>';
+}
+/* colorisation après insertion dans le DOM */
+function colorierCorps(){
+  const c=document.getElementById('corps');
+  if(!c) return;
+  const vol=volumeParGroupe(Math.max(1,DB.reglages.semainesCarto||4),uniteCarto);
+  const max=Math.max(1,...Object.values(vol));
+  c.querySelectorAll('[data-g]').forEach(el=>{
+    const v=vol[el.dataset.g]||0;
+    /* volume nul : on laisse la teinte au repos définie en CSS,
+       pour que « non travaillé » se distingue de « peu travaillé » */
+    el.style.fill = v>0 ? teinteVolume(v/max) : '';
+    el.setAttribute('aria-label',GROUPES[el.dataset.g]+' : '+Math.round(v));
+  });
+}
+
+/* ============================================================
+   LOT 8 — PARAMÈTRES, SAUVEGARDE, RESTAURATION
+   ============================================================ */
+function bascule(cle,titre,detail){
+  const on=DB.reglages[cle]!==false;
+  return '<div class="opt"><div class="co"><b>'+titre+'</b><span>'+detail+'</span></div>'+
+    '<button class="bascule" data-bascule="'+cle+'" aria-pressed="'+on+'" aria-label="'+titre+'"><i></i></button></div>';
+}
+function vueParametres(){
+  const r=DB.reglages;
+  return '<button class="retour" data-act="fermer-params">\u2039 Retour</button>'+
+    '<h2 style="font-weight:800;font-size:22px;letter-spacing:-.02em;margin:0 0 14px">Paramètres</h2>'+
+    '<p class="etiquette">Pendant la séance</p><div class="carte">'+
+    bascule('voix','Annonces vocales','Décompte parlé, nom de l’exercice et objectif à chaque série.')+
+    bascule('bips','Bips sonores','Signal sur les trois dernières secondes, même si la voix est coupée.')+
+    bascule('enchainementAuto','Enchaînement automatique',
+      'La série suivante démarre seule à la fin de la récupération. Décoche si tu as besoin de te mettre en position, notamment en gainage.')+
+    bascule('ecranAllume','Garder l’écran allumé','Empêche la mise en veille tant qu’une séance est en cours.')+
+    '</div>'+
+    '<p class="etiquette" style="margin-top:20px">Objectifs</p><div class="carte">'+
+    '<div class="opt"><div class="co"><b>Entraînements par semaine</b>'+
+    '<span>Seuil qui valide une semaine dans votre série d’activités.</span></div>'+
+    '<input type="number" inputmode="numeric" min="1" max="14" data-reglage="seancesParSemaine" value="'+(r.seancesParSemaine||2)+'"></div>'+
+    '<div class="opt"><div class="co"><b>Fenêtre de la cartographie</b>'+
+    '<span>Nombre de semaines prises en compte pour le volume musculaire.</span></div>'+
+    '<input type="number" inputmode="numeric" min="1" max="52" data-reglage="semainesCarto" value="'+(r.semainesCarto||4)+'"></div>'+
+    '</div>'+
+    '<p class="etiquette" style="margin-top:20px">Données</p><div class="carte">'+
+    '<div class="opt"><div class="co"><b>'+DB.exercices.length+' exercices \u00B7 '+DB.modeles.length+' séances</b>'+
+    '<span>'+DB.journal.length+' séance'+(DB.journal.length>1?'s':'')+' au journal \u00B7 '+
+    (Store.dispo?'stockage local actif':'stockage indisponible ici')+'</span></div></div>'+
+    '<button class="bouton discret" style="margin-top:10px" data-act="exporter">Exporter une sauvegarde</button>'+
+    '<button class="bouton discret" style="margin-top:8px" data-act="importer">Restaurer une sauvegarde</button>'+
+    '<input type="file" id="fichierImport" accept="application/json,.json" style="display:none">'+
+    '<button class="bouton danger" style="margin-top:8px" data-act="reset">Réinitialiser toutes les données</button>'+
+    '</div>'+
+    '<p class="etiquette" style="margin-top:20px">Installer sur l’écran d’accueil</p>'+
+    '<div class="carte"><p style="margin:0 0 10px;font-size:13.5px;color:var(--texte-2);line-height:1.5">'+
+    (SERVI
+      ? 'Dans Safari, touche le bouton Partager, puis « Sur l’écran d’accueil ». '+
+        'RHABDO s’ouvrira en plein écran, sans barre d’adresse, et fonctionnera hors connexion.'
+      : '<b style="color:var(--texte)">Impossible depuis un fichier local.</b><br>'+
+        'iOS ne propose « Sur l’écran d’accueil » que pour une page servie par un site web. '+
+        'Ici l’adresse commence par <code>file://</code>, et le menu Partager que tu vois est '+
+        'celui d’un <i>fichier</i>, pas celui d’une <i>page</i> : l’option n’y figure pas.<br><br>'+
+        'Il faut publier les fichiers sur une adresse en <code>https://</code>. '+
+        'Le plus simple est GitHub Pages : dépôt public, envoi des quatre fichiers du kit, '+
+        'activation de Pages dans les réglages du dépôt. Tu obtiens une adresse permanente '+
+        'et gratuite, et l’option apparaît alors dans Safari.')+
+    '</p><p class="aide" style="margin:0">Adresse actuelle : '+esc(location.protocol)+'</p></div>'+
+    '<p class="aide" style="margin-top:16px;text-align:center">RHABDO \u00B7 données conservées sur cet appareil uniquement</p>';
+}
+
+function exporterSauvegarde(){
+  try{
+    const blob=new Blob([Store.exporter()],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download='rhabdo-'+isoJour(new Date())+'.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+    toast('Sauvegarde exportée.');
+  }catch(e){ toast('Export impossible : '+e.message); }
+}
+function importerSauvegarde(fichier){
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const o=JSON.parse(r.result);
+      let n=0;
+      ['exercices','modeles','planifiees','journal','reglages'].forEach(c=>{
+        if(o[c]!=null){ DB[c]=o[c]; DB.sauver(c); n++; }
+      });
+      DB.charger(); ecranParams=false; rendre();
+      toast(n?'Sauvegarde restaurée.':'Fichier vide ou non reconnu.');
+    }catch(e){ toast('Fichier illisible : '+e.message); }
+  };
+  r.onerror=()=>toast('Lecture du fichier impossible.');
+  r.readAsText(fichier);
+}
+
+/* ============================================================
+   ÉVÉNEMENTS
+   ============================================================ */
+document.addEventListener('input',ev=>{
+  const el=ev.target.closest('[data-champ]');
+  if(el&&edition){
+    let v=el.value;
+    if(el.dataset.num){ v = v===''?null:parseFloat(v); if(isNaN(v)) v=null; }
+    ecrireChemin(edition.data,el.dataset.champ,v);
+    return;
+  }
+  const pc=ev.target.closest('[data-planifchamp]');
+  if(pc&&planif){
+    const k=pc.dataset.planifchamp;
+    planif[k] = (k==='occurrences') ? Math.max(1,Math.min(52,parseInt(pc.value,10)||1)) : pc.value;
+    if(k!=='occurrences') rendre();     /* l'aperçu des dates doit suivre */
+    else { const n=document.querySelector('.etiquette + .carte');
+           if(n) rendre(); }
+    return;
+  }
+  const rg=ev.target.closest('[data-reglage]');
+  if(rg){
+    const n=parseInt(rg.value,10);
+    if(!isNaN(n)&&n>0){ DB.reglages[rg.dataset.reglage]=n; DB.sauver('reglages'); }
+  }
+});
+document.addEventListener('change',ev=>{
+  const pc=ev.target.closest('[data-planifchamp]');
+  if(pc&&planif){
+    planif[pc.dataset.planifchamp]=pc.value; rendre(); return;
+  }
+  const g=ev.target.closest('[data-groupe]');
+  if(g&&edition){
+    const arr=edition.data[g.dataset.groupe], i=arr.indexOf(g.value);
+    if(g.checked){ if(i<0) arr.push(g.value); } else if(i>=0) arr.splice(i,1);
+    return;
+  }
+  const s=ev.target.closest('[data-surcharge]');
+  if(s&&edition){
+    const b=edition.data.blocs[+s.dataset.surcharge], exo=DB.exercice(b.exerciceId);
+    if(s.checked){ b.evolPlus=exo?exo.evolPlus:1; b.evolToutesLesN=exo?exo.evolToutesLesN:3; }
+    else { b.evolPlus=null; b.evolToutesLesN=null; }
+    rendre(); return;
+  }
+  if(ev.target.id==='fichierImport'&&ev.target.files&&ev.target.files[0]){
+    importerSauvegarde(ev.target.files[0]);
+  }
+});
+
+document.addEventListener('click',ev=>{
+  const c=s=>ev.target.closest(s);
+  try{
+    Voix.debloquer();
+
+    const onglet=c('#barre button');
+    if(onglet){ ecranParams=false; detailSeanceId=null; jourSelectionne=null; planif=null;
+      vueSpecialeCarto=false; vueSpecialeHisto=false; aller(onglet.dataset.onglet); return; }
+
+    /* --- détail d'une séance réalisée --- */
+    const det=c('[data-detail]');
+    if(det){ detailSeanceId=det.dataset.detail; ecranParams=false; rendre(); return; }
+
+    /* --- bibliothèque --- */
+    const sous=c('[data-sous]'); if(sous){ sousOnglet=sous.dataset.sous; filtreBiblio='tous'; rendre(); return; }
+    const f=c('[data-filtre]'); if(f){ filtreBiblio=f.dataset.filtre; rendre(); return; }
+    if(c('[data-nouvel-exo]')){ ouvrirExo(null); return; }
+    if(c('[data-nouvelle-seance]')){ ouvrirSeance(null); return; }
+    const ee=c('[data-editer-e]'); if(ee){ ouvrirExo(ee.dataset.editerE); return; }
+    const es=c('[data-editer-s]'); if(es){ ouvrirSeance(es.dataset.editerS); return; }
+
+    /* --- statistiques --- */
+    const pe=c('[data-periode]'); if(pe){ periodeCharge=pe.dataset.periode; rendre(); return; }
+    const fc=c('[data-fcharge]'); if(fc){ filtreCharge=fc.dataset.fcharge; rendre(); return; }
+    const fh=c('[data-fhisto]'); if(fh){ filtreHisto=fh.dataset.fhisto; limiteHisto=25; rendre(); return; }
+    const sj=c('[data-suppr-seance-journal]');
+    if(sj){
+      if(!confirm('Supprimer définitivement cette séance de l’historique ?')) return;
+      DB.journal=DB.journal.filter(x=>x.id!==sj.dataset.supprSeanceJournal);
+      DB.sauver('journal'); detailSeanceId=null; rendre(); toast('Séance supprimée.'); return;
+    }
+    const pm=c('[data-pmode]'); if(pm&&planif){ planif.mode=pm.dataset.pmode; rendre(); return; }
+    const pj=c('[data-pjour]');
+    if(pj&&planif){
+      const j=+pj.dataset.pjour, i=planif.jours.indexOf(j);
+      if(i>=0) planif.jours.splice(i,1); else planif.jours.push(j);
+      rendre(); return;
+    }
+    const un=c('[data-unite]');
+    if(un){ uniteCharge=un.dataset.unite;
+      /* les étirements n'existent qu'en durée : on ne laisse pas un filtre orphelin */
+      if(uniteCharge==='reps'&&filtreCharge==='etirement') filtreCharge='tous';
+      rendre(); return; }
+    const uc=c('[data-ucarto]'); if(uc){ uniteCarto=uc.dataset.ucarto; rendre(); return; }
+    const ca=c('[data-carto]');
+    if(ca){ DB.reglages.semainesCarto=+ca.dataset.carto; DB.sauver('reglages'); rendre(); return; }
+
+    /* --- calendrier --- */
+    const mo=c('[data-mois]');
+    if(mo){ if(!moisAffiche) moisAffiche=new Date();
+      moisAffiche=new Date(moisAffiche.getFullYear(),moisAffiche.getMonth()+(+mo.dataset.mois),1);
+      rendre(); return; }
+    const jo=c('[data-jour]');
+    if(jo){ const d=new Date(jo.dataset.jour+'T12:00:00');
+      jourSelectionne=(jourSelectionne&&memeJour(jourSelectionne,d))?null:d; rendre(); return; }
+    const dc=c('[data-decaler]');
+    if(dc){ const p=DB.planifiees.find(x=>x.id===dc.dataset.decaler);
+      if(p){ const d=new Date(p.date); d.setDate(d.getDate()+(+dc.dataset.n)); p.date=d.toISOString();
+        DB.sauver('planifiees'); rendre(); toast('Reportée au '+d.toLocaleDateString('fr-FR')+'.'); }
+      return; }
+    const dp=c('[data-dupliquer-p]');
+    if(dp){ const p=DB.planifiees.find(x=>x.id===dp.dataset.dupliquerP);
+      if(p){ const d=new Date(p.date); d.setDate(d.getDate()+7);
+        DB.planifiees.push({id:uid(),modeleId:p.modeleId,nom:p.nom,date:d.toISOString(),statut:'planifiee'});
+        DB.sauver('planifiees'); rendre(); toast('Dupliquée à la semaine suivante.'); }
+      return; }
+    const sp=c('[data-suppr-p]');
+    if(sp){ DB.planifiees=DB.planifiees.filter(x=>x.id!==sp.dataset.supprP);
+      DB.sauver('planifiees'); rendre(); return; }
+    const rp=c('[data-reporter]');
+    if(rp){ const p=DB.planifiees.find(x=>x.id===rp.dataset.reporter);
+      if(p){ const d=new Date(p.date); d.setDate(d.getDate()+1); p.date=d.toISOString();
+        DB.sauver('planifiees'); rendre(); toast('Reportée d’un jour.'); } return; }
+    const pl=c('[data-planifier]');
+    if(pl){ ouvrirPlanificateur(pl.dataset.planifier); return; }
+
+    /* --- réglages en séance (± écartement, hauteur, lestage) --- */
+    const reg=c('[data-reg]');
+    if(reg){ Seance.ajusterReglage(reg.dataset.reg,parseFloat(reg.dataset.pas),reg); return; }
+
+    /* --- incréments dans l'éditeur de séance --- */
+    const inc=c('[data-inc]');
+    if(inc&&edition){
+      const ch=inc.dataset.inc, pas=parseFloat(inc.dataset.pas), min=parseFloat(inc.dataset.min)||0;
+      const v=Math.max(min,(parseFloat(lireChemin(edition.data,ch))||0)+pas);
+      ecrireChemin(edition.data,ch,v);
+      const n=inc.parentNode.querySelector('.v');
+      if(n) n.textContent=v+' '+(inc.dataset.unite||'');
+      return;
+    }
+    const bm=c('[data-bloc-monter]'); if(bm&&edition){ const i=+bm.dataset.blocMonter,a=edition.data.blocs;
+      a.splice(i-1,0,a.splice(i,1)[0]); rendre(); return; }
+    const bd=c('[data-bloc-descendre]'); if(bd&&edition){ const i=+bd.dataset.blocDescendre,a=edition.data.blocs;
+      a.splice(i+1,0,a.splice(i,1)[0]); rendre(); return; }
+    const bu=c('[data-bloc-dupliquer]'); if(bu&&edition){ const i=+bu.dataset.blocDupliquer,a=edition.data.blocs;
+      a.splice(i+1,0,JSON.parse(JSON.stringify(a[i]))); rendre(); return; }
+    const bx=c('[data-bloc-suppr]'); if(bx&&edition){ edition.data.blocs.splice(+bx.dataset.blocSuppr,1); rendre(); return; }
+
+    /* --- bascules de paramètres --- */
+    const ba=c('[data-bascule]');
+    if(ba){ const k=ba.dataset.bascule;
+      DB.reglages[k]=(DB.reglages[k]===false);
+      DB.sauver('reglages'); rendre(); return; }
+
+    const go=c('[data-go]');
+    if(go){ const m=DB.modele(go.dataset.go); if(m){ ecranParams=false; detailSeanceId=null; Seance.demarrer(m); } return; }
+
+    const act=c('[data-act]');
+    if(act){
+      switch(act.dataset.act){
+        case 'lancer-chauffe': Seance.lancerEchauffement(); break;
+        case 'finChauffe':     Seance.finEchauffement(true); break;
+        case 'demarrer':       Seance.demarrerSerie(); break;
+        case 'enchainer':      Seance.avancerEtDemarrer(); break;
+        case 'finSerie':       Seance.terminerSerie(); break;
+        case 'reps+':          Seance.ajusterReps(1); break;
+        case 'reps-':          Seance.ajusterReps(-1); break;
+        case 'valider':        Seance.validerSerie(); break;
+        case 'pause':          Chrono.basculerPause(); rendre(); break;
+        case 'passer':         Seance.passerRecup(); break;
+        case 'passer-exo':     Seance.passerExercice(); break;
+        case 'terminer':
+          if(!Seance.active.series.length){ Seance.abandonner(); toast('Séance annulée.'); }
+          else Seance._terminer();
+          break;
+        case 'retour':         Seance.active=null; rendre(); break;
+        case 'annuler-edition':edition=null; rendre(); break;
+        case 'sauver-exo':     sauverExo(); break;
+        case 'sauver-seance':  sauverSeance(); break;
+        case 'plus-semaines':  semainesJournal+=3; rendre(); break;
+        case 'carto':          vueSpecialeCarto=true; vueSpecialeHisto=false; rendre(); break;
+        case 'fermer-carto':   vueSpecialeCarto=false; rendre(); break;
+        case 'histo':          vueSpecialeHisto=true; vueSpecialeCarto=false; limiteHisto=25; rendre(); break;
+        case 'fermer-histo':   vueSpecialeHisto=false; rendre(); break;
+        case 'plus-histo':     limiteHisto+=25; rendre(); break;
+        case 'fermer-params':  ecranParams=false; rendre(); break;
+        case 'fermer-detail':  detailSeanceId=null; rendre(); break;
+        case 'exporter':       exporterSauvegarde(); break;
+        case 'importer': {
+          const f=document.getElementById('fichierImport');
+          if(f) f.click(); break;
+        }
+        case 'ouvrir-planif':  ouvrirPlanificateur(''); break;
+        case 'fermer-planif':  planif=null; rendre(); break;
+        case 'valider-planif': {
+          if(!planif.modeleId){ toast('Choisis d’abord une séance.'); break; }
+          const m=DB.modele(planif.modeleId);
+          const dates=datesPlanifiees(planif);
+          if(!dates.length){ toast('Aucune date à ajouter.'); break; }
+          dates.forEach(d=>DB.planifiees.push({id:uid(),modeleId:m.id,nom:m.nom,
+            date:d.toISOString(),statut:'planifiee'}));
+          DB.sauver('planifiees');
+          jourSelectionne=dates[0]; moisAffiche=new Date(dates[0]); planif=null;
+          ongletCourant='planif'; rendre();
+          toast(dates.length>1 ? dates.length+' séances ajoutées au calendrier.'
+                               : 'Séance ajoutée au '+dates[0].toLocaleDateString('fr-FR')+'.');
+          break;
+        }
+        case 'ajouter-bloc': {
+          const sel=document.getElementById('choixExo');
+          if(!sel||!sel.value){ toast('Choisis d’abord un exercice.'); break; }
+          const exo=DB.exercice(sel.value);
+          edition.data.blocs.push({exerciceId:exo.id,nbSeries:exo.objSeries||4,nbReps:exo.objReps||10,
+            recupSerieSec:60,recupFinSec:120,repsInitiales:null,evolPlus:null,evolToutesLesN:null});
+          rendre(); break;
+        }
+        case 'suppr-exo': {
+          const d=edition.data, u=DB.modelesUtilisant(d.id);
+          if(u.length){ toast('Impossible : utilisé dans '+u.map(m=>m.nom).join(', ')+'.'); break; }
+          DB.exercices=DB.exercices.filter(x=>x.id!==d.id);
+          DB.sauver('exercices'); edition=null; rendre(); toast('Exercice supprimé.'); break;
+        }
+        case 'suppr-seance': {
+          const d=edition.data;
+          DB.modeles=DB.modeles.filter(x=>x.id!==d.id);
+          DB.planifiees=DB.planifiees.filter(p=>p.modeleId!==d.id);
+          DB.sauver('modeles'); DB.sauver('planifiees');
+          edition=null; sousOnglet='seances'; rendre(); toast('Séance supprimée.'); break;
+        }
+        case 'oublier-panne': dernierePanne=null; rendre(); break;
+        case 'reset':
+          if(!confirm('Effacer définitivement tous les exercices, séances et l’historique ?')) break;
+          Store.toutEffacer(); Seance.active=null; edition=null; dernierePanne=null;
+          ecranParams=false; detailSeanceId=null;
+          DB.charger(); ongletCourant='seance'; rendre(); toast('Données réinitialisées.'); break;
+      }
+      return;
+    }
+    if(c('#btnParams')){ ecranParams=true; detailSeanceId=null; edition=null; rendre(); return; }
+    if(c('#btnProfil')){ ecranParams=true; detailSeanceId=null; edition=null; rendre(); return; }
+  }catch(err){ noterPanneSansBoucle(err); rendre(); }
+});
+
+/* ============================================================
+   DÉMARRAGE
+   ============================================================ */
+/* Le mode « écran d'accueil » n'existe que pour une page servie en
+   http(s). Sur un fichier ouvert localement (file://), iOS ne propose
+   pas l'option et refuse les service workers : on n'essaie même pas. */
+const SERVI = location.protocol==='http:' || location.protocol==='https:';
+if(SERVI && 'serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+
+DB.charger();
+Voix.init();
+if(Seance.reprendre()){
+  ongletCourant='seance';
+  setTimeout(()=>toast('Séance reprise là où tu l’avais laissée.'),400);
+}
+rendre();
+if(!Store.dispo){
+  const b=document.getElementById('bandeau');
+  b.style.display='block';
+  b.textContent='Stockage bloqué dans cette fenêtre : rien ne sera conservé à la fermeture. Ouvre le fichier directement dans Safari pour que tes séances soient enregistrées.';
+}
+if(!SERVI){
+  const b2=document.getElementById('bandeau2');
+  if(b2) b2.style.display='block';
+}
+</script>
+</body>
+</html>
