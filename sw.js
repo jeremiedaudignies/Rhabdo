@@ -1,8 +1,8 @@
 /* RHABDO — cache hors connexion.
    Change CACHE à chaque nouvelle version pour forcer la mise à jour. */
-const CACHE = 'rhabdo-v5';
+const CACHE = 'rhabdo-v6';
 const FICHIERS = ['./', './index.html', './manifest.json',
-                  './icone-180.png', './icone-192.png', './icone-512.png'];
+                  './icone-180.png', './icone-192.png', './icone-512.png', './guide_des_abdominaux_à_la_chaise_romaine.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FICHIERS)).then(() => self.skipWaiting()));
