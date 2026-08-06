@@ -1,6 +1,6 @@
 /* RHABDO — cache hors connexion.
    Change CACHE à chaque nouvelle version pour forcer la mise à jour. */
-const CACHE = 'rhabdo-v3';
+const CACHE = 'rhabdo-v5';
 const FICHIERS = ['./', './index.html', './manifest.json',
                   './icone-180.png', './icone-192.png', './icone-512.png'];
 
