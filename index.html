@@ -272,12 +272,26 @@ details.reglages[open] summary::after{content:"\2013"}
 .vue-corps{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center}
 .corps svg{width:100%;height:auto;display:block}
 .corps .lg{display:block;text-align:center;font-size:11.5px;font-weight:700;color:var(--texte-3);margin-top:4px}
-.corps .neutre{fill:var(--fond);stroke:var(--filet);stroke-width:.9;stroke-linejoin:round}
-.corps .mus{fill:var(--surface-2);stroke:var(--surface);stroke-width:.9;stroke-linejoin:round;transition:fill .35s}
-.corps .stri{fill:none;stroke:var(--surface);stroke-width:.75;opacity:.55;stroke-linecap:round}
+/* Teintes fixes et contrastées : un muscle au repos doit rester
+   parfaitement lisible sur la carte blanche, même sans données. */
+.corps .neutre{fill:#EFF1F5;stroke:#CFD5DE;stroke-width:1;stroke-linejoin:round}
+.corps .mus{fill:#CFD6E0;stroke:#FFFFFF;stroke-width:1;stroke-linejoin:round;transition:fill .35s}
+.corps .stri{fill:none;stroke:#FFFFFF;stroke-width:.8;opacity:.7;stroke-linecap:round}
 .echelle{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:11px;color:var(--texte-3)}
 .echelle .bande{flex:1;height:9px;border-radius:99px;
   background:linear-gradient(90deg,var(--surface-2),#FFD9C4,#FF9A5E,var(--accent))}
+.picto{flex:0 0 auto;width:46px;height:46px;border-radius:12px;background:var(--accent-doux);
+  color:var(--accent);display:grid;place-items:center;overflow:hidden}
+.picto svg{width:38px;height:38px;stroke:currentColor;fill:none;stroke-width:6.5;
+  stroke-linecap:round;stroke-linejoin:round;display:block}
+.picto svg .t{fill:currentColor;stroke:none}
+.picto svg .sol{stroke-width:4;opacity:.35}
+.picto.mini{width:34px;height:34px;border-radius:9px}
+.picto.mini svg{width:28px;height:28px}
+.picto.grand{width:64px;height:64px;border-radius:16px}
+.picto.grand svg{width:52px;height:52px}
+.exo-tete{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.exo-tete .exo-nom{margin:0}
 .mois-tete{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
   margin:18px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--filet)}
 .mois-tete b{font-size:15px;font-weight:800;letter-spacing:-.01em;text-transform:capitalize}
@@ -389,8 +403,10 @@ const GROUPES = {
   abdo:'Abdo/Gainage', fessiers:'Fessiers', quadriceps:'Quadriceps',
   ischios:'Ischio-jambiers', mollets:'Mollets', hanche:'Hanche'
 };
-const CATEGORIES = { haut:'Haut', bas:'Bas', abdo:'Abdo/Gainage', mixte:'Mixte', etirement:'Étirement' };
-const CAT_EXO = { haut:'Haut', bas:'Bas', abdo:'Abdo/Gainage', etirement:'Étirement' };
+/* Une séance n'a plus de type choisi : ses catégories se déduisent
+   des exercices qu'elle contient. « Mixte » n'existe donc plus. */
+const CATEGORIES = { echauffement:'Échauffement', haut:'Haut', bas:'Bas', abdo:'Abdo/Gainage', etirement:'Étirement' };
+const CAT_EXO = CATEGORIES;
 
 const slug = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'')
   .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
@@ -404,6 +420,8 @@ function exercicesParDefaut(){
     evolPlus:1, evolToutesLesN:3, compteurReussites:0, remarque:''
   }, extra||{});
   return [
+    e('Échauffement tapis de course','echauffement',['quadriceps'],['mollets'],'temps',
+      {objSeries:1,objReps:600,evolPlus:0,evolToutesLesN:1}),
     e('Pompes serrées','haut',['pectoraux'],['triceps'],'reps',{ecartementCm:30}),
     e('Pompes larges','haut',['pectoraux'],['abdo'],'reps',{ecartementCm:70}),
     e('Dips','haut',['triceps'],['pectoraux']),
@@ -439,21 +457,24 @@ function modelesParDefaut(){
     repsInitiales:null,          /* null = hérite de l'exercice */
     evolPlus:null, evolToutesLesN:null
   });
-  const m=(nom,type,chauffe,blocs)=>({id:'seance-'+slug(nom),nom,type,echauffementMin:chauffe,blocs});
+  const chauffe=min=>({exerciceId:'exo-echauffement-tapis-de-course',nbSeries:1,nbReps:min*60,
+    recupSerieSec:0,recupFinSec:60,repsInitiales:null,evolPlus:null,evolToutesLesN:null});
+  const m=(nom,mn,blocs)=>({id:'seance-'+slug(nom),nom,
+    blocs:(mn?[chauffe(mn)]:[]).concat(blocs)});
   return [
-    m('Routine Haut','haut',10,[ b('Pompes serrées',6,10,60), b('Traction pronation large',6,6,90),
+    m('Routine Haut',10,[ b('Pompes serrées',6,10,60), b('Traction pronation large',6,6,90),
       b('Dips',5,8,75), b('Biceps',4,10,60), b('Triceps',4,10,60) ]),
-    m('Routine Bas','bas',10,[ b('Squat',6,15,60), b('Pont',4,15,45),
+    m('Routine Bas',10,[ b('Squat',6,15,60), b('Pont',4,15,45),
       b('Abduction hanche',4,15,45), b('Mollets',4,20,45) ]),
-    m('Routine Abdo/Gainage','abdo',5,[ b('Gainage horizontal',3,45,60), b('Gainage latéral',4,30,45),
+    m('Routine Abdo/Gainage',5,[ b('Gainage horizontal',3,45,60), b('Gainage latéral',4,30,45),
       b('Crunch',4,20,45), b('Abdominaux chaise romaine',4,12,60) ]),
-    m('Routine Étirements','etirement',0,[ b('Étirement dos',2,30,15,30), b('Étirement épaule',2,30,15,30),
+    m('Routine Étirements',0,[ b('Étirement dos',2,30,15,30), b('Étirement épaule',2,30,15,30),
       b('Étirement bras',2,30,15,30), b('Étirement jambes',2,30,15,30),
       b('Étirement chevilles',2,30,15,30), b('Étirement cou',2,20,15,30) ]),
-    m('Routine Mixte','mixte',10,[ b('Pompes larges',5,12,60), b('Squat',5,15,60),
+    m('Routine complète',10,[ b('Pompes larges',5,12,60), b('Squat',5,15,60),
       b('Traction supination large',5,6,90), b('Gainage horizontal',3,45,45) ]),
-    m('Lafay Niv II','mixte',10,[]),
-    m('Lafay Niv III','mixte',10,[])
+    m('Lafay Niv II',10,[]),
+    m('Lafay Niv III',10,[])
   ];
 }
 
@@ -466,11 +487,51 @@ const DB = {
     this.modeles = Store.lire('modeles',null);
     if(!Array.isArray(this.modeles)||!this.modeles.length){
       this.modeles = modelesParDefaut(); Store.ecrire('modeles',this.modeles); }
+    this.migrerEchauffement();
     this.planifiees = Store.lire('planifiees',[])||[];
     this.journal = Store.lire('journal',[])||[];
     this.reglages = Object.assign({ voix:true, bips:true, ecranAllume:true,
       enchainementAuto:true, seancesParSemaine:2, semainesCarto:4,
       seuils:[600,300,180,120,60,30,15,10,5,4,3,2,1], dernierBip:3 }, Store.lire('reglages',{})||{});
+  },
+  /* Les séances créées avant que l'échauffement ne devienne un
+     exercice portaient un champ echauffementMin. On le convertit en
+     premier bloc, une fois pour toutes. */
+  migrerEchauffement(){
+    let touche=false;
+    if(!this.exercice('exo-echauffement-tapis-de-course')){
+      const ref=exercicesParDefaut()[0];
+      this.exercices.unshift(ref); Store.ecrire('exercices',this.exercices);
+    }
+    this.modeles.forEach(m=>{
+      if(m.echauffementMin>0 &&
+         !(m.blocs||[]).some(b=>b.exerciceId==='exo-echauffement-tapis-de-course')){
+        m.blocs=[{exerciceId:'exo-echauffement-tapis-de-course',nbSeries:1,
+                  nbReps:m.echauffementMin*60,recupSerieSec:0,recupFinSec:60,
+                  repsInitiales:null,evolPlus:null,evolToutesLesN:null}].concat(m.blocs||[]);
+        touche=true;
+      }
+      if(m.echauffementMin!==undefined){ delete m.echauffementMin; touche=true; }
+      if(m.type!==undefined){ delete m.type; touche=true; }
+    });
+    if(touche) Store.ecrire('modeles',this.modeles);
+  },
+  /* Catégories réellement présentes dans une séance */
+  categoriesModele(m){
+    const vues=[];
+    (m.blocs||[]).forEach(b=>{
+      const e=this.exercice(b.exerciceId);
+      if(e && vues.indexOf(e.categorie)<0) vues.push(e.categorie);
+    });
+    return vues.sort((a,b)=>Object.keys(CATEGORIES).indexOf(a)-Object.keys(CATEGORIES).indexOf(b));
+  },
+  categoriesRealisee(a){
+    const vues=[];
+    (a.series||[]).forEach(s=>{
+      const e=this.exercice(s.exerciceId);
+      if(e && vues.indexOf(e.categorie)<0) vues.push(e.categorie);
+    });
+    return vues;
   },
   sauver(cle){ Store.ecrire(cle,this[cle]); },
   exercice(id){ return this.exercices.find(e=>e.id===id)||null; },
@@ -630,6 +691,65 @@ const Chrono = {
 };
 const mmss = s => { s=Math.max(0,Math.floor(s));
   return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); };
+/* ============================================================
+   PICTOGRAMMES D'EXERCICES
+   Dessins vectoriels embarqués : aucune requête réseau, aucune
+   question de licence, et le même langage graphique que la
+   cartographie musculaire.
+   ============================================================ */
+const PICTOS={
+  'abduction':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><circle class="t" cx="40" cy="16" r="7"/><polyline points="40,24 40,54"/><polyline points="40,54 36,88"/><polyline points="40,54 80,70"/><polyline points="40,30 26,48"/>',
+  'adduction':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><circle class="t" cx="58" cy="16" r="7"/><polyline points="58,24 58,54"/><polyline points="58,54 62,88"/><polyline points="58,54 26,74"/><polyline points="58,30 74,48"/>',
+  'biceps':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><circle class="t" cx="48" cy="16" r="7"/><polyline points="48,24 48,58"/><polyline points="48,32 68,48 62,28"/><polyline points="48,32 32,56"/><polyline points="48,58 40,88"/><polyline points="48,58 58,88"/>',
+  'chaise-rom':'<polyline points="10,16 90,16"/><circle class="t" cx="50" cy="34" r="7"/><polyline points="38,16 46,30"/><polyline points="62,16 54,30"/><polyline points="50,42 50,62"/><polyline points="50,62 76,58"/><polyline points="76,58 78,34"/>',
+  'crunch':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><circle class="t" cx="28" cy="58" r="6"/><polyline points="34,62 58,78"/><polyline points="58,78 80,62"/><polyline points="80,62 86,86"/><polyline points="34,62 44,48"/>',
+  'dips':'<polyline points="24,26 24,88"/><polyline points="76,26 76,88"/><circle class="t" cx="50" cy="26" r="7"/><polyline points="50,34 50,62"/><polyline points="50,40 30,48"/><polyline points="50,40 70,48"/><polyline points="50,62 42,84"/><polyline points="50,62 58,84"/>',
+  'etirement-bs':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><circle class="t" cx="30" cy="32" r="7"/><polyline points="34,38 52,58"/><polyline points="52,58 84,70"/><polyline points="38,44 78,64"/><polyline points="52,58 50,88"/>',
+  'etirement-ht':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><circle class="t" cx="50" cy="26" r="7"/><polyline points="50,34 50,60"/><polyline points="50,40 66,16"/><polyline points="50,40 34,16"/><polyline points="50,60 42,88"/><polyline points="50,60 58,88"/>',
+  'flexion-lat':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><circle class="t" cx="62" cy="16" r="7"/><polyline points="60,24 44,54"/><polyline points="60,30 78,44"/><polyline points="44,54 40,88"/><polyline points="44,54 56,88"/>',
+  'gainage':'<line class="sol" x1="6" y1="88" x2="94" y2="88"/><circle class="t" cx="22" cy="52" r="6"/><polyline points="28,58 86,72"/><polyline points="28,58 14,74"/><polyline points="14,74 36,74"/><polyline points="86,72 90,84"/>',
+  'gainage-lat':'<line class="sol" x1="6" y1="88" x2="94" y2="88"/><circle class="t" cx="20" cy="54" r="6"/><polyline points="26,60 84,64"/><polyline points="26,60 28,84"/><polyline points="84,64 90,84"/><polyline points="50,58 50,44"/>',
+  'mollets':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><circle class="t" cx="48" cy="14" r="7"/><polyline points="48,22 48,56"/><polyline points="48,56 42,80"/><polyline points="48,56 56,80"/><polyline points="42,80 34,88"/><polyline points="56,80 64,88"/><polyline points="48,30 34,50"/><polyline points="48,30 62,50"/>',
+  'pompes':'<line class="sol" x1="6" y1="88" x2="94" y2="88"/><circle class="t" cx="80" cy="38" r="7"/><polyline points="72,42 34,58"/><polyline points="64,46 64,84"/><polyline points="34,58 12,84"/>',
+  'pompes-larges':'<line class="sol" x1="6" y1="88" x2="94" y2="88"/><circle class="t" cx="80" cy="38" r="7"/><polyline points="72,42 34,58"/><polyline points="66,46 80,84"/><polyline points="66,46 50,84"/><polyline points="34,58 12,84"/>',
+  'pont':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><circle class="t" cx="14" cy="76" r="6"/><polyline points="20,80 50,58"/><polyline points="50,58 72,64"/><polyline points="72,64 80,88"/><polyline points="26,74 26,88"/>',
+  'squat':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><circle class="t" cx="46" cy="16" r="7"/><polyline points="46,24 46,50"/><polyline points="46,50 70,58"/><polyline points="70,58 68,88"/><polyline points="46,50 30,60"/><polyline points="30,60 32,88"/><polyline points="46,32 76,34"/>',
+  'superman':'<line class="sol" x1="6" y1="88" x2="94" y2="88"/><circle class="t" cx="28" cy="54" r="6"/><polyline points="10,58 34,66"/><polyline points="34,66 68,66"/><polyline points="68,66 90,56"/><polyline points="60,70 86,80"/>',
+  'tapis':'<polyline points="6,88 94,88"/><polyline points="6,88 6,80"/><polyline points="94,88 94,80"/><circle class="t" cx="58" cy="18" r="7"/><polyline points="56,26 46,52"/><polyline points="52,32 72,42"/><polyline points="52,32 32,26"/><polyline points="46,52 66,70"/><polyline points="46,52 28,66"/><polyline points="28,66 26,84"/>',
+  'traction':'<polyline points="10,16 90,16"/><circle class="t" cx="50" cy="36" r="7"/><polyline points="38,16 46,30"/><polyline points="62,16 54,30"/><polyline points="50,44 50,66"/><polyline points="50,66 42,88"/><polyline points="50,66 58,88"/>',
+  'traction-sup':'<polyline points="10,16 90,16"/><circle class="t" cx="50" cy="38" r="7"/><polyline points="36,16 44,32"/><polyline points="64,16 56,32"/><polyline points="50,46 50,66"/><polyline points="50,66 40,88"/><polyline points="50,66 60,88"/><polyline points="32,12 32,20"/><polyline points="68,12 68,20"/>',
+  'triceps':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><circle class="t" cx="48" cy="16" r="7"/><polyline points="48,24 48,58"/><polyline points="48,32 66,46 78,64"/><polyline points="48,32 34,52"/><polyline points="48,58 40,88"/><polyline points="48,58 58,88"/>'
+};
+
+/* Association exercice -> pictogramme, par mot-clé du nom. */
+const MOTS_PICTO=[
+  [/echauffement|tapis|course/,'tapis'],
+  [/pompes?\s*larges/,'pompes-larges'], [/pompes/,'pompes'],
+  [/dips/,'dips'],
+  [/traction.*supination/,'traction-sup'], [/traction/,'traction'],
+  [/chaise\s*romaine/,'chaise-rom'],
+  [/gainage.?lat/,'gainage-lat'], [/gainage/,'gainage'],
+  [/crunch|abdomin/,'crunch'],
+  [/superman/,'superman'],
+  [/biceps/,'biceps'], [/triceps/,'triceps'],
+  [/squat/,'squat'], [/flexion/,'flexion-lat'], [/mollets/,'mollets'],
+  [/abduction/,'abduction'], [/adduction/,'adduction'], [/pont/,'pont'],
+  [/etirement.*(jambe|cheville|mollet|ischio)/,'etirement-bs'],
+  [/etirement/,'etirement-ht']
+];
+function clePicto(exo){
+  if(!exo) return 'squat';
+  if(exo.picto && PICTOS[exo.picto]) return exo.picto;
+  const n=slug(exo.nom||'');
+  for(let i=0;i<MOTS_PICTO.length;i++) if(MOTS_PICTO[i][0].test(n)) return MOTS_PICTO[i][1];
+  /* repli par catégorie */
+  return {haut:'biceps',bas:'squat',abdo:'crunch',etirement:'etirement-ht',echauffement:'tapis'}[exo.categorie]||'squat';
+}
+function picto(exo,taille){
+  const k=clePicto(exo);
+  return '<span class="picto'+(taille?' '+taille:'')+'" aria-hidden="true">'+
+    '<svg viewBox="0 0 100 100">'+PICTOS[k]+'</svg></span>';
+}
 
 /* ============================================================
    5. SÉANCE EN COURS
@@ -643,9 +763,9 @@ const Seance = {
     const blocs=(modele.blocs||[]).filter(b=>DB.exercice(b.exerciceId));
     if(!blocs.length){ toast('Cette séance ne contient aucun exercice. Ajoute-lui des exercices depuis la bibliothèque.'); return; }
     this.active={
-      id:uid(), modeleId:modele.id, nom:modele.nom, type:modele.type,
-      debut:new Date().toISOString(), echauffementMin:modele.echauffementMin||0,
-      echauffementSec:0, blocs:blocs.map(b=>Object.assign({},b)), series:[]
+      id:uid(), modeleId:modele.id, nom:modele.nom,
+      debut:new Date().toISOString(),
+      blocs:blocs.map(b=>Object.assign({},b)), series:[]
     };
     this.iBloc=0; this.iSerie=1; this.progressions=[];
     /* Valeur proposée au compteur, par ordre de priorité :
@@ -658,29 +778,10 @@ const Seance = {
       b.derniereSaisie = (max!=null) ? max : DB.repsDepart(exo,b).val;
     });
     this._preparerSaisie(); Ecran.prendre(); ongletCourant='seance'; edition=null;
-    /* l'échauffement ne démarre PAS tout seul : le premier tap
-       lance le décompte et débloque l'audio du même geste. */
-    this.etat = this.active.echauffementMin>0 ? 'echauffement-pret' : 'pret';
+    this.etat='pret';
     this.persister(); rendre();
-    if(this.etat==='pret')
+    if(true)
       Voix.dire(modele.nom+'. '+this._exo().nom+', série 1 sur '+this._bloc().nbSeries+'.');
-  },
-
-  lancerEchauffement(){
-    const sec=this.active.echauffementMin*60;
-    this.etat='echauffement'; this.persister(); rendre();
-    Voix.gong();
-    Voix.dire('Échauffement, '+direDuree(sec)+', tapis de course.');
-    Chrono.lancer('chauffe',sec,{ surFin:()=>this.finEchauffement(false) });
-  },
-  finEchauffement(passe){
-    this.active.echauffementSec = passe ? Math.round(Chrono.ecouleSec()) : this.active.echauffementMin*60;
-    Chrono.arreter();
-    this.etat='pret'; this._preparerSaisie(); this.persister();
-    Voix.gong();
-    Voix.dire('Échauffement terminé. '+this._exo().nom+', série 1 sur '+this._bloc().nbSeries+
-      '. Objectif '+this._bloc().nbReps+' '+(this._exo().modeEffort==='temps'?'secondes':'répétitions')+'.');
-    rendre();
   },
 
   reprendre(){
@@ -693,8 +794,7 @@ const Seance = {
     const iSerie=Math.min(Math.max(1,s.iSerie|0),blocs[iBloc].nbSeries);
     this.active=s.active; this.iBloc=iBloc; this.iSerie=iSerie; this.progressions=[];
     /* on ne relance jamais un chrono tout seul au chargement */
-    this.etat = (s.etat==='echauffement'||s.etat==='echauffement-pret') ? 'echauffement-pret'
-      : (s.etat==='recup-termine' ? 'recup-termine' : 'pret');
+    this.etat = (s.etat==='recup-termine') ? 'recup-termine' : 'pret';
     this._preparerSaisie();
     return true;
   },
@@ -833,10 +933,10 @@ const Seance = {
       const bloc=this.active.blocs.find(b=>b.exerciceId===id);
       const regle=DB.regleEvolution(exo,bloc);
       if(!regle.plus||!regle.tous) return;
+      /* objectif atteint à CHAQUE série de cette séance : on progresse */
       const reussi=parExo[id].every(s=>s.repsRealisees>=s.repsObjectif);
-      exo.compteurReussites = reussi ? (exo.compteurReussites||0)+1 : 0;
-      if(reussi && exo.compteurReussites>=regle.tous){
-        exo.compteurReussites=0; exo.objReps+=regle.plus;
+      if(reussi){
+        exo.objReps+=regle.plus;
         const modele=DB.modele(this.active.modeleId);
         if(modele){ const bm=(modele.blocs||[]).find(b=>b.exerciceId===id); if(bm) bm.nbReps+=regle.plus; }
         this.progressions.push(exo.nom+' : objectif porté à '+exo.objReps+(exo.modeEffort==='temps'?' s':' reps'));
@@ -932,15 +1032,6 @@ function rafraichirCadran(){
 function etatCadran(){
   const C=552.9;
   if(!Seance.active) return {cls:'',mode:'',gros:'',sous:'',serie:'',arc:0};
-  if(Seance.etat==='echauffement-pret'||Seance.etat==='echauffement'){
-    const cible=Seance.active.echauffementMin*60;
-    const r=Seance.etat==='echauffement-pret'?cible:(Chrono.restantSec()==null?cible:Chrono.restantSec());
-    return {
-      cls:'chauffe'+(Seance.etat==='echauffement'&&r<=10?' alerte':''),
-      mode: Seance.etat==='echauffement-pret'?'Prêt à démarrer':(Chrono.enPause()?'Échauffement · en pause':'Échauffement'),
-      gros:mmss(r), sous:'sur '+Seance.active.echauffementMin+' min', serie:'', arc:C*(1-r/cible)
-    };
-  }
   const b=Seance._bloc(), exo=Seance._exo();
   if(!b||!exo) return {cls:'',mode:'',gros:'',sous:'',serie:'',arc:0};
   const parTemps=exo.modeEffort==='temps';
@@ -1000,12 +1091,11 @@ function rendre(){
     if(dernierePanne){ v.innerHTML=vuePanne(); return; }
     if(detailSeanceId){ v.innerHTML=vueDetailSeance(); return; }
     if(ecranParams){ v.innerHTML=vueParametres(); return; }
-    if(vueSpecialeCarto){ v.innerHTML=vueCartographie(); colorierCorps(); return; }
     if(vueSpecialeHisto){ v.innerHTML=vueHistorique(); return; }
     if(planif){ v.innerHTML=vuePlanificateur(); return; }
     if(ongletCourant==='seance') v.innerHTML = Seance.active?vueSeanceEnCours():vueListeSeances();
     else if(ongletCourant==='biblio') v.innerHTML = edition?vueEditeur():vueBiblio();
-    else if(ongletCourant==='accueil') v.innerHTML = vueAccueil();
+    else if(ongletCourant==='accueil'){ v.innerHTML = vueAccueil(); colorierCorps(); }
     else v.innerHTML = vuePlanif();
   }catch(err){ noterPanneSansBoucle(err); v.innerHTML=vuePanne(); }
 }
@@ -1015,7 +1105,9 @@ function noterPanneSansBoucle(err){
 function vuePanne(){
   return '<div class="panne"><h2>Quelque chose a cassé</h2>'+
     '<p style="margin:0;font-size:13.5px">Voici le message exact, à me transmettre tel quel.</p>'+
-    '<pre>'+esc(dernierePanne)+'</pre>'+
+    '<pre>'+esc(dernierePanne)+'\n\nonglet='+ongletCourant+
+    ' unite='+uniteCharge+'/'+uniteCarto+' filtre='+filtreCharge+
+    ' journal='+DB.journal.length+'</pre>'+
     '<button class="bouton discret" data-act="oublier-panne">Continuer quand même</button>'+
     '<button class="bouton danger" style="margin-top:8px" data-act="reset">Réinitialiser toutes les données</button></div>';
 }
@@ -1047,8 +1139,8 @@ function vueListeSeances(){
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">'+
       '<div style="min-width:0"><h3>'+esc(m.nom)+'</h3><div class="quand">'+
       (n?n+' exercice'+(n>1?'s':'')+' \u00B7 '+series+' séries':'Aucun exercice — à compléter')+
-      (m.echauffementMin?' \u00B7 échauffement '+m.echauffementMin+' min':'')+'</div></div>'+
-      '<span class="pastille '+m.type+'">'+CATEGORIES[m.type]+'</span></div>'+
+      '</div></div>'+
+      '<div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end">'+pastillesSeance(m)+'</div></div>'+
       '<div class="cmds">'+(n?'<button class="go" data-go="'+m.id+'">Débuter</button>':'')+
       '<button data-planifier="'+m.id+'">Planifier</button>'+
       '<button data-editer-s="'+m.id+'">Modifier</button></div></div>';
@@ -1074,7 +1166,7 @@ function listeExercices(){
   return boutonsFiltre(Object.keys(CAT_EXO),CAT_EXO)+
     '<button class="ajout" data-nouvel-exo="1">+ Créer un exercice</button>'+
     (liste.length ? liste.map(e=>
-      '<div class="ligne" data-editer-e="'+e.id+'"><div class="txt"><b>'+esc(e.nom)+'</b><span>'+
+      '<div class="ligne" data-editer-e="'+e.id+'">'+picto(e)+'<div class="txt"><b>'+esc(e.nom)+'</b><span>'+
       e.zone1.map(z=>GROUPES[z]).join(', ')+
       (e.zone2.length?' \u2192 '+e.zone2.map(z=>GROUPES[z]).join(', '):'')+
       ' \u00B7 '+e.objSeries+'\u00D7'+e.objReps+(e.modeEffort==='temps'?' s':'')+
@@ -1082,19 +1174,24 @@ function listeExercices(){
       : '<div class="vide"><p>Aucun exercice dans ce filtre.</p></div>');
 }
 function listeSeances(){
-  const liste=DB.modeles.filter(m=>filtreBiblio==='tous'||m.type===filtreBiblio);
+  const liste=DB.modeles.filter(m=>filtreBiblio==='tous'||DB.categoriesModele(m).indexOf(filtreBiblio)>=0);
   return boutonsFiltre(Object.keys(CATEGORIES),CATEGORIES)+
     '<button class="ajout" data-nouvelle-seance="1">+ Créer une séance</button>'+
     (liste.length ? liste.map(m=>{
       const n=(m.blocs||[]).length;
       return '<div class="ligne" data-editer-s="'+m.id+'"><div class="txt"><b>'+esc(m.nom)+'</b><span>'+
         (n?n+' exercice'+(n>1?'s':''):'vide')+
-        (m.echauffementMin?' \u00B7 échauffement '+m.echauffementMin+' min':'')+
-        '</span></div><span class="pastille '+m.type+'">'+CATEGORIES[m.type]+'</span>'+
+        '</span></div><span style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;max-width:44%">'+
+        pastillesSeance(m)+'</span>'+
         '<span class="fleche">\u203A</span></div>';
     }).join('') : '<div class="vide"><p>Aucune séance dans ce filtre.</p></div>');
 }
 
+function pastillesSeance(m){
+  const cats=DB.categoriesModele(m);
+  if(!cats.length) return '<span class="pastille">vide</span>';
+  return cats.map(c=>'<span class="pastille '+c+'">'+CATEGORIES[c]+'</span>').join(' ');
+}
 function vueEditeur(){ return edition.type==='exo'?editeurExercice():editeurSeance(); }
 
 /* --- page 3 : création / modification d'exercice --- */
@@ -1108,6 +1205,10 @@ function editeurExercice(){
   const utilise=d.id?DB.modelesUtilisant(d.id):[];
   return '<p class="etiquette">'+(edition.nouveau?'Nouvel exercice':'Modifier l’exercice')+'</p>'+
     '<div class="carte">'+
+    '<div class="exo-tete">'+picto(d,'grand')+
+    '<div style="min-width:0"><b style="font-size:16px;font-weight:700">'+
+    (esc(d.nom)||'Sans nom')+'</b><br><span style="font-size:12.5px;color:var(--texte-2)">'+
+    (CATEGORIES[d.categorie]||'')+'</span></div></div>'+
     '<div class="champ"><label>Nom</label><input data-champ="nom" value="'+esc(d.nom)+'" placeholder="Pompes serrées"></div>'+
     '<div class="champ"><label>Catégorie</label><select data-champ="categorie">'+optCat+'</select></div>'+
     '<div class="champ"><label>Type d’effort</label><select data-champ="modeEffort">'+
@@ -1137,12 +1238,11 @@ function editeurExercice(){
     'placeholder="par défaut : l’objectif ('+d.objReps+')" value="'+(d.repsInitiales==null?'':d.repsInitiales)+'">'+
     '<p class="aide">Valeur proposée au compteur la première fois. Ensuite, l’app reprend '+
     'automatiquement le maximum de ta dernière réalisation. Laisse vide pour partir de l’objectif.</p></div>'+
-    '<div class="champ"><label>Règle de progression</label><div class="trio" style="grid-template-columns:1fr auto 1fr;align-items:center">'+
+    '<div class="champ"><label>Règle de progression</label>'+
     '<input data-champ="evolPlus" data-num="1" type="number" inputmode="numeric" value="'+d.evolPlus+'">'+
-    '<span style="text-align:center;color:var(--texte-2);font-size:13px">toutes les</span>'+
-    '<input data-champ="evolToutesLesN" data-num="1" type="number" inputmode="numeric" value="'+d.evolToutesLesN+'"></div>'+
-    '<p class="aide">Ajouter ce nombre à l’objectif toutes les N séances où toutes les séries ont été réussies. '+
-    'Cette règle vaut partout où l’exercice apparaît ; chaque séance peut la remplacer. Mettre 0 pour ne pas progresser.</p></div>'+
+    '<p class="aide">Augmenter de ce nombre de répétitions si l’objectif est atteint à chaque série '+
+    'de la séance précédente. Cette règle vaut partout où l’exercice apparaît ; chaque séance peut la '+
+    'remplacer. Mettre 0 pour ne pas progresser.</p></div>'+
     '<div class="champ"><label>Remarque</label><textarea data-champ="remarque" rows="2" '+
     'placeholder="Diminuer l’écartement de 5 cm une fois 15 répétitions atteintes">'+esc(d.remarque)+'</textarea></div>'+
     '</div>'+
@@ -1156,8 +1256,6 @@ function editeurExercice(){
 /* --- page 4 : création / modification de séance --- */
 function editeurSeance(){
   const d=edition.data;
-  const optType=Object.keys(CATEGORIES).map(c=>
-    '<option value="'+c+'"'+(d.type===c?' selected':'')+'>'+CATEGORIES[c]+'</option>').join('');
   const optExos=Object.keys(CAT_EXO).map(cat=>
     '<optgroup label="'+CAT_EXO[cat]+'">'+
     DB.exercices.filter(e=>e.categorie===cat).sort((a,b)=>a.nom.localeCompare(b.nom,'fr'))
@@ -1170,10 +1268,10 @@ function editeurSeance(){
     const regle=DB.regleEvolution(exo,b);
     const pas=(champ,val,unite,step)=>
       '<div class="reglage" style="padding:8px 0"><span class="nom">'+champ.lib+'</span><span class="pas">'+
-      '<button data-inc="blocs.'+i+'.'+champ.cle+'" data-pas="'+(-step)+'" data-min="'+(champ.min||0)+'" data-unite="'+unite+'">\u2212</button>'+
+      '<button data-inc="blocs.'+i+'.'+champ.cle+'" data-pas="'+(-step)+'" data-min="'+(champ.min||0)+'" data-suffixe="'+unite+'">\u2212</button>'+
       '<span class="v">'+val+' '+unite+'</span>'+
-      '<button data-inc="blocs.'+i+'.'+champ.cle+'" data-pas="'+step+'" data-min="'+(champ.min||0)+'" data-unite="'+unite+'">+</button></span></div>';
-    return '<div class="bloc-exo"><div class="tete"><b>'+esc(exo.nom)+'</b><div class="mini">'+
+      '<button data-inc="blocs.'+i+'.'+champ.cle+'" data-pas="'+step+'" data-min="'+(champ.min||0)+'" data-suffixe="'+unite+'">+</button></span></div>';
+    return '<div class="bloc-exo"><div class="tete">'+picto(exo,'mini')+'<b>'+esc(exo.nom)+'</b><div class="mini">'+
       (i>0?'<button data-bloc-monter="'+i+'" aria-label="Monter">\u2191</button>':'')+
       (i<d.blocs.length-1?'<button data-bloc-descendre="'+i+'" aria-label="Descendre">\u2193</button>':'')+
       '<button data-bloc-dupliquer="'+i+'" aria-label="Dupliquer">\u29C9</button>'+
@@ -1191,11 +1289,11 @@ function editeurSeance(){
       '<input type="checkbox" data-surcharge="'+i+'"'+(surcharge?' checked':'')+' style="width:auto">'+
       'Règle de progression propre à cette séance</label>'+
       (surcharge
-        ? '<div class="trio" style="grid-template-columns:1fr auto 1fr;align-items:center;margin-top:8px">'+
-          '<input data-champ="blocs.'+i+'.evolPlus" data-num="1" type="number" inputmode="numeric" value="'+b.evolPlus+'">'+
-          '<span style="text-align:center;color:var(--texte-2);font-size:13px">toutes les</span>'+
-          '<input data-champ="blocs.'+i+'.evolToutesLesN" data-num="1" type="number" inputmode="numeric" value="'+b.evolToutesLesN+'"></div>'
-        : '<p class="aide">Hérite de l’exercice : '+(regle.plus?'+'+regle.plus+' toutes les '+regle.tous+' séances réussies':'aucune progression')+'.</p>')+
+        ? '<input data-champ="blocs.'+i+'.evolPlus" data-num="1" type="number" inputmode="numeric" '+
+          'style="margin-top:8px" value="'+b.evolPlus+'">'+
+          '<p class="aide">Répétitions ajoutées si l’objectif est atteint à chaque série.</p>'
+        : '<p class="aide">Hérite de l’exercice : '+(regle.plus?'+'+regle.plus+' répétition'+(regle.plus>1?'s':'')+
+          ' si l’objectif est atteint à chaque série de la séance précédente':'aucune progression')+'.</p>')+
       '</div>';
   }).join('');
 
@@ -1203,10 +1301,8 @@ function editeurSeance(){
   return '<p class="etiquette">'+(edition.nouveau?'Nouvelle séance':'Modifier la séance')+'</p>'+
     '<div class="carte">'+
     '<div class="champ"><label>Nom</label><input data-champ="nom" value="'+esc(d.nom)+'" placeholder="Routine Haut"></div>'+
-    '<div class="champ"><label>Type</label><select data-champ="type">'+optType+'</select></div>'+
-    '<div class="champ"><label>Échauffement (minutes, tapis de course)</label>'+
-    '<input data-champ="echauffementMin" data-num="1" type="number" inputmode="numeric" value="'+(d.echauffementMin||0)+'">'+
-    '<p class="aide">0 pour aucun échauffement. Sinon c’est une étape à part entière, avec son décompte annoncé.</p></div>'+
+    '<p class="aide">Les catégories de la séance se déduisent des exercices qu’elle contient : '+
+    (DB.categoriesModele(d).map(c=>CATEGORIES[c]).join(', ')||'aucun exercice pour l’instant')+'.</p>'+
     '</div>'+
     '<p class="etiquette" style="margin-top:20px">Exercices'+
     (total?' \u00B7 '+d.blocs.length+' exercice'+(d.blocs.length>1?'s':'')+', '+total+' séries':'')+'</p>'+
@@ -1225,25 +1321,6 @@ function editeurSeance(){
 function vueSeanceEnCours(){
   if(Seance.etat==='termine') return vueBilan();
   const a=Seance.active;
-
-  /* --- échauffement --- */
-  if(Seance.etat==='echauffement-pret'||Seance.etat==='echauffement'){
-    const premier=DB.exercice(a.blocs[0].exerciceId)||{nom:'?'};
-    const pret=Seance.etat==='echauffement-pret';
-    const action = pret
-      ? '<button class="bouton principal" data-act="lancer-chauffe">Débuter la séance</button>'+
-        '<button class="bouton discret" data-act="finChauffe">Passer l’échauffement</button>'
-      : '<div class="rangee">'+
-        '<button class="bouton discret" data-act="pause">'+(Chrono.enPause()?'Reprendre':'Pause')+'</button>'+
-        '<button class="bouton chauffe" data-act="finChauffe">Passer l’échauffement</button></div>';
-    return '<div class="fil"><span>Étape 1 sur '+(a.blocs.length+1)+' \u00B7 Échauffement</span><span>0 %</span></div>'+
-      '<div class="jauge"><i style="width:0%"></i></div>'+cadranHTML()+
-      '<h2 class="exo-nom">Tapis de course</h2>'+
-      '<p class="exo-meta">'+(pret?'Touche « Débuter la séance » pour lancer le décompte':'Mise en route')+'</p>'+
-      '<div class="zone-action">'+action+'</div>'+
-      '<div class="suite">Premier exercice : <b>'+esc(premier.nom)+'</b></div>'+
-      '<button class="bouton discret" style="margin-top:14px" data-act="terminer">Annuler la séance</button>';
-  }
 
   const b=Seance._bloc(), exo=Seance._exo();
   if(!b||!exo){ Seance.abandonner(); return vueListeSeances(); }
@@ -1293,16 +1370,17 @@ function vueSeanceEnCours(){
   return '<div class="fil"><span>Exercice '+(Seance.iBloc+1)+'/'+a.blocs.length+'</span>'+
     '<span>'+prog.pct+' %</span></div>'+
     '<div class="jauge"><i style="width:'+prog.pct+'%"></i></div>'+cadranHTML()+
+    '<div class="exo-tete">'+picto(exo)+'<div style="min-width:0">'+
     '<h2 class="exo-nom">'+esc(exo.nom)+'</h2>'+
     '<p class="exo-meta">'+exo.zone1.map(z=>GROUPES[z]).join(' \u00B7 ')+
-    (exo.zone2.length?' \u2192 '+exo.zone2.map(z=>GROUPES[z]).join(' \u00B7 '):'')+'</p>'+
+    (exo.zone2.length?' \u2192 '+exo.zone2.map(z=>GROUPES[z]).join(' \u00B7 '):'')+'</p></div></div>'+
     '<div class="zone-action">'+action+'</div>'+
     '<details class="reglages"><summary>Réglages de l’exercice</summary>'+
     reglageHTML('Écartement','ecartementCm',b.ecartementCm,'cm',1)+
     reglageHTML('Hauteur','hauteurCm',b.hauteurCm,'cm',1)+
     reglageHTML('Lestage','lestageKg',b.lestageKg,'kg',0.5)+
     '<div class="reglage"><span class="nom">Progression<br><span style="font-size:11.5px;color:var(--texte-3)">'+
-    (regle.plus?'+'+regle.plus+' toutes les '+regle.tous+' séances réussies':'aucune')+
+    (regle.plus?'+'+regle.plus+' rép. si objectif atteint à chaque série':'aucune')+
     ' \u00B7 '+(regle.herite?'héritée de l’exercice':'propre à cette séance')+'</span></span></div>'+
     (exo.remarque?'<div class="reglage"><span class="nom" style="font-size:13px">'+esc(exo.remarque)+'</span></div>':'')+
     '</details>'+
@@ -1361,7 +1439,9 @@ function ouvrirExo(id){
 function ouvrirSeance(id){
   const m=id?DB.modele(id):null;
   edition={type:'seance',nouveau:!m,
-    data:m?JSON.parse(JSON.stringify(m)):{id:null,nom:'',type:'mixte',echauffementMin:10,blocs:[]}};
+    data:m?JSON.parse(JSON.stringify(m)):{id:null,nom:'',blocs:[
+      {exerciceId:'exo-echauffement-tapis-de-course',nbSeries:1,nbReps:600,
+       recupSerieSec:0,recupFinSec:60,repsInitiales:null,evolPlus:null,evolToutesLesN:null}]}};
   ongletCourant='biblio'; ecranParams=false; detailSeanceId=null; rendre();
 }
 function sauverExo(){
@@ -1378,7 +1458,6 @@ function sauverExo(){
 function sauverSeance(){
   const d=edition.data;
   if(!String(d.nom).trim()){ toast('Donne un nom à la séance.'); return; }
-  d.echauffementMin=Math.max(0,parseInt(d.echauffementMin,10)||0);
   (d.blocs||[]).forEach(b=>{
     ['nbSeries','nbReps','recupSerieSec','recupFinSec'].forEach(k=>b[k]=Math.max(0,parseInt(b[k],10)||0));
     if(b.nbSeries<1) b.nbSeries=1;
@@ -1396,7 +1475,7 @@ function sauverSeance(){
    LOT 6 — STATISTIQUES : calculs
    ============================================================ */
 let ecranParams=false, detailSeanceId=null, moisAffiche=null, jourSelectionne=null;
-let vueSpecialeCarto=false, vueSpecialeHisto=false, filtreHisto='tous', limiteHisto=25;
+let vueSpecialeHisto=false, filtreHisto='tous', limiteHisto=25;
 let planif=null;   /* écran de planification : {modeleId,date,mode,jours,occurrences} */
 let periodeCharge='3m', filtreCharge='tous', semainesJournal=3, uniteCharge='reps', uniteCarto='reps';
 
@@ -1575,6 +1654,8 @@ function graphCharge(pts,unite){
    ============================================================ */
 function vueAccueil(){
   const sa=serieActivites();
+  /* garde-fou : jamais d'unité inconnue, quoi qu'il arrive en amont */
+  if(!UNITES[uniteCharge]) uniteCharge='reps';
   /* les étirements ne se lisent qu'en durée : on force l'unité */
   if(filtreCharge==='etirement') uniteCharge='temps';
   const pts=seancesPeriode(periodeCharge,filtreCharge,uniteCharge);
@@ -1649,11 +1730,9 @@ function vueAccueil(){
     '<div class="carte">'+lignesD+
     '<p class="aide" style="margin-top:8px">Comparaison avec la période précédente de même durée.</p></div>';
 
-  return blocSerie+blocCharge+blocJournal+blocPR+blocD+
+  return blocSerie+blocCharge+blocJournal+blocPR+blocD+blocCartographie()+
     '<button class="bouton discret" style="margin-top:20px" data-act="histo">'+
-    'Historique complet des séances \u203A</button>'+
-    '<button class="bouton discret" style="margin-top:8px" data-act="carto">'+
-    'Cartographie musculaire \u203A</button>';
+    'Historique complet des séances \u203A</button>';
 }
 
 function journalBulles(){
@@ -1709,7 +1788,7 @@ function ouvrirPlanificateur(modeleId, date){
   const d = date || jourSelectionne || new Date();
   planif={ modeleId:modeleId||'', date:isoJour(d), mode:'unique',
            jours:[(d.getDay()+6)%7], occurrences:8 };
-  ecranParams=false; detailSeanceId=null; vueSpecialeCarto=false; vueSpecialeHisto=false;
+  ecranParams=false; detailSeanceId=null; vueSpecialeHisto=false;
   ongletCourant='planif'; rendre();
 }
 
@@ -1801,11 +1880,11 @@ function vuePlanificateur(){
    HISTORIQUE DES SÉANCES
    ============================================================ */
 const TYPES_HISTO=[['tous','Toutes'],['haut','Haut'],['bas','Bas'],
-                   ['abdo','Abdo/Gainage'],['mixte','Mixte'],['etirement','Étirements']];
+                   ['abdo','Abdo/Gainage'],['etirement','Étirements']];
 
 function vueHistorique(){
   const toutes=DB.journal.slice().sort((a,b)=>new Date(b.debut)-new Date(a.debut));
-  const liste=toutes.filter(a=>filtreHisto==='tous'||a.type===filtreHisto);
+  const liste=toutes.filter(a=>filtreHisto==='tous'||DB.categoriesRealisee(a).indexOf(filtreHisto)>=0);
   const filtres='<div class="filtres">'+TYPES_HISTO.map(t=>
     '<button data-fhisto="'+t[0]+'" aria-pressed="'+(filtreHisto===t[0])+'">'+t[1]+'</button>').join('')+'</div>';
 
@@ -1893,7 +1972,7 @@ function vuePlanif(){
       '<div style="min-width:0"><h3>'+esc(p.nom||(m?m.nom:'Séance supprimée'))+'</h3>'+
       '<div class="quand"'+(d<a0?' style="color:var(--effort);font-weight:600"':'')+'>'+
       d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})+'</div></div>'+
-      (m?'<span class="pastille '+m.type+'">'+CATEGORIES[m.type]+'</span>':'')+'</div><div class="cmds">'+
+      (m?'<span style="display:flex;flex-wrap:wrap;gap:4px">'+pastillesSeance(m)+'</span>':'')+'</div><div class="cmds">'+
       (m&&(m.blocs||[]).length?'<button class="go" data-go="'+m.id+'">Débuter</button>':'')+
       '<button data-decaler="'+p.id+'" data-n="1">+1 jour</button>'+
       '<button data-decaler="'+p.id+'" data-n="7">+1 sem.</button>'+
@@ -1952,7 +2031,6 @@ function vueDetailSeance(){
     '<div class="carte stat-grille">'+
     [[mmss(a.dureeSec||0),'durée'],[totalReps,'répétitions'],[(a.series||[]).length,'séries']]
       .map(s=>'<div><div class="n">'+s[0]+'</div><div class="l">'+s[1]+'</div></div>').join('')+'</div>'+
-    (a.echauffementSec?'<p class="aide" style="margin-top:8px">Échauffement : '+mmss(a.echauffementSec)+'</p>':'')+
     blocs+
     '<button class="bouton danger" style="margin-top:20px" data-suppr-seance-journal="'+a.id+'">'+
     'Supprimer cette séance de l\u2019historique</button>';
@@ -1964,10 +2042,10 @@ function vueDetailSeance(){
    groupe ; la teinte est proportionnelle au volume travaillé.
    ============================================================ */
 function teinteVolume(part){
-  if(part<=0) return '';
-  /* rampe en trois paliers : sable, saumon, orange plein */
-  const p=Math.max(0.10,Math.min(1,Math.pow(part,0.7)));
-  const r=Math.round(252-(252-249)*p), g=Math.round(216-(216-78)*p), b=Math.round(186-(186-0)*p);
+  if(part<=0) return '';                 /* gris de repos, défini en CSS */
+  /* du gris de repos vers l'orange plein, en passant par le saumon */
+  const p=Math.max(0.12,Math.min(1,Math.pow(part,0.7)));
+  const r=Math.round(207+(249-207)*p), g=Math.round(214-(214-78)*p), b=Math.round(224-224*p);
   return 'rgb('+r+','+g+','+b+')';
 }
 function silhouetteFace(){
@@ -1981,39 +2059,41 @@ function silhouetteDos(){
     '</svg>';
 }
 
-function vueCartographie(){
+/* Bloc de cartographie, intégré à l'écran Statistiques.
+   Plus de sous-menu : la carte est visible d'emblée. */
+function blocCartographie(){
+  if(!UNITES[uniteCarto]) uniteCarto='reps';
   const sem=Math.max(1,DB.reglages.semainesCarto||4);
   const vol=volumeParGroupe(sem,uniteCarto);
   const max=Math.max(1,...Object.values(vol));
   const unite = uniteCarto==='temps' ? 'min' : 'rép.';
   const classement=Object.keys(GROUPES).map(g=>({g,v:Math.round(vol[g])})).sort((a,b)=>b.v-a.v);
+  const travailles=classement.filter(x=>x.v>0);
   const oublies=classement.filter(x=>x.v===0);
-  const lignes=classement.filter(x=>x.v>0).map(x=>
-    '<div class="delta"><span>'+GROUPES[x.g]+'</span>'+
-    '<span class="n">'+x.v+' <span style="color:var(--texte-3);font-weight:400">'+unite+'</span></span></div>').join('');
   const bU=['reps','temps'].map(u=>
     '<button data-ucarto="'+u+'" aria-selected="'+(uniteCarto===u)+'">'+UNITES[u].lib+'</button>').join('');
   const bS=[2,4,8,12].map(n=>
-    '<button data-carto="'+n+'" aria-pressed="'+(sem===n)+'">'+n+' semaines</button>').join('');
+    '<button data-carto="'+n+'" aria-pressed="'+(sem===n)+'">'+n+' sem.</button>').join('');
   const note = uniteCarto==='temps'
     ? 'Gainage et étirements uniquement, en minutes tenues.'
-    : 'Exercices en répétitions uniquement. Le gainage et les étirements ont leur propre carte, en durée.';
-  return '<button class="retour" data-act="fermer-carto">\u2039 Retour</button>'+
-    '<h2 style="font-weight:800;font-size:22px;letter-spacing:-.02em;margin:0 0 3px">Cartographie musculaire</h2>'+
-    '<p style="color:var(--texte-2);margin:0 0 12px;font-size:13.5px">'+
-    'Volume travaillé sur les '+sem+' dernières semaines.</p>'+
+    : 'Exercices en répétitions uniquement. Gainage et étirements ont leur propre carte, en durée.';
+  const detail = travailles.length
+    ? '<details class="reglages" style="margin-top:12px"><summary>Détail par groupe</summary>'+
+      travailles.map(x=>'<div class="reglage"><span class="nom">'+GROUPES[x.g]+'</span>'+
+        '<span class="pas"><span class="v">'+x.v+' '+unite+'</span></span></div>').join('')+'</details>'
+    : '';
+  return '<p class="etiquette" style="margin-top:22px">Cartographie musculaire \u00B7 '+sem+' semaines</p>'+
     '<div class="onglets">'+bU+'</div>'+
     '<div class="filtres">'+bS+'</div>'+
     '<div class="carte"><div class="corps" id="corps">'+silhouetteFace()+silhouetteDos()+'</div>'+
     '<div class="echelle"><span>0</span><span class="bande"></span><span>'+Math.round(max)+' '+unite+'</span></div>'+
     '<p class="aide" style="margin-top:8px">Groupe prioritaire compté à 100 %, secondaire à 50 %. '+note+'</p></div>'+
-    (oublies.length?'<div class="carte" style="margin-top:12px;border-color:var(--chauffe)">'+
+    (oublies.length?'<div class="carte" style="margin-top:10px;border-color:var(--chauffe)">'+
       '<p class="etiquette" style="color:var(--chauffe)">Non sollicités sur la période</p>'+
       '<p style="margin:0;font-size:14px">'+oublies.map(x=>GROUPES[x.g]).join(', ')+'</p></div>':'')+
-    '<p class="etiquette" style="margin-top:20px">Détail par groupe</p>'+
-    '<div class="carte">'+(lignes||'<p style="margin:0;color:var(--texte-2);font-size:13.5px">Rien sur la période dans cette unité.</p>')+'</div>';
+    detail;
 }
-/* colorisation après insertion dans le DOM */
+/* colorisation, appelée juste après l'insertion dans le DOM */
 function colorierCorps(){
   const c=document.getElementById('corps');
   if(!c) return;
@@ -2165,7 +2245,7 @@ document.addEventListener('click',ev=>{
 
     const onglet=c('#barre button');
     if(onglet){ ecranParams=false; detailSeanceId=null; jourSelectionne=null; planif=null;
-      vueSpecialeCarto=false; vueSpecialeHisto=false; aller(onglet.dataset.onglet); return; }
+      vueSpecialeHisto=false; aller(onglet.dataset.onglet); return; }
 
     /* --- détail d'une séance réalisée --- */
     const det=c('[data-detail]');
@@ -2197,11 +2277,12 @@ document.addEventListener('click',ev=>{
       rendre(); return;
     }
     const un=c('[data-unite]');
-    if(un){ uniteCharge=un.dataset.unite;
+    if(un && UNITES[un.dataset.unite]){ uniteCharge=un.dataset.unite;
       /* les étirements n'existent qu'en durée : on ne laisse pas un filtre orphelin */
       if(uniteCharge==='reps'&&filtreCharge==='etirement') filtreCharge='tous';
       rendre(); return; }
-    const uc=c('[data-ucarto]'); if(uc){ uniteCarto=uc.dataset.ucarto; rendre(); return; }
+    const uc=c('[data-ucarto]');
+    if(uc && UNITES[uc.dataset.ucarto]){ uniteCarto=uc.dataset.ucarto; rendre(); return; }
     const ca=c('[data-carto]');
     if(ca){ DB.reglages.semainesCarto=+ca.dataset.carto; DB.sauver('reglages'); rendre(); return; }
 
@@ -2245,7 +2326,7 @@ document.addEventListener('click',ev=>{
       const v=Math.max(min,(parseFloat(lireChemin(edition.data,ch))||0)+pas);
       ecrireChemin(edition.data,ch,v);
       const n=inc.parentNode.querySelector('.v');
-      if(n) n.textContent=v+' '+(inc.dataset.unite||'');
+      if(n) n.textContent=v+' '+(inc.dataset.suffixe||'');
       return;
     }
     const bm=c('[data-bloc-monter]'); if(bm&&edition){ const i=+bm.dataset.blocMonter,a=edition.data.blocs;
@@ -2288,9 +2369,7 @@ document.addEventListener('click',ev=>{
         case 'sauver-exo':     sauverExo(); break;
         case 'sauver-seance':  sauverSeance(); break;
         case 'plus-semaines':  semainesJournal+=3; rendre(); break;
-        case 'carto':          vueSpecialeCarto=true; vueSpecialeHisto=false; rendre(); break;
-        case 'fermer-carto':   vueSpecialeCarto=false; rendre(); break;
-        case 'histo':          vueSpecialeHisto=true; vueSpecialeCarto=false; limiteHisto=25; rendre(); break;
+        case 'histo':          vueSpecialeHisto=true; limiteHisto=25; rendre(); break;
         case 'fermer-histo':   vueSpecialeHisto=false; rendre(); break;
         case 'plus-histo':     limiteHisto+=25; rendre(); break;
         case 'fermer-params':  ecranParams=false; rendre(); break;
