@@ -302,6 +302,8 @@ details.reglages[open] summary::after{content:"\2013"}
 .picto.mini svg{width:28px;height:28px}
 .picto.grand{width:64px;height:64px;border-radius:16px}
 .picto.grand svg{width:52px;height:52px}
+.picto.photo{background:#fff;box-shadow:inset 0 0 0 1px var(--filet)}
+.picto.photo img{width:100%;height:100%;object-fit:cover;object-position:50% 52%;display:block}
 .exo-tete{display:flex;align-items:center;gap:12px;margin-bottom:6px}
 .exo-tete .exo-nom{margin:0}
 .mois-tete{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
@@ -1316,10 +1318,26 @@ function clePicto(exo){
   return {haut:'biceps-curl',bas:'squat',abdo:'crunch',etirement:'stretch-shoulder',
           echauffement:'treadmill',course:'run-easy'}[exo.categorie]||'squat';
 }
-function picto(exo,taille){
+function pictoVectoriel(exo,taille){
   const k=clePicto(exo);
   return '<span class="picto'+(taille?' '+taille:'')+'" aria-hidden="true">'+
     '<svg viewBox="0 0 100 100">'+PICTOS[k]+'</svg></span>';
+}
+function picto(exo,taille){
+  const ref = exo && taille!=='guide' ? GUIDE_IMAGES[exo.id] : null;
+  if(!ref) return pictoVectoriel(exo,taille);
+  return '<span class="picto photo'+(taille?' '+taille:'')+'" data-exo="'+esc(exo.id)+'" aria-hidden="true">'+
+    '<img loading="lazy" decoding="async" onerror="vignetteRepli(this)" alt="" src="'+esc(ref.phase2)+'">'+
+    '</span>';
+}
+/* Même principe que pour le guide : une vignette introuvable retombe
+   sur le dessin vectoriel plutôt que d'afficher un cadre cassé. */
+function vignetteRepli(img){
+  const boite=img&&img.parentNode;
+  const exo=boite&&boite.dataset?DB.exercice(boite.dataset.exo||''):null;
+  if(!boite||!exo) return;
+  boite.classList.remove('photo');
+  boite.innerHTML='<svg viewBox="0 0 100 100">'+PICTOS[clePicto(exo)]+'</svg>';
 }
 /* ------------------------------------------------------------
    Les illustrations actuelles portent leur propre légende
