@@ -1335,6 +1335,44 @@ function picto(exo,taille){
 const LEGENDE_DANS_IMAGE = true;
 
 const GUIDE_IMAGES={"exo-pompes-serrees":{"phase1":"pompes-serrees-phase-1.webp","phase2":"pompes-serrees-phase-2.webp","alt":"pompes serrees"},"exo-pompes-larges":{"phase1":"pompes-larges-phase-1.webp","phase2":"pompes-larges-phase-2.webp","alt":"pompes larges"},"exo-dips":{"phase1":"dips-phase-1.webp","phase2":"dips-phase-2.webp","alt":"dips"},"exo-traction-pronation-serree":{"phase1":"traction-pronation-serree-phase-1.webp","phase2":"traction-pronation-serree-phase-2.webp","alt":"traction pronation serree"},"exo-traction-pronation-large":{"phase1":"traction-pronation-large-phase-1.webp","phase2":"traction-pronation-large-phase-2.webp","alt":"traction pronation large"},"exo-traction-supination-serree":{"phase1":"traction-supination-serree-phase-1.webp","phase2":"traction-supination-serree-phase-2.webp","alt":"traction supination serree"},"exo-traction-supination-large":{"phase1":"traction-supination-large-phase-1.webp","phase2":"traction-supination-large-phase-2.webp","alt":"traction supination large"},"exo-squat":{"phase1":"squat-phase-1.webp","phase2":"squat-phase-2.webp","alt":"squat"},"exo-crunch":{"phase1":"crunch-phase-1.webp","phase2":"crunch-phase-2.webp","alt":"crunch"},"exo-gainage-horizontal":{"phase1":"gainage-horizontal-phase-1.webp","phase2":"gainage-horizontal-phase-2.webp","alt":"gainage horizontal"},"exo-biceps":{"phase1":"biceps-phase-1.webp","phase2":"biceps-phase-2.webp","alt":"biceps"},"exo-triceps":{"phase1":"triceps-phase-1.webp","phase2":"triceps-phase-2.webp","alt":"triceps"},"exo-superman":{"phase1":"superman-phase-1.webp","phase2":"superman-phase-2.webp","alt":"superman"},"exo-flexion-laterale":{"phase1":"flexion-laterale-phase-1.webp","phase2":"flexion-laterale-phase-2.webp","alt":"flexion laterale"},"exo-mollets":{"phase1":"mollets-phase-1.webp","phase2":"mollets-phase-2.webp","alt":"mollets"},"exo-abduction-hanche":{"phase1":"abduction-hanche-phase-1.webp","phase2":"abduction-hanche-phase-2.webp","alt":"abduction hanche"},"exo-adduction-hanche":{"phase1":"adduction-hanche-phase-1.webp","phase2":"adduction-hanche-phase-2.webp","alt":"adduction hanche"},"exo-pont":{"phase1":"pont-phase-1.webp","phase2":"pont-phase-2.webp","alt":"pont"},"exo-abdominaux-chaise-romaine":{"phase1":"abdominaux-chaise-romaine-phase-1.webp","phase2":"abdominaux-chaise-romaine-phase-2.webp","alt":"abdominaux chaise romaine"},"exo-gainage-lateral":{"phase1":"gainage-lateral-phase-1.webp","phase2":"gainage-lateral-phase-2.webp","alt":"gainage lateral"},"exo-echauffement-tapis-de-course":{"phase1":"echauffement-tapis-phase-1.webp","phase2":"echauffement-tapis-phase-2.webp","alt":"echauffement tapis"},"exo-course-a-pied-en-endurance":{"phase1":"course-endurance-phase-1.webp","phase2":"course-endurance-phase-2.webp","alt":"course endurance"},"exo-course-a-pied-allure-marathon":{"phase1":"course-marathon-phase-1.webp","phase2":"course-marathon-phase-2.webp","alt":"course marathon"},"exo-course-a-pied-allure-semi-marathon":{"phase1":"course-semi-marathon-phase-1.webp","phase2":"course-semi-marathon-phase-2.webp","alt":"course semi marathon"},"exo-course-a-pied-allure-10-km":{"phase1":"course-10-km-phase-1.webp","phase2":"course-10-km-phase-2.webp","alt":"course 10 km"},"exo-course-a-pied-allure-vma":{"phase1":"course-vma-phase-1.webp","phase2":"course-vma-phase-2.webp","alt":"course vma"},"exo-course-a-pied-sprint":{"phase1":"course-sprint-phase-1.webp","phase2":"course-sprint-phase-2.webp","alt":"course sprint"},"exo-etirement-dos":{"phase1":"etirement-dos-phase-1.webp","phase2":"etirement-dos-phase-2.webp","alt":"etirement dos"},"exo-etirement-epaule":{"phase1":"etirement-epaule-phase-1.webp","phase2":"etirement-epaule-phase-2.webp","alt":"etirement epaule"},"exo-etirement-bras":{"phase1":"etirement-bras-phase-1.webp","phase2":"etirement-bras-phase-2.webp","alt":"etirement bras"}};
+/* Les trente-trois paires produites pour le programme course à pied.
+   Fichiers à la racine du dépôt, comme les trente premières. */
+Object.assign(GUIDE_IMAGES, {
+ "exo-demi-squat-barre":{"phase1":"demi-squat-barre-phase-1.webp","phase2":"demi-squat-barre-phase-2.webp","alt":"demi squat barre"},
+ "exo-goblet-squat":{"phase1":"goblet-squat-phase-1.webp","phase2":"goblet-squat-phase-2.webp","alt":"goblet squat"},
+ "exo-souleve-de-terre-roumain":{"phase1":"souleve-de-terre-roumain-phase-1.webp","phase2":"souleve-de-terre-roumain-phase-2.webp","alt":"souleve de terre roumain"},
+ "exo-souleve-de-terre-barre-hexagonale":{"phase1":"souleve-de-terre-barre-hexagonale-phase-1.webp","phase2":"souleve-de-terre-barre-hexagonale-phase-2.webp","alt":"souleve de terre barre hexagonale"},
+ "exo-hip-thrust":{"phase1":"hip-thrust-phase-1.webp","phase2":"hip-thrust-phase-2.webp","alt":"hip thrust"},
+ "exo-fente-arriere-chargee":{"phase1":"fente-arriere-chargee-phase-1.webp","phase2":"fente-arriere-chargee-phase-2.webp","alt":"fente arriere chargee"},
+ "exo-fente-bulgare":{"phase1":"fente-bulgare-phase-1.webp","phase2":"fente-bulgare-phase-2.webp","alt":"fente bulgare"},
+ "exo-squat-overhead":{"phase1":"squat-overhead-phase-1.webp","phase2":"squat-overhead-phase-2.webp","alt":"squat overhead"},
+ "exo-mollets-debout-jambe-tendue":{"phase1":"mollets-debout-jambe-tendue-phase-1.webp","phase2":"mollets-debout-jambe-tendue-phase-2.webp","alt":"mollets debout jambe tendue"},
+ "exo-mollets-assis-genou-flechi":{"phase1":"mollets-assis-genou-flechi-phase-1.webp","phase2":"mollets-assis-genou-flechi-phase-2.webp","alt":"mollets assis genou flechi"},
+ "exo-isometrie-mollet-unilateral":{"phase1":"isometrie-mollet-unilateral-phase-1.webp","phase2":"isometrie-mollet-unilateral-phase-2.webp","alt":"isometrie mollet unilateral"},
+ "exo-nordic-curl":{"phase1":"nordic-curl-phase-1.webp","phase2":"nordic-curl-phase-2.webp","alt":"nordic curl"},
+ "exo-pogo-hops":{"phase1":"pogo-hops-phase-1.webp","phase2":"pogo-hops-phase-2.webp","alt":"pogo hops"},
+ "exo-sauts-verticaux":{"phase1":"sauts-verticaux-phase-1.webp","phase2":"sauts-verticaux-phase-2.webp","alt":"sauts verticaux"},
+ "exo-bondissements":{"phase1":"bondissements-phase-1.webp","phase2":"bondissements-phase-2.webp","alt":"bondissements"},
+ "exo-rowing-haltere-un-bras":{"phase1":"rowing-haltere-un-bras-phase-1.webp","phase2":"rowing-haltere-un-bras-phase-2.webp","alt":"rowing haltere un bras"},
+ "exo-developpe-militaire-halteres":{"phase1":"developpe-militaire-halteres-phase-1.webp","phase2":"developpe-militaire-halteres-phase-2.webp","alt":"developpe militaire halteres"},
+ "exo-elevations-laterales":{"phase1":"elevations-laterales-phase-1.webp","phase2":"elevations-laterales-phase-2.webp","alt":"elevations laterales"},
+ "exo-rotateurs-externes-elastique":{"phase1":"rotateurs-externes-elastique-phase-1.webp","phase2":"rotateurs-externes-elastique-phase-2.webp","alt":"rotateurs externes elastique"},
+ "exo-curl-up-mcgill":{"phase1":"curl-up-mcgill-phase-1.webp","phase2":"curl-up-mcgill-phase-2.webp","alt":"curl up mcgill"},
+ "exo-bird-dog":{"phase1":"bird-dog-phase-1.webp","phase2":"bird-dog-phase-2.webp","alt":"bird dog"},
+ "exo-pallof-press":{"phase1":"pallof-press-phase-1.webp","phase2":"pallof-press-phase-2.webp","alt":"pallof press"},
+ "exo-copenhagen-adduction":{"phase1":"copenhagen-adduction-phase-1.webp","phase2":"copenhagen-adduction-phase-2.webp","alt":"copenhagen adduction"},
+ "exo-releve-de-genoux-suspendu":{"phase1":"releve-de-genoux-suspendu-phase-1.webp","phase2":"releve-de-genoux-suspendu-phase-2.webp","alt":"releve de genoux suspendu"},
+ "exo-corde-a-sauter":{"phase1":"corde-a-sauter-phase-1.webp","phase2":"corde-a-sauter-phase-2.webp","alt":"corde a sauter"},
+ "exo-charniere-de-hanche-au-baton":{"phase1":"charniere-de-hanche-au-baton-phase-1.webp","phase2":"charniere-de-hanche-au-baton-phase-2.webp","alt":"charniere de hanche au baton"},
+ "exo-mobilite-cheville-au-mur":{"phase1":"mobilite-cheville-au-mur-phase-1.webp","phase2":"mobilite-cheville-au-mur-phase-2.webp","alt":"mobilite cheville au mur"},
+ "exo-mobilite-hanche-fente-haute":{"phase1":"mobilite-hanche-fente-haute-phase-1.webp","phase2":"mobilite-hanche-fente-haute-phase-2.webp","alt":"mobilite hanche fente haute"},
+ "exo-rotations-thoraciques":{"phase1":"rotations-thoraciques-phase-1.webp","phase2":"rotations-thoraciques-phase-2.webp","alt":"rotations thoraciques"},
+ "exo-monster-walk-elastique":{"phase1":"monster-walk-elastique-phase-1.webp","phase2":"monster-walk-elastique-phase-2.webp","alt":"monster walk elastique"},
+ "exo-etirement-jambes":{"phase1":"etirement-jambes-phase-1.webp","phase2":"etirement-jambes-phase-2.webp","alt":"etirement jambes"},
+ "exo-etirement-chevilles":{"phase1":"etirement-chevilles-phase-1.webp","phase2":"etirement-chevilles-phase-2.webp","alt":"etirement chevilles"},
+ "exo-etirement-cou":{"phase1":"etirement-cou-phase-1.webp","phase2":"etirement-cou-phase-2.webp","alt":"etirement cou"}
+});
+
 function phrasesTexte(txt,max){
   return String(txt||'').replace(/\s+/g,' ').split(/(?:\.\s+|;\s+|\n+)/)
     .map(s=>s.trim()).filter(Boolean).map(s=>s.replace(/[. ]+$/,'')).slice(0,max||99);
@@ -1344,7 +1382,42 @@ function listeTexteHTML(txt,max){
   if(!it.length) return '';
   return '<ul>'+it.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>';
 }
+/* Libellés de phase propres à un exercice, alignés sur les badges
+   incrustés dans les illustrations. */
+const GUIDE_TITRES_EXO={
+ 'exo-demi-squat-barre':['Position initiale','Descente à mi-course'],
+ 'exo-goblet-squat':['Position initiale','Descente contrôlée'],
+ 'exo-souleve-de-terre-roumain':['Position haute','Charnière de hanche'],
+ 'exo-souleve-de-terre-barre-hexagonale':['Position de départ','Extension complète'],
+ 'exo-hip-thrust':['Position basse','Extension de hanche'],
+ 'exo-fente-arriere-chargee':['Position debout','Fente arrière'],
+ 'exo-fente-bulgare':['Position de départ','Descente'],
+ 'exo-squat-overhead':['Barre verrouillée','Descente'],
+ 'exo-mollets-debout-jambe-tendue':['Talon bas','Extension complète'],
+ 'exo-mollets-assis-genou-flechi':['Talon bas','Montée sur pointes'],
+ 'exo-isometrie-mollet-unilateral':['Mise en place','Position tenue'],
+ 'exo-nordic-curl':['Position haute','Descente excentrique'],
+ 'exo-pogo-hops':['Contact au sol','Rebond'],
+ 'exo-sauts-verticaux':['Contre-mouvement','Suspension'],
+ 'exo-bondissements':['Appui','Suspension'],
+ 'exo-rowing-haltere-un-bras':['Bras tendu','Tirage'],
+ 'exo-developpe-militaire-halteres':['Haltères aux épaules','Poussée verticale'],
+ 'exo-elevations-laterales':['Bras le long du corps','Élévation'],
+ 'exo-rotateurs-externes-elastique':['Avant-bras rentré','Rotation externe'],
+ 'exo-curl-up-mcgill':['Position initiale','Décollement des épaules'],
+ 'exo-bird-dog':['Quadrupédie','Extension croisée'],
+ 'exo-pallof-press':['Mains au sternum','Bras tendus'],
+ 'exo-copenhagen-adduction':['Position basse','Bassin aligné'],
+ 'exo-releve-de-genoux-suspendu':['Suspension active','Genoux à hauteur de hanches'],
+ 'exo-corde-a-sauter':['Contact au sol','Rebond'],
+ 'exo-charniere-de-hanche-au-baton':['Trois appuis','Charnière'],
+ 'exo-mobilite-cheville-au-mur':['Position de départ','Genou vers le mur'],
+ 'exo-mobilite-hanche-fente-haute':['Mise en place','Bassin avancé'],
+ 'exo-rotations-thoraciques':['Coude rentré','Ouverture thoracique'],
+ 'exo-monster-walk-elastique':['Position basse','Pas latéral']
+};
 function guideTitres(exo){
+  if(GUIDE_TITRES_EXO[exo.id]) return GUIDE_TITRES_EXO[exo.id];
   const k=clePicto(exo);
   const exact={
     'roman-chair-leg-raise':['Position initiale','Flexion des hanches'],
@@ -1402,15 +1475,25 @@ function guideVisuelImage(exo,ref){
   const legende=(!LEGENDE_DANS_IMAGE && muscles.length)
     ? '<div class="guide-legend">'+muscles.map(m=>'<span><i class="'+m.cls+'"></i>'+esc(m.nom)+'</span>').join('')+'</div>'
     : '';
-  return '<div class="guide-hero guide-realiste">'+
+  return '<div class="guide-hero guide-realiste" data-exo="'+esc(exo.id)+'">'+
     '<div class="guide-motion" role="img" aria-label="Démonstration animée : '+esc(exo.nom)+'">'+
-      '<img class="phase-1" loading="lazy" decoding="async" src="'+esc(ref.phase1)+'" alt="Position initiale : '+esc(exo.nom)+'">'+
-      '<img class="phase-2" loading="lazy" decoding="async" src="'+esc(ref.phase2)+'" alt="Phase active : '+esc(exo.nom)+'">'+
+      '<img class="phase-1" loading="lazy" decoding="async" onerror="guideRepli(this)" src="'+esc(ref.phase1)+'" alt="Position initiale : '+esc(exo.nom)+'">'+
+      '<img class="phase-2" loading="lazy" decoding="async" onerror="guideRepli(this)" src="'+esc(ref.phase2)+'" alt="Phase active : '+esc(exo.nom)+'">'+
     '</div>'+
     (LEGENDE_DANS_IMAGE ? '' : '<div class="guide-motion-state"><i></i><b>Position initiale</b><span>\u2192</span><b>Phase active</b><i></i></div>')+
     legende+
     '<p class="guide-note">Les deux phases alternent automatiquement pour visualiser le mouvement. L’animation est désactivée lorsque le réglage système « réduire les animations » est actif.</p>'+
   '</div>';
+}
+/* Une illustration introuvable ne doit pas casser la fiche : on
+   remplace le bloc animé par le guide vectoriel, qui ne dépend
+   d'aucun fichier externe. */
+function guideRepli(img){
+  const hero=img&&img.closest?img.closest('.guide-hero'):null;
+  if(!hero||hero.dataset.repli) return;
+  hero.dataset.repli='1';
+  const exo=DB.exercice(hero.dataset.exo||'');
+  if(exo) hero.outerHTML=guideVisuelVectoriel(exo);
 }
 function ficheExerciceHTML(exo,ouverte){
   if(!exo || !(exo.description||exo.execution||exo.erreurs)) return '';
