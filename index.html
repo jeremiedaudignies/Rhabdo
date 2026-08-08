@@ -533,8 +533,45 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7
 
 const FICHES_EXERCICES = {"echauffement-tapis-de-course": {"picto": "treadmill", "description": "Mise en route progressive destinée à augmenter la température corporelle et à préparer les articulations avant les exercices plus intenses.", "execution": "Commencez par une marche active, puis augmentez doucement l’allure. Gardez une foulée souple, le buste droit et les épaules relâchées.", "erreurs": "Démarrer trop vite, s’agripper aux poignées ou transformer l’échauffement en séance difficile."}, "course-a-pied-en-endurance": {"picto": "run-easy", "description": "Course continue facile, réalisée à une intensité permettant de parler par phrases et de conserver une respiration maîtrisée.", "execution": "Adoptez une allure régulière et confortable. Restez relâché, regardez loin devant et laissez la durée, plutôt que la vitesse, guider l’effort.", "erreurs": "Accélérer progressivement sans s’en rendre compte, courir crispé ou chercher une allure cible au détriment de l’aisance."}, "course-a-pied-allure-marathon": {"picto": "run-marathon", "description": "Travail à l’allure spécifique visée sur marathon, soutenue mais contrôlée, destiné à améliorer l’économie de course et la tenue d’allure.", "execution": "Stabilisez rapidement l’allure cible et conservez une foulée économique. Pour les blocs longs, entraînez également l’hydratation et le ravitaillement prévus en compétition.", "erreurs": "Partir plus vite que l’allure prévue, négliger l’échauffement ou prolonger le bloc lorsque la technique se dégrade nettement."}, "course-a-pied-allure-semi-marathon": {"picto": "run-half", "description": "Course à une intensité proche de l’allure semi-marathon, exigeante mais régulière, généralement organisée en blocs séparés par une récupération courte.", "execution": "Après un échauffement complet, installez une allure stable. Gardez le haut du corps relâché et terminez le bloc avec une technique encore propre.", "erreurs": "Courir le premier bloc comme un 10 km, raccourcir excessivement les récupérations ou ignorer une dérive cardiaque inhabituelle."}, "course-a-pied-allure-10-km": {"picto": "run-10k", "description": "Travail spécifique à l’allure 10 km, proche du seuil haut, pour développer la capacité à maintenir une vitesse soutenue sans désorganisation technique.", "execution": "Réalisez un échauffement progressif, puis courez les répétitions à allure homogène. Conservez une cadence fluide et une respiration rythmée.", "erreurs": "Sprinter au départ, courir chaque répétition plus vite que la précédente ou finir avec une posture affaissée."}, "course-a-pied-allure-vma": {"picto": "run-vma", "description": "Intervalles rapides sollicitant fortement la puissance aérobie, alternés avec des récupérations suffisantes pour préserver la qualité des répétitions.", "execution": "Échauffez-vous soigneusement avec quelques accélérations. Courez vite mais relâché, à vitesse régulière, puis récupérez en trottinant ou en marchant selon le format.", "erreurs": "Partir au sprint, réduire la récupération au point de perdre la technique ou augmenter simultanément vitesse et volume."}, "course-a-pied-sprint": {"picto": "run-sprint", "description": "Effort très bref et quasi maximal visant la vitesse, la coordination et la capacité d’accélération, avec récupération presque complète.", "execution": "Après un échauffement long, accélérez progressivement sur les premiers appuis puis restez gainé et relâché. Arrêtez la répétition dès que la vitesse chute nettement.", "erreurs": "Sprinter à froid, se crisper, multiplier les répétitions fatiguées ou pratiquer sur un sol glissant."}, "pompes-serrees": {"picto": "pushup-narrow", "description": "Variante de pompe au poids du corps qui conserve le travail des pectoraux tout en augmentant la participation des triceps.", "execution": "Placez les mains sous les épaules ou légèrement plus serrées. Gardez le corps aligné, descendez en contrôlant avec les coudes proches du buste, puis repoussez le sol.", "erreurs": "Écarter les coudes, laisser tomber le bassin, avancer la tête ou raccourcir systématiquement l’amplitude.", "sourceLabel": "", "sourceUrl": ""}, "pompes-larges": {"picto": "pushup-wide", "description": "Pompe avec les mains plus écartées que les épaules, accentuant le travail des pectoraux tout en exigeant un gainage solide.", "execution": "Écartez les mains sans dépasser une position confortable pour les épaules. Descendez la poitrine entre les appuis, corps aligné, puis poussez sans verrouillage brutal.", "erreurs": "Choisir un écartement extrême, hausser les épaules, creuser les lombaires ou rebondir en bas du mouvement.", "sourceLabel": "", "sourceUrl": ""}, "dips": {"picto": "dips", "description": "Mouvement de poussée verticale au poids du corps sollicitant principalement les triceps et les pectoraux, avec une forte demande de stabilité scapulaire.", "execution": "Verrouillez les épaules vers le bas, descendez de façon contrôlée jusqu’à une amplitude confortable, puis repoussez les barres sans balancer les jambes.", "erreurs": "S’effondrer entre les épaules, descendre au-delà de sa mobilité, écarter excessivement les coudes ou donner un coup de jambes.", "sourceLabel": "", "sourceUrl": ""}, "traction-pronation-serree": {"picto": "pullup-pron-narrow", "description": "Traction paumes tournées vers l’avant, avec prise relativement serrée, mobilisant le dos et les bras sur une grande amplitude.", "execution": "Partez bras tendus et corps gainé. Abaissez d’abord les omoplates, puis tirez les coudes vers le bas jusqu’à approcher la poitrine de la barre; contrôlez la descente.", "erreurs": "Se balancer, tirer uniquement avec les bras, avancer le menton ou relâcher brutalement la phase descendante.", "sourceLabel": "", "sourceUrl": ""}, "traction-pronation-large": {"picto": "pullup-pron-wide", "description": "Traction en pronation avec une prise plus large que les épaules, orientée vers le travail du grand dorsal et de la ceinture scapulaire.", "execution": "Choisissez une largeur qui permet de garder les épaules confortables. Restez gainé, tirez la poitrine vers la barre et redescendez jusqu’aux bras tendus sans perdre le contrôle.", "erreurs": "Prise excessivement large, demi-amplitude, épaules remontées vers les oreilles ou balancement du bassin.", "sourceLabel": "", "sourceUrl": ""}, "traction-supination-serree": {"picto": "pullup-sup-narrow", "description": "Traction paumes tournées vers soi, prise serrée, qui associe le travail du dos à une participation importante des biceps.", "execution": "Suspendez-vous corps gainé, initiez le mouvement par les omoplates puis tirez les coudes vers les côtes. Montez sans casser les poignets et contrôlez le retour.", "erreurs": "Lancer les jambes, arrondir les épaules, casser les poignets ou transformer le mouvement en curl incomplet.", "sourceLabel": "", "sourceUrl": ""}, "traction-supination-large": {"picto": "pullup-sup-wide", "description": "Variante en supination avec prise élargie; elle reste un mouvement de dos et de bras mais demande davantage de mobilité aux épaules et aux poignets.", "execution": "N’utilisez qu’une largeur confortable. Gardez les abdominaux engagés, montez sans élan et redescendez lentement jusqu’à l’extension complète des bras.", "erreurs": "Forcer une largeur douloureuse, laisser les épaules partir vers l’avant, se balancer ou négliger la descente.", "sourceLabel": "", "sourceUrl": ""}, "biceps": {"picto": "biceps-curl", "description": "Exercice de flexion du coude destiné au biceps brachial et au brachial, réalisé ici comme un curl avec haltères.", "execution": "Tenez-vous droit, coudes proches du corps. Fléchissez les avant-bras sans avancer les épaules, marquez la contraction puis redescendez lentement.", "erreurs": "Prendre de l’élan avec le dos, déplacer les coudes, casser les poignets ou laisser tomber la charge.", "sourceLabel": "", "sourceUrl": ""}, "triceps": {"picto": "triceps-overhead", "description": "Extension au-dessus de la tête qui isole le triceps, notamment sa longue portion placée en position étirée.", "execution": "Gardez le tronc gainé et les coudes orientés vers l’avant. Fléchissez les coudes pour descendre la charge derrière la tête, puis tendez les bras sans déplacer les épaules.", "erreurs": "Écarter les coudes, cambrer fortement, utiliser une charge incontrôlable ou verrouiller brutalement l’articulation.", "sourceLabel": "", "sourceUrl": ""}, "superman": {"picto": "superman", "description": "Extension au sol sollicitant la chaîne postérieure, notamment les muscles lombaires et les fessiers, en répétitions ou en maintien isométrique.", "execution": "Allongez-vous sur le ventre, bras tendus. Soulevez légèrement bras, poitrine et jambes en gardant la nuque neutre, puis revenez lentement au sol.", "erreurs": "Chercher une hauteur excessive, jeter la tête en arrière, retenir sa respiration ou créer un mouvement saccadé.", "sourceLabel": "", "sourceUrl": ""}, "squat": {"picto": "squat", "description": "Mouvement polyarticulaire de flexion des jambes sollicitant principalement les quadriceps et les fessiers, avec un important travail de stabilisation du tronc.", "execution": "Placez les pieds dans une position naturelle, inspirez et gainez. Descendez en fléchissant hanches et genoux, genoux dans l’axe des pieds, puis poussez le sol pour remonter.", "erreurs": "Genoux qui s’effondrent vers l’intérieur, talons qui décollent, dos qui s’arrondit ou profondeur imposée au-delà de sa mobilité.", "sourceLabel": "", "sourceUrl": ""}, "flexion-laterale": {"picto": "lateral-lunge", "description": "Interprétée ici comme une fente latérale: déplacement du bassin sur un côté pour travailler quadriceps, fessiers et adducteurs dans le plan frontal.", "execution": "Faites un grand pas latéral, poussez les hanches en arrière et fléchissez la jambe d’appui tandis que l’autre reste allongée. Revenez en poussant fermement dans le pied fléchi.", "erreurs": "Confondre avec une inclinaison du buste, laisser le genou rentrer vers l’intérieur, décoller le talon ou aller trop vite.", "sourceLabel": "", "sourceUrl": ""}, "mollets": {"picto": "calf-raise", "description": "Extension de cheville destinée aux mollets; genou tendu, le gastrocnémien est fortement sollicité, tandis qu’un genou fléchi accentue le soléaire.", "execution": "Placez l’avant-pied sur un support stable, laissez le talon descendre sous contrôle, marquez un court arrêt puis montez complètement sur la pointe.", "erreurs": "Rebondir sur le tendon d’Achille, travailler en demi-amplitude, tourner les chevilles ou accélérer la descente.", "sourceLabel": "", "sourceUrl": ""}, "abduction-hanche": {"picto": "hip-abduction", "description": "Éloignement de la jambe par rapport à l’axe du corps pour renforcer surtout le moyen fessier et les stabilisateurs latéraux de la hanche.", "execution": "Restez droit et stabilisez le bassin. Écartez la jambe sans tourner la pointe du pied vers le haut, marquez une courte pause puis revenez lentement.", "erreurs": "Incliner tout le buste, ouvrir le bassin, donner de l’élan ou rechercher une amplitude au détriment du contrôle.", "sourceLabel": "", "sourceUrl": ""}, "adduction-hanche": {"picto": "hip-adduction", "description": "Rapprochement de la jambe vers la ligne médiane pour solliciter les muscles adducteurs de la hanche.", "execution": "Stabilisez le tronc et le bassin, puis ramenez la jambe vers l’intérieur avec une amplitude confortable. Contrôlez le retour sans laisser la charge tirer la hanche.", "erreurs": "Tourner le bassin, fléchir excessivement le tronc, utiliser de l’élan ou forcer une amplitude douloureuse.", "sourceLabel": "", "sourceUrl": ""}, "pont": {"picto": "glute-bridge", "description": "Le pont fessier est une extension de hanche au sol qui renforce les fessiers, les ischio-jambiers et la stabilité du bassin.", "execution": "Allongez-vous, genoux fléchis et pieds à plat. Contractez les abdominaux et les fessiers, montez le bassin jusqu’à aligner épaules, hanches et genoux, puis redescendez contrôlé.", "erreurs": "Cambrer au lieu d’étendre les hanches, pousser uniquement sur les pointes, écarter les genoux ou rebondir au sol.", "sourceLabel": "", "sourceUrl": ""}, "crunch": {"picto": "crunch", "description": "Flexion courte du tronc au sol ciblant surtout le grand droit de l’abdomen, avec une participation du transverse.", "execution": "Gardez le bas du dos au contact du sol, expirez en rapprochant les côtes du bassin et soulevez seulement les omoplates. Revenez lentement sans relâcher totalement la sangle abdominale.", "erreurs": "Tirer sur la nuque, s’asseoir complètement, prendre de l’élan ou bloquer la respiration.", "sourceLabel": "", "sourceUrl": ""}, "abdominaux-chaise-romaine": {"picto": "roman-chair-leg-raise", "description": "Relevé de jambes sur chaise romaine sollicitant le grand droit de l’abdomen et les fléchisseurs de hanche, avec les épaules maintenues actives sur les appuis.", "execution": "Plaquez le dos au dossier, appuyez les avant-bras et abaissez les épaules. Montez les genoux fléchis vers 90° en enroulant légèrement le bassin, puis redescendez sans balancer.", "erreurs": "Se suspendre passivement aux épaules, donner de l’élan, creuser fortement les lombaires ou laisser tomber les jambes.", "sourceLabel": "", "sourceUrl": ""}, "gainage-horizontal": {"picto": "front-plank", "description": "Gainage frontal isométrique visant la stabilité globale du tronc, avec participation des abdominaux, des épaules, des fessiers et des muscles du dos.", "execution": "Placez les coudes sous les épaules et alignez tête, bassin et talons. Contractez abdominaux et fessiers tout en respirant régulièrement.", "erreurs": "Laisser le bassin tomber, monter les fesses, retenir sa respiration ou prolonger la série après la perte d’alignement.", "sourceLabel": "", "sourceUrl": ""}, "gainage-lateral": {"picto": "side-plank", "description": "Gainage sur le côté mettant l’accent sur les obliques et le transverse, tout en renforçant la stabilité latérale du bassin et de l’épaule.", "execution": "Placez le coude sous l’épaule, empilez ou décalez les pieds, puis soulevez le bassin pour former une ligne droite entre tête, hanches et pieds.", "erreurs": "Laisser tomber le bassin, avancer l’épaule, tourner le tronc vers le sol ou tenir au-delà d’une position propre.", "sourceLabel": "", "sourceUrl": ""}, "etirement-dos": {"picto": "stretch-back", "description": "Mobilisation douce du dos destinée à relâcher les tensions sans chercher une amplitude forcée.", "execution": "Adoptez une position stable, arrondissez progressivement le dos et éloignez les mains. Respirez lentement et maintenez une tension légère à modérée.", "erreurs": "Faire des à-coups, bloquer la respiration ou poursuivre malgré une douleur vive ou irradiée."}, "etirement-epaule": {"picto": "stretch-shoulder", "description": "Étirement transversal de l’épaule visant surtout la partie postérieure du deltoïde et la capsule postérieure.", "execution": "Amenez un bras tendu devant la poitrine et rapprochez-le doucement avec l’autre bras. Gardez l’épaule basse et le buste face à l’avant.", "erreurs": "Hausser l’épaule, tourner tout le tronc, tirer sur le coude avec force ou provoquer un pincement articulaire."}, "etirement-bras": {"picto": "stretch-triceps", "description": "Étirement du triceps avec le bras au-dessus de la tête, pouvant également mobiliser légèrement l’épaule et le grand dorsal.", "execution": "Levez un bras, pliez le coude derrière la tête et guidez-le doucement avec l’autre main. Gardez les côtes basses et la nuque neutre.", "erreurs": "Cambrer, pousser brutalement le coude, avancer la tête ou rechercher une douleur intense."}, "etirement-jambes": {"picto": "stretch-hamstring", "description": "Étirement de la chaîne postérieure de la cuisse, principalement les ischio-jambiers.", "execution": "Placez une jambe tendue devant vous, gardez le dos long et inclinez le bassin vers l’avant jusqu’à sentir une tension derrière la cuisse.", "erreurs": "Arrondir fortement le dos, verrouiller douloureusement le genou, tirer sur le pied ou effectuer des rebonds."}, "etirement-chevilles": {"picto": "stretch-calf", "description": "Étirement du mollet et mobilisation de la cheville, utile pour travailler la flexion dorsale de façon progressive.", "execution": "Face à un mur, gardez le talon arrière au sol et avancez doucement le genou ou le bassin. Maintenez le pied dans l’axe sans écraser la voûte plantaire.", "erreurs": "Décoller le talon, laisser le genou s’effondrer vers l’intérieur, rebondir ou forcer sur une cheville douloureuse."}, "etirement-cou": {"picto": "stretch-neck", "description": "Mobilisation légère des muscles latéraux du cou et de la région supérieure de l’épaule.", "execution": "Asseyez-vous droit, abaissez une épaule et inclinez doucement la tête du côté opposé. La main peut seulement accompagner, sans tirer.", "erreurs": "Faire des rotations rapides, tirer fortement sur la tête, hausser l’épaule ou maintenir une position qui provoque vertiges ou fourmillements."}};
 
-function exercicesParDefaut(){
-  const e=(nom,cat,z1,z2,mode,extra)=>Object.assign({
+
+/* --- Fiches du catalogue de renforcement -------------------------
+   Ajoutées après coup, elles suivent exactement le format des
+   précédentes : un pictogramme, une description, une exécution et
+   les erreurs fréquentes. ------------------------------------- */
+Object.assign(FICHES_EXERCICES, {
+ 'souleve-de-terre-roumain':{picto:'deadlift-rdl',description:'Charnière de hanche partant du haut, qui charge fortement les ischio-jambiers et les fessiers en position allongée, avec un travail important des érecteurs du rachis en isométrie.',execution:'Barre contre les cuisses, dos neutre et gainé. Reculez les hanches en laissant la barre glisser le long des jambes, descendez tant que le dos reste plat, puis revenez en poussant le bassin vers l’avant.',erreurs:'Arrondir le bas du dos, éloigner la barre du corps, plier les genoux comme un squat ou terminer en hyperextension lombaire.',sourceLabel:'',sourceUrl:''},
+ 'souleve-de-terre-barre-hexagonale':{picto:'deadlift-rdl',description:'Soulevé de terre réalisé à l’intérieur d’une barre hexagonale : les bras se placent dans l’axe du corps, ce qui redresse le buste et réduit nettement les contraintes de cisaillement sur le bas du dos.',execution:'Placez-vous au centre de la barre, saisissez les poignées, gainez et poussez dans le sol jambes puis hanches. Reposez la charge en refaisant le trajet inverse, dos neutre.',erreurs:'Tirer avec le dos avant les jambes, décoller le bassin trop tôt, laisser la nuque partir en arrière ou lâcher la barre en fin de série.',sourceLabel:'',sourceUrl:''},
+ 'demi-squat-barre':{picto:'barbell-squat',description:'Squat barre arrêté cuisse proche de l’horizontale. L’amplitude partielle correspond à celle réellement utilisée en course et autorise des charges élevées sur les quadriceps et les fessiers.',execution:'Barre sur les trapèzes, pieds à largeur de bassin. Inspirez, gainez, descendez jusqu’au repère de profondeur choisi, marquez un temps très bref puis poussez le sol.',erreurs:'Profondeur variable d’une série à l’autre, genoux qui rentrent, talons qui décollent, buste qui plonge vers l’avant ou dos qui s’arrondit en bas.',sourceLabel:'',sourceUrl:''},
+ 'goblet-squat':{picto:'squat',description:'Squat tenu devant la poitrine avec une haltère ou un kettlebell. La charge frontale redresse spontanément le buste : c’est la version d’apprentissage la plus sûre pour le bas du dos.',execution:'Tenez la charge contre le sternum, coudes proches du corps. Descendez entre les cuisses en gardant le buste haut, puis remontez en poussant le sol.',erreurs:'Laisser la charge s’éloigner de la poitrine, arrondir le haut du dos, chercher une profondeur supérieure à sa mobilité ou retenir sa respiration.',sourceLabel:'',sourceUrl:''},
+ 'squat-overhead':{picto:'overhead-squat',description:'Squat barre tenue bras tendus au-dessus de la tête. Peu utile comme exercice de force, mais excellent révélateur de mobilité de cheville, de hanche et d’épaule et très bon éducatif de gainage.',execution:'Barre légère, prise large, bras verrouillés et alignés au-dessus du milieu du pied. Descendez lentement en gardant la barre dans l’axe, puis remontez sans avancer les épaules.',erreurs:'Compenser le manque de mobilité en creusant les lombaires, laisser la barre partir vers l’avant, charger cet exercice ou l’utiliser comme mouvement principal.',sourceLabel:'',sourceUrl:''},
+ 'hip-thrust':{picto:'hip-thrust',description:'Extension de hanche épaules appuyées sur un banc, barre posée sur le bassin. Charge maximale sur le grand fessier avec une contrainte de compression quasi nulle sur la colonne.',execution:'Omoplates sur le banc, pieds à plat, côtes basses. Poussez le bassin vers le plafond jusqu’à l’alignement genoux-hanches-épaules, marquez la contraction, redescendez contrôlé.',erreurs:'Chercher l’amplitude en cambrant le bas du dos, laisser les genoux s’écarter, pousser sur les pointes de pied ou relever le menton en haut du mouvement.',sourceLabel:'',sourceUrl:''},
+ 'fente-arriere-chargee':{picto:'lunge-back',description:'Fente réalisée en reculant une jambe, avec haltères ou barre. Mouvement unipodal proche de l’appui de course, moins traumatisant pour le genou avant que la fente avant.',execution:'Reculez franchement une jambe, descendez le genou arrière vers le sol en gardant le buste vertical, puis repoussez avec la jambe avant pour revenir. Comptez les répétitions par jambe.',erreurs:'Pas trop court, genou avant qui part vers l’intérieur, buste qui s’incline en avant ou perte d’équilibre latérale en fin de série.',sourceLabel:'',sourceUrl:''},
+ 'fente-bulgare':{picto:'lunge-back',description:'Fente unipodale pied arrière surélevé. La version la plus exigeante du travail sur une jambe : force du quadriceps et du fessier, et contrôle du bassin dans le plan frontal.',execution:'Posez le dessus du pied arrière sur un banc, avancez suffisamment le pied avant. Descendez vertical jusqu’à la cuisse avant proche de l’horizontale, puis remontez. Répétitions comptées par jambe.',erreurs:'Pied avant trop proche du banc, bassin qui bascule d’un côté, genou qui rentre ou appui excessif sur la jambe arrière.',sourceLabel:'',sourceUrl:''},
+ 'mollets-debout-jambe-tendue':{picto:'calf-raise',description:'Extension de cheville genou tendu, debout et chargé. Cible principalement les gastrocnémiens, très sollicités dans la phase de propulsion de la foulée.',execution:'Avant-pied sur une cale, genoux tendus sans être verrouillés. Laissez le talon descendre lentement sous l’horizontale, marquez un arrêt bas, puis montez complètement sur la pointe.',erreurs:'Rebondir sur le tendon d’Achille, travailler en demi-amplitude, plier les genoux pour aider ou accélérer la phase descendante.',sourceLabel:'',sourceUrl:''},
+ 'mollets-assis-genou-flechi':{picto:'calf-raise',description:'Extension de cheville genou fléchi à environ 90°, qui isole le soléaire. C’est le muscle qui encaisse les contraintes les plus élevées à chaque appui de course.',execution:'Assis, charge posée sur les cuisses juste au-dessus des genoux, avant-pieds sur une cale. Descendez le talon lentement, marquez la position basse, montez complètement.',erreurs:'Amplitude raccourcie, charge posée trop près des genoux, rythme trop rapide ou absence de temps d’arrêt en position basse.',sourceLabel:'',sourceUrl:''},
+ 'nordic-curl':{picto:'nordic-curl',description:'Flexion excentrique des ischio-jambiers à genoux, chevilles bloquées. Un des exercices les mieux documentés en prévention des lésions musculaires de la cuisse.',execution:'À genoux, chevilles maintenues, bassin verrouillé dans l’alignement du tronc. Laissez le corps descendre le plus lentement possible, puis remontez en vous aidant des mains ou d’un élastique.',erreurs:'Casser la ligne au niveau des hanches, se laisser tomber sans retenir, chercher l’amplitude complète trop tôt ou enchaîner les séries sans récupération.',sourceLabel:'',sourceUrl:''},
+ 'pogo-hops':{picto:'jump',description:'Petits bonds successifs réalisés genoux quasi tendus, tout le travail venant de la cheville. Développe la raideur du système muscle-tendon et raccourcit le temps de contact au sol.',execution:'Rebondissez sur l’avant du pied, genoux souples mais peu fléchis, bassin haut et gainé. Cherchez le contact le plus bref possible plutôt que la hauteur.',erreurs:'Fléchir les genoux comme pour un squat sauté, écraser les talons au sol, allonger les contacts par fatigue ou poursuivre la série quand le rythme se dégrade.',sourceLabel:'',sourceUrl:''},
+ 'sauts-verticaux':{picto:'jump',description:'Saut vertical maximal avec contre-mouvement, réalisé en séries courtes. Sert autant de travail de puissance que d’indicateur de fraîcheur neuromusculaire.',execution:'Départ debout, descendez rapidement en demi-flexion puis enchaînez immédiatement vers le haut en projetant les bras. Amortissez la réception genoux souples.',erreurs:'Marquer une pause en position basse, réceptionner jambes tendues, enchaîner sans récupération ou multiplier les répétitions au détriment de la hauteur.',sourceLabel:'',sourceUrl:''},
+ 'bondissements':{picto:'jump',description:'Foulées bondissantes réalisées sur quelques dizaines de mètres, à mi-chemin entre la course et le saut. Travail de puissance horizontale directement transférable à la foulée.',execution:'Enchaînez de grandes foulées en cherchant à la fois la distance et le temps de suspension, bras actifs, bassin haut. Comptez les appuis plutôt que les mètres.',erreurs:'Pratiquer sur sol dur ou glissant, s’asseoir dans la foulée, laisser le bassin s’affaisser ou prolonger la série quand l’amplitude diminue.',sourceLabel:'',sourceUrl:''},
+ 'isometrie-mollet-unilateral':{picto:'calf-raise',description:'Maintien sur la pointe d’un seul pied, sans charge additionnelle. Travail de tolérance du tendon d’Achille, particulièrement utile en récupération et en entretien.',execution:'Montez sur la pointe d’un pied, l’autre jambe relevée, et tenez la position haute sans laisser le talon redescendre. Gardez la cheville dans l’axe.',erreurs:'S’appuyer franchement sur un support, laisser la cheville partir vers l’extérieur, descendre progressivement sans s’en rendre compte ou retenir sa respiration.',sourceLabel:'',sourceUrl:''},
+ 'rowing-haltere-un-bras':{picto:'db-row',description:'Tirage horizontal à une main, buste penché et appui sur un banc. Complète les tractions en rééquilibrant le rapport entre poussée et tirage, très utile en position assise prolongée.',execution:'Une main et un genou en appui, dos plat et parallèle au sol. Tirez le coude vers la hanche en abaissant d’abord l’omoplate, puis redescendez bras tendu sans tourner le buste.',erreurs:'Tourner le tronc pour arracher la charge, arrondir le dos, tirer uniquement avec le bras ou relâcher brutalement la descente.',sourceLabel:'',sourceUrl:''},
+ 'developpe-militaire-halteres':{picto:'overhead-press',description:'Poussée verticale au-dessus de la tête avec haltères, debout ou assis. Renforce les épaules et les triceps et demande un gainage important pour éviter la compensation lombaire.',execution:'Haltères au niveau des épaules, côtes basses et fessiers serrés. Poussez à la verticale jusqu’aux bras tendus, puis redescendez en contrôlant.',erreurs:'Cambrer le bas du dos pour passer la charge, pousser vers l’avant, hausser les épaules ou verrouiller brutalement les coudes.',sourceLabel:'',sourceUrl:''},
+ 'elevations-laterales':{picto:'lateral-raise',description:'Élévation des bras sur le côté avec haltères légères, ciblant le faisceau moyen du deltoïde. Exercice d’équilibre visuel et de santé d’épaule plus que de force.',execution:'Debout, buste stable, coudes très légèrement fléchis. Montez les bras jusqu’à l’horizontale sans hausser les épaules, puis redescendez lentement.',erreurs:'Prendre de l’élan avec le tronc, monter au-dessus de l’horizontale, hausser les trapèzes ou choisir une charge trop lourde.',sourceLabel:'',sourceUrl:''},
+ 'rotateurs-externes-elastique':{picto:'band-press',description:'Rotation externe de l’épaule contre élastique, coude au corps. Renforce la coiffe des rotateurs, contrepoids indispensable au volume de poussée et à la position assise.',execution:'Coude fléchi à 90° et calé contre le flanc, avant-bras devant le ventre. Écartez la main vers l’extérieur sans décoller le coude, puis revenez lentement.',erreurs:'Décoller le coude, tourner tout le buste, utiliser un élastique trop résistant ou accélérer le retour.',sourceLabel:'',sourceUrl:''},
+ 'curl-up-mcgill':{picto:'curl-up',description:'Version modifiée du redressement, mains glissées sous le bas du dos et une jambe fléchie. Sollicite la sangle abdominale en préservant la courbure lombaire, contrairement au crunch classique.',execution:'Mains à plat sous les lombaires, une jambe fléchie et l’autre tendue. Décollez très légèrement la tête et les épaules en bloc, sans bouger le bas du dos, et tenez quelques secondes.',erreurs:'Enrouler le bas du dos, écraser les lombaires au sol, tirer sur la nuque ou chercher une amplitude de crunch.',sourceLabel:'',sourceUrl:''},
+ 'bird-dog':{picto:'bird-dog',description:'Extension simultanée d’un bras et de la jambe opposée en position quadrupédique. Travail de coordination et de stabilité anti-rotation, colonne maintenue en position neutre.',execution:'À quatre pattes, dos plat. Tendez un bras devant et la jambe opposée derrière sans dépasser l’horizontale, tenez quelques secondes, puis alternez.',erreurs:'Monter la jambe trop haut en creusant les lombaires, laisser le bassin basculer, tourner les épaules ou aller trop vite.',sourceLabel:'',sourceUrl:''},
+ 'pallof-press':{picto:'band-press',description:'Poussée horizontale contre un élastique fixé latéralement : il ne s’agit pas de bouger le tronc mais de résister à la rotation. Le gainage debout le plus proche des contraintes de la course.',execution:'Debout de profil par rapport à l’ancrage, mains jointes contre le sternum. Tendez les bras devant vous en résistant à la traction latérale, puis revenez sans laisser le buste tourner.',erreurs:'Se laisser entraîner par l’élastique, tourner les épaules ou le bassin, retenir sa respiration ou se placer trop près de l’ancrage.',sourceLabel:'',sourceUrl:''},
+ 'copenhagen-adduction':{picto:'side-plank',description:'Gainage latéral avec la jambe supérieure en appui sur un banc, sollicitant fortement les adducteurs. Exercice de référence en prévention des douleurs de pubis et d’aine.',execution:'En appui sur le coude, jambe du dessus posée sur un support à hauteur de genou. Montez le bassin jusqu’à l’alignement, la jambe basse pouvant être fléchie au début, puis redescendez contrôlé.',erreurs:'Commencer directement en version complète, laisser le bassin tourner vers le sol, tenir au-delà de la position propre ou négliger le côté le plus faible.',sourceLabel:'',sourceUrl:''},
+ 'releve-de-genoux-suspendu':{picto:'hanging-knee-raise',description:'Relevé de genoux suspendu à la barre, arrêté avant l’enroulement du bassin. Version compatible avec une colonne lombaire à ménager, contrairement au relevé de jambes complet.',execution:'Suspendez-vous épaules actives et abaissées. Montez les genoux jusqu’à hauteur de hanches sans basculer le bassin, puis redescendez lentement sans balancer.',erreurs:'Prendre de l’élan, poursuivre le mouvement en enroulant le bassin, se suspendre passivement aux épaules ou laisser tomber les jambes.',sourceLabel:'',sourceUrl:''},
+ 'corde-a-sauter':{picto:'jump-rope',description:'Sauts à la corde en appuis brefs, utilisés en échauffement et comme pliométrie de base pour la raideur de la cheville et la voûte plantaire.',execution:'Rebondissez sur l’avant du pied, genoux souples, poignets faisant tourner la corde plutôt que les bras. Cherchez un rythme régulier et des contacts silencieux.',erreurs:'Sauter trop haut, écraser les talons, faire tourner la corde à bras tendus ou prolonger la série quand le rythme se casse.',sourceLabel:'',sourceUrl:''},
+ 'mobilite-cheville-au-mur':{picto:'stretch-calf',description:'Mobilisation en flexion dorsale de la cheville, genou avancé vers le mur. Prépare directement la profondeur du squat et amortit mieux la réception de la foulée.',execution:'Pied face au mur, talon collé au sol. Avancez le genou vers le mur dans l’axe du deuxième orteil, jusqu’à la limite sans décoller le talon, puis relâchez.',erreurs:'Décoller le talon, laisser le genou partir vers l’intérieur, écraser la voûte plantaire ou forcer par à-coups.',sourceLabel:'',sourceUrl:''},
+ 'mobilite-hanche-fente-haute':{picto:'lateral-lunge',description:'Position de fente haute maintenue, destinée aux fléchisseurs de hanche que la position assise raccourcit. Prépare l’extension de hanche utilisée en propulsion.',execution:'Genou arrière au sol, bassin en rétroversion et fessier de la jambe arrière contracté. Avancez légèrement le bassin sans cambrer et respirez lentement.',erreurs:'Chercher l’amplitude en creusant les lombaires, laisser le bassin s’ouvrir, poser le genou sans amorti ou tenir en apnée.',sourceLabel:'',sourceUrl:''},
+ 'rotations-thoraciques':{picto:'stretch-back',description:'Mobilisation en rotation du haut du dos, zone qui perd le plus d’amplitude en travail de bureau. Décharge d’autant la région lombaire lors des mouvements chargés.',execution:'À genoux ou en position quadrupédique, une main derrière la tête. Ouvrez le coude vers le plafond en suivant du regard, puis revenez lentement. Alternez les côtés.',erreurs:'Tourner à partir du bas du dos, effectuer des à-coups, retenir sa respiration ou bloquer le bassin trop tard.',sourceLabel:'',sourceUrl:''},
+ 'monster-walk-elastique':{picto:'hip-abduction',description:'Déplacements latéraux ou vers l’avant avec un élastique placé au-dessus des genoux ou aux chevilles. Active le moyen fessier, stabilisateur clé du bassin en appui unipodal.',execution:'Élastique en place, demi-flexion des genoux, bassin bas et stable. Avancez ou déplacez-vous latéralement en gardant une tension constante sur l’élastique.',erreurs:'Se redresser en cours de série, laisser les genoux rentrer, faire de grands pas rapides ou incliner le buste d’un côté.',sourceLabel:'',sourceUrl:''},
+ 'charniere-de-hanche-au-baton':{picto:'deadlift-rdl',description:'Éducatif de charnière de hanche, un bâton maintenu en contact avec la tête, le haut du dos et le sacrum. Le meilleur repère pour vérifier la neutralité de la colonne avant de charger.',execution:'Trois points de contact maintenus, genoux légèrement fléchis. Reculez les hanches en penchant le buste, descendez tant que les trois contacts tiennent, puis revenez.',erreurs:'Perdre le contact lombaire ou cervical, plier les genoux comme pour un squat, descendre au-delà de sa mobilité ou aller vite.',sourceLabel:'',sourceUrl:''}
+});
+
+const fabriqueExo=(nom,cat,z1,z2,mode,extra)=>Object.assign({
     id:'exo-'+slug(nom), nom, categorie:cat, zone1:z1, zone2:z2||[], modeEffort:mode||'reps',
     ecartementCm:null, hauteurCm:null, lestageKg:null,   /* null = poids du corps */
     objSeries:6, objReps:mode==='temps'?30:10,
@@ -544,6 +581,11 @@ function exercicesParDefaut(){
     evolToutesLesN:1, compteurReussites:0, remarque:'',
     description:'', execution:'', erreurs:'', sourceLabel:'', sourceUrl:'', picto:''
   }, FICHES_EXERCICES[slug(nom)]||{}, extra||{});
+
+/* Les trente-trois exercices historiques, hérités de la méthode au
+   poids du corps et du travail de course. */
+function exercicesLafay(){
+  const e=fabriqueExo;
   return [
     e('Échauffement tapis de course','echauffement',['quadriceps'],['mollets'],'temps',
       {objSeries:1,objReps:600,evolPlus:0,evolToutesLesN:1}),
@@ -587,8 +629,79 @@ function exercicesParDefaut(){
     e('Étirement cou','etirement',['epaules'],[],'temps',{objSeries:2,objReps:20,evolPlus:0})
   ];
 }
-function modelesParDefaut(){
-  const b=(nom,series,reps,recup,recupFin)=>({
+
+/* Catalogue de renforcement ajouté pour le programme course a pied :
+   barres, travail unilatéral, mollets, pliométrie, gainage McGill.
+   Les exercices chargés progressent au lestage plutôt qu'aux
+   répétitions : evolPlus vaut 0 et c'est evolLestageKg qui bouge. */
+function exercicesRenfo(){
+  const e=fabriqueExo;
+  return [
+    /* --- Bas du corps : force ---------------------------------- */
+    e('Demi-squat barre','bas',['quadriceps'],['fessiers','abdo'],'reps',
+      {objSeries:5,objReps:5,lestageKg:20,evolPlus:0,evolLestageKg:2.5}),
+    e('Goblet squat','bas',['quadriceps'],['fessiers'],'reps',
+      {objSeries:3,objReps:15,lestageKg:12,evolPlus:0,evolLestageKg:2}),
+    e('Soulevé de terre roumain','bas',['ischios'],['fessiers','dos'],'reps',
+      {objSeries:4,objReps:6,lestageKg:20,evolPlus:0,evolLestageKg:2.5}),
+    e('Soulevé de terre barre hexagonale','bas',['fessiers'],['quadriceps','dos'],'reps',
+      {objSeries:4,objReps:5,lestageKg:25,evolPlus:0,evolLestageKg:2.5}),
+    e('Hip thrust','bas',['fessiers'],['ischios'],'reps',
+      {objSeries:4,objReps:8,lestageKg:20,evolPlus:0,evolLestageKg:5}),
+    e('Fente arrière chargée','bas',['quadriceps'],['fessiers','hanche'],'reps',
+      {objSeries:3,objReps:10,lestageKg:10,evolPlus:0,evolLestageKg:2}),
+    e('Fente bulgare','bas',['quadriceps'],['fessiers','hanche'],'reps',
+      {objSeries:3,objReps:8,lestageKg:10,evolPlus:0,evolLestageKg:2}),
+    e('Squat overhead','bas',['quadriceps'],['epaules','abdo'],'reps',
+      {objSeries:2,objReps:5,lestageKg:10,evolPlus:0,evolLestageKg:0}),
+    /* --- Bas du corps : mollets et ischios ---------------------- */
+    e('Mollets debout jambe tendue','bas',['mollets'],[],'reps',
+      {objSeries:4,objReps:12,lestageKg:20,evolPlus:0,evolLestageKg:2.5}),
+    e('Mollets assis genou fléchi','bas',['mollets'],[],'reps',
+      {objSeries:4,objReps:15,lestageKg:20,evolPlus:0,evolLestageKg:2.5}),
+    e('Isométrie mollet unilatéral','bas',['mollets'],[],'temps',
+      {objSeries:3,objReps:30,evolPlus:5}),
+    e('Nordic curl','bas',['ischios'],['fessiers'],'reps',
+      {objSeries:3,objReps:5,evolPlus:1}),
+    /* --- Pliométrie -------------------------------------------- */
+    e('Pogo hops','bas',['mollets'],['quadriceps'],'reps',
+      {objSeries:3,objReps:20,evolPlus:2}),
+    e('Sauts verticaux','bas',['quadriceps'],['mollets','fessiers'],'reps',
+      {objSeries:4,objReps:5,evolPlus:0}),
+    e('Bondissements','bas',['fessiers'],['mollets','quadriceps'],'reps',
+      {objSeries:3,objReps:20,evolPlus:2}),
+    /* --- Haut du corps ----------------------------------------- */
+    e('Rowing haltère un bras','haut',['dos'],['biceps'],'reps',
+      {objSeries:4,objReps:10,lestageKg:20,evolPlus:0,evolLestageKg:2}),
+    e('Développé militaire haltères','haut',['epaules'],['triceps'],'reps',
+      {objSeries:3,objReps:10,lestageKg:12,evolPlus:0,evolLestageKg:2}),
+    e('Élévations latérales','haut',['epaules'],[],'reps',
+      {objSeries:3,objReps:12,lestageKg:6,evolPlus:0,evolLestageKg:1}),
+    e('Rotateurs externes élastique','haut',['epaules'],['dos'],'reps',
+      {objSeries:2,objReps:15,evolPlus:1}),
+    /* --- Abdo / gainage ---------------------------------------- */
+    e('Curl-up McGill','abdo',['abdo'],[],'reps',{objSeries:3,objReps:10,evolPlus:1}),
+    e('Bird dog','abdo',['abdo'],['dos','fessiers'],'reps',{objSeries:3,objReps:8,evolPlus:1}),
+    e('Pallof press','abdo',['abdo'],['epaules'],'reps',{objSeries:3,objReps:10,evolPlus:1}),
+    e('Copenhagen adduction','abdo',['hanche'],['abdo'],'reps',{objSeries:3,objReps:8,evolPlus:1}),
+    e('Relevé de genoux suspendu','abdo',['abdo'],['hanche'],'reps',{objSeries:3,objReps:10,evolPlus:1}),
+    /* --- Échauffement et mobilité ------------------------------- */
+    e('Corde à sauter','echauffement',['mollets'],['quadriceps'],'temps',
+      {objSeries:3,objReps:60,evolPlus:15}),
+    e('Charnière de hanche au bâton','echauffement',['ischios'],['dos'],'reps',
+      {objSeries:2,objReps:8,evolPlus:0}),
+    e('Mobilité cheville au mur','echauffement',['mollets'],[],'reps',
+      {objSeries:2,objReps:10,evolPlus:0}),
+    e('Mobilité hanche fente haute','echauffement',['hanche'],['quadriceps'],'temps',
+      {objSeries:2,objReps:30,evolPlus:0}),
+    e('Rotations thoraciques','echauffement',['dos'],['epaules'],'reps',
+      {objSeries:2,objReps:8,evolPlus:0}),
+    e('Monster walk élastique','echauffement',['hanche'],['fessiers'],'reps',
+      {objSeries:2,objReps:15,evolPlus:1})
+  ];
+}
+function exercicesParDefaut(){ return exercicesLafay().concat(exercicesRenfo()); }
+const blocSeance=(nom,series,reps,recup,recupFin,opts)=>Object.assign({
     exerciceId:'exo-'+slug(nom), nbSeries:series, nbReps:reps,
     recupSerieSec:recup, recupFinSec:recupFin==null?120:recupFin,
     repsInitiales:null,          /* null = hérite de l'exercice */
@@ -597,11 +710,15 @@ function modelesParDefaut(){
     compteObjectif:true,         /* compte pour l'objectif global de la séance */
     objectifAtteintLe:null,
     evolPlus:null, evolToutesLesN:null
-  });
-  const chauffe=min=>({exerciceId:'exo-echauffement-tapis-de-course',nbSeries:1,nbReps:min*60,
+  }, opts||{});
+const blocChauffe=min=>({exerciceId:'exo-echauffement-tapis-de-course',nbSeries:1,nbReps:min*60,
     recupSerieSec:0,recupFinSec:60,repsInitiales:null,evolPlus:null,evolToutesLesN:null});
-  const m=(nom,mn,blocs)=>({id:'seance-'+slug(nom),nom,
-    blocs:(mn?[chauffe(mn)]:[]).concat(blocs)});
+const modeleSeance=(nom,mn,blocs)=>({id:'seance-'+slug(nom),nom,
+    blocs:(mn?[blocChauffe(mn)]:[]).concat(blocs)});
+
+/* Les séances historiques. */
+function modelesLafay(){
+  const b=blocSeance, m=modeleSeance;
   return [
     m('Routine Haut',10,[ b('Pompes serrées',6,10,60), b('Traction pronation large',6,6,90),
       b('Dips',5,8,75), b('Biceps',4,10,60), b('Triceps',4,10,60) ]),
@@ -619,6 +736,214 @@ function modelesParDefaut(){
   ];
 }
 
+/* Les quinze séances du programme course à pied : cinq blocs de
+   périodisation, chacun avec une séance A (bas du corps, mercredi
+   soir), une séance B (haut du corps et pliométrie, samedi) et une
+   séance C (courte : dimanche, semaine de course ou affûtage).
+
+   Les récupérations s'allongent d'un bloc à l'autre à mesure que
+   les charges montent et que les séries raccourcissent. Les blocs
+   d'échauffement et de mobilité portent compteObjectif à false :
+   ils ne doivent pas retenir l'objectif global de la séance. */
+function modelesRenfo(){
+  const b=blocSeance, m=modeleSeance, H={compteObjectif:false};
+  return [
+
+    /* ===== BLOC 0 — adaptation anatomique, 10 → 30 août ==========
+       Charges légères, séries longues, RPE 6. On apprend les
+       mouvements à la barre sans fatiguer les jambes avant Arras. */
+    m('Bloc 0 · A — Bas · adaptation',8,[
+      b('Mobilité cheville au mur',2,10,30,45,H),
+      b('Charnière de hanche au bâton',2,8,30,45,H),
+      b('Squat overhead',2,5,45,60,H),
+      b('Goblet squat',3,15,90,120),
+      b('Soulevé de terre roumain',3,12,90,120),
+      b('Hip thrust',3,15,90,120),
+      b('Fente arrière chargée',3,12,90,120),
+      b('Mollets debout jambe tendue',3,20,60,90),
+      b('Mollets assis genou fléchi',3,20,60,90),
+      b('Nordic curl',3,5,90,60)
+    ]),
+    m('Bloc 0 · B — Haut & pliométrie',0,[
+      b('Corde à sauter',3,60,45,60,H),
+      b('Pogo hops',3,20,45,75),
+      b('Traction supination serrée',4,8,105,120),
+      b('Rowing haltère un bras',4,12,90,105),
+      b('Dips',3,10,75,90),
+      b('Pompes serrées',3,12,60,90),
+      b('Développé militaire haltères',3,12,75,90),
+      b('Rotateurs externes élastique',2,15,45,60),
+      b('Curl-up McGill',3,10,45,45),
+      b('Gainage latéral',3,30,45,45),
+      b('Bird dog',3,8,45,60)
+    ]),
+    m('Bloc 0 · C — Mobilité & gainage',0,[
+      b('Mobilité hanche fente haute',2,30,30,45,H),
+      b('Mobilité cheville au mur',2,10,30,45,H),
+      b('Rotations thoraciques',2,8,30,45,H),
+      b('Monster walk élastique',2,15,45,60),
+      b('Curl-up McGill',3,8,45,45),
+      b('Gainage latéral',3,25,45,45),
+      b('Bird dog',3,8,45,45),
+      b('Isométrie mollet unilatéral',3,30,45,60),
+      b('Étirement jambes',2,30,15,30),
+      b('Étirement chevilles',2,30,15,30)
+    ]),
+
+    /* ===== BLOC 1 — maintien, 31 août → 27 septembre =============
+       Trois courses en quatre semaines : on entretient, on ne
+       construit pas. 70 à 80 %, trois répétitions gardées en
+       réserve, rien de lourd dans les 72 h avant une course. */
+    m('Bloc 1 · A — Bas · maintien',8,[
+      b('Charnière de hanche au bâton',2,8,30,45,H),
+      b('Squat overhead',2,5,45,60,H),
+      b('Demi-squat barre',4,5,120,150),
+      b('Soulevé de terre roumain',4,6,120,150),
+      b('Hip thrust',4,8,105,120),
+      b('Mollets debout jambe tendue',3,12,75,90),
+      b('Mollets assis genou fléchi',3,15,75,90),
+      b('Nordic curl',3,5,90,60)
+    ]),
+    m('Bloc 1 · B — Haut & pliométrie',0,[
+      b('Corde à sauter',3,60,45,60,H),
+      b('Pogo hops',3,20,45,75),
+      b('Sauts verticaux',3,5,90,120),
+      b('Traction supination serrée',4,8,105,105),
+      b('Rowing haltère un bras',4,10,90,105),
+      b('Dips',3,10,90,90),
+      b('Développé militaire haltères',3,10,90,90),
+      b('Rotateurs externes élastique',2,15,45,60),
+      b('Pallof press',3,10,45,45),
+      b('Gainage latéral',3,30,45,60)
+    ]),
+    m('Bloc 1 · C — Semaine de course',0,[
+      b('Mobilité hanche fente haute',2,30,30,45,H),
+      b('Monster walk élastique',2,15,45,60,H),
+      b('Pogo hops',2,15,60,90),
+      b('Curl-up McGill',2,10,45,45),
+      b('Bird dog',2,8,45,45),
+      b('Gainage latéral',2,25,45,45),
+      b('Isométrie mollet unilatéral',2,30,45,60),
+      b('Étirement jambes',2,30,15,30),
+      b('Étirement chevilles',2,30,15,30)
+    ]),
+
+    /* ===== BLOC 2 — force maximale, 28 septembre → 18 octobre ====
+       Le bloc qui produit le gain d'économie de course. 85 à 90 %,
+       séries courtes, récupérations longues, une à deux répétitions
+       gardées en réserve : jamais l'échec sous barre. Le demi-squat
+       porte le volume ; la charnière et le hip thrust ne prennent
+       que trois séries, pour que la séance tienne dans l'heure. */
+    m('Bloc 2 · A — Bas · force maximale',10,[
+      b('Charnière de hanche au bâton',2,8,30,45,H),
+      b('Squat overhead',2,5,45,60,H),
+      b('Demi-squat barre',5,4,180,180),
+      b('Soulevé de terre roumain',3,5,150,150),
+      b('Hip thrust',3,5,150,120),
+      b('Mollets debout jambe tendue',3,8,90,90),
+      b('Mollets assis genou fléchi',3,10,90,90),
+      b('Nordic curl',3,4,90,60)
+    ]),
+    m('Bloc 2 · B — Haut · force',0,[
+      b('Corde à sauter',3,60,45,60,H),
+      b('Pogo hops',3,20,45,75),
+      b('Traction supination serrée',5,5,120,120),
+      b('Rowing haltère un bras',4,8,105,105),
+      b('Dips',4,6,105,105),
+      b('Développé militaire haltères',3,8,90,90),
+      b('Rotateurs externes élastique',2,15,45,60),
+      b('Curl-up McGill',3,10,45,45),
+      b('Copenhagen adduction',2,8,45,60)
+    ]),
+    m('Bloc 2 · C — Récupération & gainage',0,[
+      b('Mobilité hanche fente haute',2,30,30,45,H),
+      b('Mobilité cheville au mur',2,10,30,45,H),
+      b('Rotations thoraciques',2,8,30,45,H),
+      b('Curl-up McGill',3,10,45,45),
+      b('Pallof press',3,10,45,45),
+      b('Bird dog',3,8,45,45),
+      b('Gainage latéral',3,30,45,45),
+      b('Isométrie mollet unilatéral',3,30,45,60),
+      b('Étirement jambes',2,30,15,30),
+      b('Étirement chevilles',2,30,15,30)
+    ]),
+
+    /* ===== BLOC 3 — conversion en puissance, 19 octobre → 1er nov.
+       Charges légères déplacées vite, volume réduit, qualité
+       absolue. Dernière séance lourde à J-10, dernière séance
+       explosive à J-4, rien après. */
+    m('Bloc 3 · A — Bas · puissance',10,[
+      b('Squat overhead',2,5,45,60,H),
+      b('Sauts verticaux',3,5,90,120),
+      b('Demi-squat barre',4,5,150,150),
+      b('Fente arrière chargée',3,6,105,105),
+      b('Hip thrust',4,6,105,105),
+      b('Mollets debout jambe tendue',3,10,75,90),
+      b('Nordic curl',3,5,90,60)
+    ]),
+    m('Bloc 3 · B — Pliométrie & haut',0,[
+      b('Corde à sauter',3,60,45,60,H),
+      b('Pogo hops',4,20,45,75),
+      b('Bondissements',3,20,120,150),
+      b('Traction supination serrée',4,6,105,105),
+      b('Rowing haltère un bras',3,10,90,90),
+      b('Dips',3,8,90,90),
+      b('Rotateurs externes élastique',2,15,45,60),
+      b('Pallof press',3,10,45,45),
+      b('Gainage latéral',3,30,45,60)
+    ]),
+    m('Bloc 3 · C — Affûtage',0,[
+      b('Mobilité hanche fente haute',2,30,30,45,H),
+      b('Mobilité cheville au mur',2,10,30,45,H),
+      b('Pogo hops',2,12,60,90),
+      b('Sauts verticaux',2,4,90,120),
+      b('Bird dog',2,8,45,45),
+      b('Étirement jambes',2,30,15,30),
+      b('Étirement chevilles',2,30,15,30)
+    ]),
+
+    /* ===== BLOC 4 — intersaison Bompa, novembre → février ========
+       La course repasse en volume facile : c'est le seul moment de
+       l'année où la force se construit vraiment. Trois séances par
+       semaine, montée progressive vers de vrais triplés. */
+    m('Bloc 4 · A — Bas · intersaison',10,[
+      b('Charnière de hanche au bâton',2,8,30,45,H),
+      b('Squat overhead',2,5,45,60,H),
+      b('Demi-squat barre',5,3,180,180),
+      b('Soulevé de terre barre hexagonale',4,5,150,150),
+      b('Hip thrust',3,5,150,120),
+      b('Fente bulgare',3,6,90,90),
+      b('Mollets debout jambe tendue',3,8,90,90),
+      b('Mollets assis genou fléchi',3,10,90,90),
+      b('Nordic curl',3,4,90,60)
+    ]),
+    m('Bloc 4 · B — Haut · intersaison',0,[
+      b('Corde à sauter',3,60,45,60,H),
+      b('Traction supination serrée',5,5,120,120),
+      b('Rowing haltère un bras',4,10,105,105),
+      b('Dips',4,8,105,105),
+      b('Pompes larges',3,12,60,90),
+      b('Développé militaire haltères',4,8,105,105),
+      b('Élévations latérales',3,12,60,90),
+      b('Triceps',3,15,60,90),
+      b('Rotateurs externes élastique',2,15,45,60),
+      b('Curl-up McGill',3,10,45,60)
+    ]),
+    m('Bloc 4 · C — Full body & pliométrie',8,[
+      b('Pogo hops',3,20,45,75),
+      b('Sauts verticaux',3,5,90,120),
+      b('Goblet squat',3,12,90,105),
+      b('Soulevé de terre roumain',3,10,90,105),
+      b('Fente arrière chargée',3,10,90,105),
+      b('Monster walk élastique',2,15,45,60),
+      b('Copenhagen adduction',3,8,45,60),
+      b('Pallof press',3,10,45,45),
+      b('Bird dog',3,8,45,60)
+    ])
+  ];
+}
+function modelesParDefaut(){ return modelesLafay().concat(modelesRenfo()); }
+
 const DB = {
   exercices:[], modeles:[], planifiees:[], journal:[], reglages:{},
   charger(){
@@ -634,6 +959,30 @@ const DB = {
     this.reglages = Object.assign({ voix:true, bips:true, ecranAllume:true,
       enchainementAuto:true, seancesParSemaine:2, semainesCarto:4,
       seuils:[600,300,180,120,60,30,15,10,5,4,3,2,1], dernierBip:3 }, Store.lire('reglages',{})||{});
+    this.majCatalogueRenfo();
+  },
+  /* Le catalogue de renforcement et les quinze séances des blocs 0 à 4
+     sont arrivés après la première installation : une bibliothèque
+     déjà remplie ne les aurait jamais vus, puisque les valeurs par
+     défaut ne servent qu'au tout premier lancement.
+
+     On les insère donc une fois, et une seule : un exercice ou une
+     séance déjà présent est laissé intact, et un exercice supprimé
+     volontairement — le crunch, par exemple — ne réapparaît pas au
+     lancement suivant. */
+  majCatalogueRenfo(){
+    if(this.reglages.catalogueRenfo>=1) return;
+    let touche=false;
+    exercicesRenfo().forEach(ref=>{
+      if(!this.exercice(ref.id)){ this.exercices.push(ref); touche=true; }
+    });
+    if(touche){ Store.ecrire('exercices',this.exercices); touche=false; }
+    modelesRenfo().forEach(ref=>{
+      if(!this.modeles.some(m=>m.id===ref.id)){ this.modeles.push(ref); touche=true; }
+    });
+    if(touche) Store.ecrire('modeles',this.modeles);
+    this.reglages.catalogueRenfo=1;
+    Store.ecrire('reglages',this.reglages);
   },
   /* Les séances créées avant que l'échauffement ne devienne un
      exercice portaient un champ echauffementMin. On le convertit en
@@ -896,6 +1245,28 @@ const mmss = s => { s=Math.max(0,Math.floor(s));
    cartographie musculaire.
    ============================================================ */
 const PICTOS={"treadmill":"<path class=\"equip\" d=\"M8 84H92M12 84V76M88 84V76M70 22H88V50\"/><circle class=\"t\" cx=\"54\" cy=\"18\" r=\"6\"/><path d=\"M52 25L44 49L58 62M47 34L30 29M47 34L67 41M44 49L26 68L19 82M58 62L76 75\"/>","run-easy":"<line class=\"sol\" x1=\"8\" y1=\"88\" x2=\"92\" y2=\"88\"/><circle class=\"t\" cx=\"60\" cy=\"19\" r=\"6\"/><path d=\"M57 26L48 49L61 61M52 34L36 44M53 33L70 39M48 49L31 67L19 83M61 61L79 76L89 82\"/><path class=\"mvt\" d=\"M12 34H27M8 45H23\"/>","run-marathon":"<line class=\"sol\" x1=\"8\" y1=\"88\" x2=\"92\" y2=\"88\"/><circle class=\"t\" cx=\"58\" cy=\"18\" r=\"6\"/><path d=\"M55 25L48 49L59 61M50 34L34 42M51 33L68 42M48 49L34 67L24 83M59 61L75 76L89 83\"/><path class=\"mvt\" d=\"M10 30H23M8 40H20M12 50H25\"/>","run-half":"<line class=\"sol\" x1=\"8\" y1=\"88\" x2=\"92\" y2=\"88\"/><circle class=\"t\" cx=\"62\" cy=\"19\" r=\"6\"/><path d=\"M58 26L47 48L61 59M51 33L33 39M52 33L70 44M47 48L27 62L15 78M61 59L78 72L91 76\"/><path class=\"mvt\" d=\"M8 31H27M5 43H22\"/>","run-10k":"<line class=\"sol\" x1=\"6\" y1=\"88\" x2=\"94\" y2=\"88\"/><circle class=\"t\" cx=\"65\" cy=\"18\" r=\"6\"/><path d=\"M61 25L47 46L60 57M52 31L31 35M52 31L72 43M47 46L25 57L9 72M60 57L78 68L94 70\"/><path class=\"mvt\" d=\"M6 26H29M4 38H24M9 50H28\"/>","run-vma":"<line class=\"sol\" x1=\"6\" y1=\"88\" x2=\"94\" y2=\"88\"/><path class=\"equip\" d=\"M12 72V88M22 78V88M78 75V88M88 70V88\"/><circle class=\"t\" cx=\"62\" cy=\"19\" r=\"6\"/><path d=\"M58 26L46 47L59 58M51 32L31 37M51 32L71 43M46 47L25 60L12 76M59 58L78 70L92 73\"/>","run-sprint":"<line class=\"sol\" x1=\"5\" y1=\"88\" x2=\"95\" y2=\"88\"/><circle class=\"t\" cx=\"69\" cy=\"23\" r=\"6\"/><path d=\"M64 29L45 43L58 54M51 37L28 33M50 37L73 43M45 43L25 53L7 68M58 54L78 60L95 57\"/><path class=\"mvt\" d=\"M6 23H35M3 34H24M8 45H30\"/>","pushup-narrow":"<line class=\"sol\" x1=\"6\" y1=\"88\" x2=\"94\" y2=\"88\"/><circle class=\"t\" cx=\"79\" cy=\"43\" r=\"6\"/><path d=\"M72 46L38 58L17 73M38 58L57 68M57 68L63 86M52 66L49 86\"/>","pushup-wide":"<line class=\"sol\" x1=\"6\" y1=\"88\" x2=\"94\" y2=\"88\"/><circle class=\"t\" cx=\"79\" cy=\"43\" r=\"6\"/><path d=\"M72 46L38 58L17 73M50 54L73 82M50 54L45 85\"/>","dips":"<path class=\"equip\" d=\"M20 34V90M80 34V90M8 34H36M64 34H92\"/><circle class=\"t\" cx=\"50\" cy=\"24\" r=\"6\"/><path d=\"M50 31L50 58M50 40L31 42M50 40L69 42M50 58L41 83M50 58L59 83\"/>","pullup-pron-narrow":"<path class=\"equip\" d=\"M10 15H90\"/><circle class=\"t\" cx=\"50\" cy=\"35\" r=\"6\"/><path d=\"M43 16L47 29M57 16L53 29M50 42L50 64M50 64L41 86M50 64L59 86\"/><path class=\"mvt\" d=\"M38 12V20M62 12V20\"/>","pullup-pron-wide":"<path class=\"equip\" d=\"M8 15H92\"/><circle class=\"t\" cx=\"50\" cy=\"35\" r=\"6\"/><path d=\"M22 16L45 31M78 16L55 31M50 42L50 64M50 64L41 86M50 64L59 86\"/><path class=\"mvt\" d=\"M18 12V20M82 12V20\"/>","pullup-sup-narrow":"<path class=\"equip\" d=\"M10 15H90\"/><circle class=\"t\" cx=\"50\" cy=\"35\" r=\"6\"/><path d=\"M41 17L46 30M59 17L54 30M50 42L50 64M50 64L41 86M50 64L59 86\"/><path class=\"mvt\" d=\"M37 20H44M56 20H63\"/>","pullup-sup-wide":"<path class=\"equip\" d=\"M8 15H92\"/><circle class=\"t\" cx=\"50\" cy=\"35\" r=\"6\"/><path d=\"M23 17L45 31M77 17L55 31M50 42L50 64M50 64L41 86M50 64L59 86\"/><path class=\"mvt\" d=\"M18 20H25M75 20H82\"/>","biceps-curl":"<line class=\"sol\" x1=\"8\" y1=\"90\" x2=\"92\" y2=\"90\"/><circle class=\"t\" cx=\"50\" cy=\"16\" r=\"6\"/><path d=\"M50 23L50 57M50 31L35 45L31 29M50 31L65 45L69 29M50 57L42 87M50 57L58 87\"/><circle class=\"equip\" cx=\"28\" cy=\"27\" r=\"5\"/><circle class=\"equip\" cx=\"72\" cy=\"27\" r=\"5\"/>","triceps-overhead":"<line class=\"sol\" x1=\"8\" y1=\"90\" x2=\"92\" y2=\"90\"/><circle class=\"t\" cx=\"50\" cy=\"20\" r=\"6\"/><path d=\"M50 27L50 58M50 34L39 18L48 8M50 34L61 18L52 8M50 58L42 88M50 58L58 88\"/><circle class=\"equip\" cx=\"50\" cy=\"7\" r=\"5\"/>","superman":"<line class=\"sol\" x1=\"6\" y1=\"88\" x2=\"94\" y2=\"88\"/><circle class=\"t\" cx=\"29\" cy=\"57\" r=\"6\"/><path d=\"M35 61L58 65L78 58M42 63L18 51M58 65L86 72M62 64L88 53\"/>","squat":"<line class=\"sol\" x1=\"6\" y1=\"90\" x2=\"94\" y2=\"90\"/><circle class=\"t\" cx=\"46\" cy=\"18\" r=\"6\"/><path d=\"M46 25L43 49L58 58M43 34L68 35M43 49L26 61L29 88M58 58L73 64L70 88\"/>","lateral-lunge":"<line class=\"sol\" x1=\"5\" y1=\"90\" x2=\"95\" y2=\"90\"/><circle class=\"t\" cx=\"45\" cy=\"18\" r=\"6\"/><path d=\"M45 25L45 49M45 34L26 45M45 34L63 45M45 49L25 64L13 88M45 49L70 64L91 88\"/><path class=\"mvt\" d=\"M67 54L82 54M78 49L84 54L78 59\"/>","calf-raise":"<path class=\"equip\" d=\"M13 86H87M30 86H70\"/><circle class=\"t\" cx=\"50\" cy=\"16\" r=\"6\"/><path d=\"M50 23L50 57M50 34L35 48M50 34L65 48M50 57L43 80L34 86M50 57L58 80L68 86\"/><path class=\"mvt\" d=\"M77 69V84M72 74L77 69L82 74\"/>","hip-abduction":"<line class=\"sol\" x1=\"6\" y1=\"90\" x2=\"94\" y2=\"90\"/><path class=\"equip\" d=\"M25 28V88\"/><circle class=\"t\" cx=\"47\" cy=\"17\" r=\"6\"/><path d=\"M47 24L47 55M47 34L27 40M47 55L42 87M47 55L79 70\"/><path class=\"mvt\" d=\"M68 58L82 64M79 58L84 65L76 68\"/>","hip-adduction":"<line class=\"sol\" x1=\"6\" y1=\"90\" x2=\"94\" y2=\"90\"/><path class=\"equip\" d=\"M75 28V88\"/><circle class=\"t\" cx=\"53\" cy=\"17\" r=\"6\"/><path d=\"M53 24L53 55M53 34L73 40M53 55L58 87M53 55L22 70\"/><path class=\"mvt\" d=\"M31 62L45 58M37 55L45 58L40 65\"/>","glute-bridge":"<line class=\"sol\" x1=\"6\" y1=\"89\" x2=\"94\" y2=\"89\"/><circle class=\"t\" cx=\"18\" cy=\"74\" r=\"6\"/><path d=\"M24 76L43 62L61 52L77 64M31 72L31 88M77 64L84 88\"/><path class=\"mvt\" d=\"M57 67V53M52 58L57 53L62 58\"/>","crunch":"<line class=\"sol\" x1=\"6\" y1=\"90\" x2=\"94\" y2=\"90\"/><circle class=\"t\" cx=\"30\" cy=\"61\" r=\"6\"/><path d=\"M36 64L53 76L72 70M53 76L76 88M72 70L86 87M36 64L45 49\"/><path class=\"mvt\" d=\"M22 47Q35 35 49 46\"/>","roman-chair-leg-raise":"<path class=\"equip\" d=\"M17 18V91M83 18V91M17 28H39M61 28H83M17 91H6M83 91H94M34 42H45M55 42H66M42 56H58\"/><circle class=\"t\" cx=\"50\" cy=\"25\" r=\"6\"/><path d=\"M50 32L49 55M49 40L36 38M49 40L64 38M49 55L64 64L79 57M49 55L61 73L79 73\"/><path class=\"mvt\" d=\"M76 48V61M71 53L76 48L81 53\"/>","front-plank":"<line class=\"sol\" x1=\"6\" y1=\"88\" x2=\"94\" y2=\"88\"/><circle class=\"t\" cx=\"23\" cy=\"57\" r=\"6\"/><path d=\"M29 61L81 70M37 63L24 78L43 78M81 70L89 85\"/><path class=\"mvt\" d=\"M51 56V72\"/>","side-plank":"<line class=\"sol\" x1=\"6\" y1=\"88\" x2=\"94\" y2=\"88\"/><circle class=\"t\" cx=\"21\" cy=\"57\" r=\"6\"/><path d=\"M27 61L81 65M31 62L29 84M81 65L90 85M52 63L52 42\"/><path class=\"mvt\" d=\"M47 47L52 42L57 47\"/>","stretch-back":"<line class=\"sol\" x1=\"6\" y1=\"90\" x2=\"94\" y2=\"90\"/><circle class=\"t\" cx=\"29\" cy=\"55\" r=\"6\"/><path d=\"M35 58Q50 46 64 60L82 73M42 55L22 76M64 60L58 87M82 73L88 88\"/>","stretch-shoulder":"<line class=\"sol\" x1=\"8\" y1=\"90\" x2=\"92\" y2=\"90\"/><circle class=\"t\" cx=\"50\" cy=\"18\" r=\"6\"/><path d=\"M50 25L50 58M50 34L75 42M50 34L32 44L70 44M50 58L42 88M50 58L58 88\"/>","stretch-triceps":"<line class=\"sol\" x1=\"8\" y1=\"90\" x2=\"92\" y2=\"90\"/><circle class=\"t\" cx=\"50\" cy=\"22\" r=\"6\"/><path d=\"M50 29L50 60M50 37L38 18L46 8M50 37L62 20L54 11M50 60L42 89M50 60L58 89\"/>","stretch-hamstring":"<line class=\"sol\" x1=\"6\" y1=\"90\" x2=\"94\" y2=\"90\"/><circle class=\"t\" cx=\"36\" cy=\"34\" r=\"6\"/><path d=\"M40 39L54 55L73 66M47 46L76 62M54 55L47 88M73 66L90 88\"/>","stretch-calf":"<line class=\"sol\" x1=\"6\" y1=\"90\" x2=\"94\" y2=\"90\"/><path class=\"equip\" d=\"M83 18V90\"/><circle class=\"t\" cx=\"51\" cy=\"25\" r=\"6\"/><path d=\"M55 30L62 53M58 38L82 41M62 53L47 68L35 89M62 53L74 71L82 89\"/>","stretch-neck":"<line class=\"sol\" x1=\"8\" y1=\"90\" x2=\"92\" y2=\"90\"/><circle class=\"t\" cx=\"56\" cy=\"20\" r=\"6\"/><path d=\"M52 27L47 58M49 35L29 48M49 35L68 46M47 58L39 88M47 58L56 88M54 26L68 14\"/><path class=\"mvt\" d=\"M62 10Q70 8 76 15\"/>"};
+
+/* --- Pictogrammes du catalogue de renforcement -------------------
+   Même langage graphique que les précédents : « sol » pour la ligne
+   d'appui, « t » pour la tête, « equip » pour le matériel, « mvt »
+   pour la flèche de mouvement. --------------------------------- */
+Object.assign(PICTOS, {
+  'deadlift-rdl':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><circle class="t" cx="30" cy="30" r="6"/><path d="M36 33L62 44M44 37L45 66M62 44L67 68L62 90"/><path class="equip" d="M30 68H62"/><circle class="equip" cx="26" cy="68" r="5"/><circle class="equip" cx="66" cy="68" r="5"/><path class="mvt" d="M82 74V56M77 61L82 56L87 61"/>',
+  'barbell-squat':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><circle class="t" cx="40" cy="22" r="6"/><path d="M42 29L54 54M45 36L28 33M45 36L64 34M54 54L34 60L40 88M54 54L60 70L58 88"/><path class="equip" d="M26 32H68"/><circle class="equip" cx="22" cy="32" r="5"/><circle class="equip" cx="72" cy="32" r="5"/>',
+  'overhead-squat':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><circle class="t" cx="44" cy="28" r="6"/><path d="M45 35L54 58M47 41L36 15M47 41L60 15M54 58L34 64L40 88M54 58L60 73L58 88"/><path class="equip" d="M28 13H70"/><circle class="equip" cx="24" cy="13" r="4"/><circle class="equip" cx="74" cy="13" r="4"/>',
+  'hip-thrust':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><path class="equip" d="M8 58H34M13 58V90M31 58V90"/><circle class="t" cx="22" cy="47" r="6"/><path d="M28 51L52 54L70 70M40 53L37 90M70 70L76 90"/><path class="equip" d="M42 48H62"/><circle class="equip" cx="39" cy="48" r="5"/><circle class="equip" cx="65" cy="48" r="5"/><path class="mvt" d="M52 40V28M47 33L52 28L57 33"/>',
+  'lunge-back':'<line class="sol" x1="5" y1="90" x2="95" y2="90"/><circle class="t" cx="46" cy="18" r="6"/><path d="M46 25L48 52M47 33L33 51M47 33L61 51M48 52L31 65L33 90M48 52L68 72L85 88"/><circle class="equip" cx="30" cy="55" r="5"/><circle class="equip" cx="64" cy="55" r="5"/>',
+  'nordic-curl':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><path class="equip" d="M70 78H90M80 78V90"/><circle class="t" cx="24" cy="45" r="6"/><path d="M30 48L52 59L70 79M39 53L33 73M70 79L84 83"/><path class="mvt" d="M20 61Q33 70 46 75"/>',
+  'jump':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><circle class="t" cx="50" cy="24" r="6"/><path d="M50 31L50 57M50 38L33 24M50 38L67 24M50 57L41 76M50 57L59 76"/><path class="mvt" d="M50 14V4M45 9L50 4L55 9M22 80L28 86M78 80L72 86"/>',
+  'jump-rope':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><circle class="t" cx="50" cy="30" r="6"/><path d="M50 37L50 60M50 43L37 49M50 43L63 49M50 60L44 84M50 60L56 84"/><path class="equip" d="M37 49Q11 52 13 24Q50 2 87 24Q89 52 63 49"/>',
+  'db-row':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><path class="equip" d="M18 62H52M23 62V90M47 62V90"/><circle class="t" cx="29" cy="40" r="6"/><path d="M35 44L66 50M39 46L39 62M45 47L58 65M66 50L72 72L68 90"/><circle class="equip" cx="60" cy="69" r="5"/><path class="mvt" d="M78 64V50M73 55L78 50L83 55"/>',
+  'overhead-press':'<line class="sol" x1="8" y1="90" x2="92" y2="90"/><circle class="t" cx="50" cy="31" r="6"/><path d="M50 38L50 62M50 43L34 34L31 17M50 43L66 34L69 17M50 62L43 90M50 62L57 90"/><circle class="equip" cx="29" cy="13" r="5"/><circle class="equip" cx="71" cy="13" r="5"/><path class="mvt" d="M86 34V20M81 25L86 20L91 25"/>',
+  'lateral-raise':'<line class="sol" x1="8" y1="90" x2="92" y2="90"/><circle class="t" cx="50" cy="20" r="6"/><path d="M50 27L50 60M50 34L26 31M50 34L74 31M50 60L43 90M50 60L57 90"/><circle class="equip" cx="21" cy="30" r="5"/><circle class="equip" cx="79" cy="30" r="5"/><path class="mvt" d="M21 48V38M79 48V38"/>',
+  'band-press':'<line class="sol" x1="8" y1="90" x2="92" y2="90"/><path class="equip" d="M12 18V88"/><circle class="t" cx="57" cy="20" r="6"/><path d="M57 27L57 58M57 36L74 44M57 58L49 88M57 58L65 88"/><path class="equip" d="M14 38Q44 37 74 44"/><path class="mvt" d="M80 44H92M87 39L93 44L87 49"/>',
+  'bird-dog':'<line class="sol" x1="6" y1="88" x2="94" y2="88"/><circle class="t" cx="26" cy="52" r="6"/><path d="M32 55L64 60M39 57L37 84M64 60L70 84M33 51L14 40M65 59L88 50"/>',
+  'curl-up':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><circle class="t" cx="24" cy="65" r="6"/><path d="M30 68L58 76M39 72L35 85M58 76L70 61L78 88M58 76L88 83"/><path class="mvt" d="M19 53Q30 47 41 53"/>',
+  'hanging-knee-raise':'<path class="equip" d="M10 14H90"/><circle class="t" cx="50" cy="30" r="6"/><path d="M44 15L47 25M56 15L53 25M50 37L50 60M50 60L69 57M69 57L71 78"/><path class="mvt" d="M80 72V56M75 61L80 56L85 61"/>'
+});
 
 const PICTO_EXACT={"exo-echauffement-tapis-de-course":"treadmill","exo-course-a-pied-en-endurance":"run-easy","exo-course-a-pied-allure-marathon":"run-marathon","exo-course-a-pied-allure-semi-marathon":"run-half","exo-course-a-pied-allure-10-km":"run-10k","exo-course-a-pied-allure-vma":"run-vma","exo-course-a-pied-sprint":"run-sprint","exo-pompes-serrees":"pushup-narrow","exo-pompes-larges":"pushup-wide","exo-dips":"dips","exo-traction-pronation-serree":"pullup-pron-narrow","exo-traction-pronation-large":"pullup-pron-wide","exo-traction-supination-serree":"pullup-sup-narrow","exo-traction-supination-large":"pullup-sup-wide","exo-biceps":"biceps-curl","exo-triceps":"triceps-overhead","exo-superman":"superman","exo-squat":"squat","exo-flexion-laterale":"lateral-lunge","exo-mollets":"calf-raise","exo-abduction-hanche":"hip-abduction","exo-adduction-hanche":"hip-adduction","exo-pont":"glute-bridge","exo-crunch":"crunch","exo-abdominaux-chaise-romaine":"roman-chair-leg-raise","exo-gainage-horizontal":"front-plank","exo-gainage-lateral":"side-plank","exo-etirement-dos":"stretch-back","exo-etirement-epaule":"stretch-shoulder","exo-etirement-bras":"stretch-triceps","exo-etirement-jambes":"stretch-hamstring","exo-etirement-chevilles":"stretch-calf","exo-etirement-cou":"stretch-neck"};
 
