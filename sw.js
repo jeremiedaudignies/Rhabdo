@@ -14,7 +14,7 @@
    cache hors connexion. Le noyau seul est bien plus sûr, et les images
    se cachent d'elles-mêmes dès la première consultation d'une fiche.
 */
-const CACHE = 'rhabdo-v15';
+const CACHE = 'rhabdo-v16';
 const NOYAU = ['./', './index.html', './manifest.json',
                './icone-180.png', './icone-192.png', './icone-512.png'];
 

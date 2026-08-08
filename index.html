@@ -280,7 +280,7 @@ details.reglages[open] summary::after{content:"\2013"}
 .delta .up{color:var(--recup)} .delta .down{color:var(--effort)} .delta .flat{color:var(--texte-3)}
 .corps{display:flex;align-items:flex-start;gap:10px}
 .vue-corps{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center}
-.corps svg{width:100%;height:auto;display:block}
+.corps svg{width:100%;height:auto;aspect-ratio:200/470;display:block}
 .corps .lg{display:block;text-align:center;font-size:11.5px;font-weight:700;color:var(--texte-3);margin-top:4px}
 /* Teintes fixes et contrastées : un muscle au repos doit rester
    parfaitement lisible sur la carte blanche, même sans données. */
@@ -304,6 +304,51 @@ details.reglages[open] summary::after{content:"\2013"}
 .picto.grand svg{width:52px;height:52px}
 .picto.photo{background:#fff;box-shadow:inset 0 0 0 1px var(--filet)}
 .picto.photo img{width:100%;height:100%;object-fit:cover;object-position:50% 52%;display:block}
+button.picto{padding:0;border:0;cursor:pointer;position:relative}
+button.picto::after{content:'';position:absolute;right:2px;bottom:2px;width:13px;height:13px;
+  border-radius:99px;background:var(--accent);opacity:.9;
+  box-shadow:0 0 0 2px var(--surface)}
+button.picto.mini::after{width:11px;height:11px}
+.picto.anim{position:relative}
+.picto.anim img{position:absolute;inset:0}
+.picto.anim .phase-1{animation:vign1 6s ease-in-out infinite}
+.picto.anim .phase-2{animation:vign2 6s ease-in-out infinite}
+@keyframes vign1{0%,40%{opacity:1}48%,90%{opacity:0}98%,100%{opacity:1}}
+@keyframes vign2{0%,40%{opacity:0}48%,90%{opacity:1}98%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){
+  .picto.anim .phase-1,.picto.anim .phase-2{animation:none}
+  .picto.anim .phase-2{opacity:0}
+}
+.modale{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center}
+.modale-fond{position:absolute;inset:0;background:rgba(20,23,28,.42);backdrop-filter:blur(2px)}
+.modale-feuille{position:relative;width:100%;max-width:560px;max-height:92vh;display:flex;
+  flex-direction:column;background:var(--fond);border-radius:22px 22px 0 0;
+  box-shadow:0 -12px 40px rgba(20,23,28,.22);animation:monte .22s ease-out}
+@keyframes monte{from{transform:translateY(14px);opacity:.6}to{transform:none;opacity:1}}
+.modale-tete{display:flex;align-items:center;gap:10px;padding:16px 16px 10px;
+  border-bottom:1px solid var(--filet)}
+.modale-tete .exo-nom{margin:0}
+.modale-corps{overflow:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 4px;flex:1}
+.modale-pied{padding:10px 16px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--filet)}
+.chrono-chip{flex:0 0 auto;font-size:12px;font-weight:700;letter-spacing:.02em;
+  padding:6px 10px;border-radius:99px;background:var(--accent-doux);color:var(--accent);
+  white-space:nowrap;font-variant-numeric:tabular-nums}
+.chrono-chip.recup{background:#E1F5F1;color:var(--recup)}
+.modale-tete .rond{flex:0 0 auto;width:36px;height:36px;border-radius:99px;border:0;
+  background:var(--surface-2);color:var(--texte-2);font-size:20px;line-height:1;cursor:pointer}
+.modale-tete .rond:active{transform:scale(.94)}
+.groupes-tab{margin-top:12px;border-top:1px solid var(--filet)}
+.groupes-tab .gl{display:grid;grid-template-columns:1fr 64px 74px;align-items:center;gap:8px;
+  padding:9px 0;border-bottom:1px solid var(--filet)}
+.groupes-tab .gl:last-child{border-bottom:0}
+.groupes-tab .nm{font-size:13.5px;font-weight:700;min-width:0}
+.groupes-tab .barre-g{height:6px;border-radius:99px;background:var(--surface-2);margin-top:5px;overflow:hidden}
+.groupes-tab .barre-g i{display:block;height:100%;border-radius:99px;background:var(--accent)}
+.groupes-tab .vv{text-align:right;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+.groupes-tab .vv small{display:block;font-size:10.5px;font-weight:600;color:var(--texte-3);
+  letter-spacing:.02em;text-transform:uppercase}
+.groupes-tab .vv.muet{color:var(--texte-3);font-weight:600}
+.groupes-tab .src{font-size:11px;color:var(--texte-3);font-weight:500}
 .exo-tete{display:flex;align-items:center;gap:12px;margin-bottom:6px}
 .exo-tete .exo-nom{margin:0}
 .mois-tete{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
@@ -1330,6 +1375,24 @@ function picto(exo,taille){
     '<img loading="lazy" decoding="async" onerror="vignetteRepli(this)" alt="" src="'+esc(ref.phase2)+'">'+
     '</span>';
 }
+/* Vignette cliquable : même dessin, mais elle ouvre la fiche.
+   La pastille orange en bas à droite signale qu'il y a quelque chose
+   à toucher — sans quoi rien ne distingue une image décorative d'une
+   image active. */
+function pictoLien(exo,taille,animee){
+  if(!exo) return picto(exo,taille);
+  const ref = GUIDE_IMAGES[exo.id];
+  const cls = 'picto'+(ref?' photo':'')+(ref&&animee?' anim':'')+(taille?' '+taille:'');
+  const dedans = ref
+    ? (animee
+        ? '<img class="phase-1" loading="lazy" decoding="async" onerror="vignetteRepli(this)" alt="" src="'+esc(ref.phase1)+'">'+
+          '<img class="phase-2" loading="lazy" decoding="async" onerror="vignetteRepli(this)" alt="" src="'+esc(ref.phase2)+'">'
+        : '<img loading="lazy" decoding="async" onerror="vignetteRepli(this)" alt="" src="'+esc(ref.phase2)+'">')
+    : '<svg viewBox="0 0 100 100" aria-hidden="true">'+PICTOS[clePicto(exo)]+'</svg>';
+  return '<button type="button" class="'+cls+'" data-fiche="'+esc(exo.id)+'" data-exo="'+esc(exo.id)+'"'+
+    ' aria-label="Voir la fiche : '+esc(exo.nom)+'">'+dedans+'</button>';
+}
+
 /* Même principe que pour le guide : une vignette introuvable retombe
    sur le dessin vectoriel plutôt que d'afficher un cadre cassé. */
 function vignetteRepli(img){
@@ -1512,6 +1575,35 @@ function guideRepli(img){
   hero.dataset.repli='1';
   const exo=DB.exercice(hero.dataset.exo||'');
   if(exo) hero.outerHTML=guideVisuelVectoriel(exo);
+}
+/* Surcouche de consultation. Elle ne remplace pas la vue courante :
+   elle se pose dessus. Pendant une séance, le cadran reste donc
+   présent et le chronomètre continue — la pastille de la tête en
+   donne la lecture, rafraîchie par rafraichirCadran(). */
+function modaleFiche(){
+  const exo=DB.exercice(ficheModale);
+  if(!exo) return '';
+  const enSeance = ongletCourant==='seance' && Seance.active && Seance.etat!=='termine';
+  const muscles=(exo.zone1||[]).map(z=>GROUPES[z]).join(' \u00B7 ')+
+    ((exo.zone2||[]).length?' \u2192 '+exo.zone2.map(z=>GROUPES[z]).join(' \u00B7 '):'');
+  const e=enSeance?etatCadran():null;
+  return '<div class="modale" role="dialog" aria-modal="true" aria-label="Fiche : '+esc(exo.nom)+'">'+
+    '<div class="modale-fond" data-act="fermer-fiche"></div>'+
+    '<div class="modale-feuille">'+
+      '<div class="modale-tete">'+
+        '<div style="flex:1;min-width:0"><h2 class="exo-nom">'+esc(exo.nom)+'</h2>'+
+        '<p class="exo-meta">'+muscles+'</p></div>'+
+        (enSeance?'<span class="chrono-chip'+(e.cls==='recup'?' recup':'')+'" id="cadran-mini">'+
+          esc(e.mode)+' \u00B7 '+esc(String(e.gros))+'</span>':'')+
+        '<button class="rond" data-act="fermer-fiche" aria-label="Fermer">\u00D7</button>'+
+      '</div>'+
+      '<div class="modale-corps">'+
+        (ficheExerciceHTML(exo,true)||'<p class="aide">Aucune fiche détaillée pour cet exercice.</p>')+
+        (exo.remarque?'<p class="aide" style="margin-top:10px">'+esc(exo.remarque)+'</p>':'')+
+      '</div>'+
+      '<div class="modale-pied"><button class="bouton principal" data-act="fermer-fiche">'+
+        (enSeance?'Retour \u00E0 la s\u00E9ance en cours':'Retour')+'</button></div>'+
+    '</div></div>';
 }
 function ficheExerciceHTML(exo,ouverte){
   if(!exo || !(exo.description||exo.execution||exo.erreurs)) return '';
@@ -1879,8 +1971,16 @@ function toast(msg){
    ------------------------------------------------------------ */
 function rafraichirCadran(){
   const cadran=document.getElementById('cadran');
-  if(!cadran) return;
   const etat=etatCadran();
+  /* La pastille de la fiche en surcouche lit le même état : c'est ce
+     qui permet de consulter un exercice sans perdre le chrono de vue. */
+  const chip=document.getElementById('cadran-mini');
+  if(chip){
+    const t=etat.mode+' \u00B7 '+etat.gros;
+    if(chip.textContent!==t) chip.textContent=t;
+    chip.className='chrono-chip'+(etat.cls.indexOf('recup')>=0?' recup':'');
+  }
+  if(!cadran) return;
   cadran.className='cadran '+etat.cls;
   const c=cadran.querySelector('.chiffres'), s=cadran.querySelector('.sous'),
         m=cadran.querySelector('.mode'), a=cadran.querySelector('.arc');
@@ -1953,15 +2053,20 @@ function rendre(){
     b.setAttribute('aria-current', b.dataset.onglet===ongletCourant?'page':'false'));
   const v=$('#vue');
   try{
-    if(dernierePanne){ v.innerHTML=vuePanne(); return; }
-    if(detailSeanceId){ v.innerHTML=vueDetailSeance(); return; }
-    if(ecranParams){ v.innerHTML=vueParametres(); return; }
-    if(vueSpecialeHisto){ v.innerHTML=vueHistorique(); return; }
-    if(planif){ v.innerHTML=vuePlanificateur(); return; }
-    if(ongletCourant==='seance') v.innerHTML = Seance.active?vueSeanceEnCours():vueListeSeances();
-    else if(ongletCourant==='biblio') v.innerHTML = edition?vueEditeur():vueBiblio();
-    else if(ongletCourant==='accueil'){ v.innerHTML = vueAccueil(); colorierCorps(); }
-    else v.innerHTML = vuePlanif();
+    let carte=false, html;
+    if(dernierePanne) html=vuePanne();
+    else if(detailSeanceId) html=vueDetailSeance();
+    else if(ecranParams) html=vueParametres();
+    else if(vueSpecialeHisto) html=vueHistorique();
+    else if(planif) html=vuePlanificateur();
+    else if(ongletCourant==='seance') html = Seance.active?vueSeanceEnCours():vueListeSeances();
+    else if(ongletCourant==='biblio') html = edition?vueEditeur():vueBiblio();
+    else if(ongletCourant==='accueil'){ html = vueAccueil(); carte=true; }
+    else html=vuePlanif();
+    /* La fiche se pose par-dessus : la vue dessous reste montée, donc
+       le retour ne coûte rien et le cadran continue de tourner. */
+    v.innerHTML = html + (ficheModale?modaleFiche():'');
+    if(carte) colorierCorps();
   }catch(err){ noterPanneSansBoucle(err); v.innerHTML=vuePanne(); }
 }
 function noterPanneSansBoucle(err){
@@ -2169,7 +2274,7 @@ function editeurSeance(){
       '<button data-inc="blocs.'+i+'.'+champ.cle+'" data-pas="'+(-step)+'" data-min="'+(champ.min||0)+'" data-suffixe="'+unite+'">\u2212</button>'+
       '<span class="v">'+val+' '+unite+'</span>'+
       '<button data-inc="blocs.'+i+'.'+champ.cle+'" data-pas="'+step+'" data-min="'+(champ.min||0)+'" data-suffixe="'+unite+'">+</button></span></div>';
-    return '<div class="bloc-exo"><div class="tete">'+picto(exo,'mini')+'<b>'+esc(exo.nom)+'</b><div class="mini">'+
+    return '<div class="bloc-exo"><div class="tete">'+pictoLien(exo,'mini')+'<b>'+esc(exo.nom)+'</b><div class="mini">'+
       (i>0?'<button data-bloc-monter="'+i+'" aria-label="Monter">\u2191</button>':'')+
       (i<d.blocs.length-1?'<button data-bloc-descendre="'+i+'" aria-label="Descendre">\u2193</button>':'')+
       '<button data-bloc-dupliquer="'+i+'" aria-label="Dupliquer">\u29C9</button>'+
@@ -2299,7 +2404,7 @@ function vueSeanceEnCours(){
   return '<div class="fil"><span>Exercice '+(Seance.iBloc+1)+'/'+a.blocs.length+'</span>'+
     '<span>'+prog.pct+' %</span></div>'+
     '<div class="jauge"><i style="width:'+prog.pct+'%"></i></div>'+cadranHTML()+
-    '<div class="exo-tete">'+picto(exo)+'<div style="min-width:0">'+
+    '<div class="exo-tete">'+pictoLien(exo,'grand',true)+'<div style="min-width:0">'+
     '<h2 class="exo-nom">'+esc(exo.nom)+'</h2>'+
     '<p class="exo-meta">'+exo.zone1.map(z=>GROUPES[z]).join(' \u00B7 ')+
     (exo.zone2.length?' \u2192 '+exo.zone2.map(z=>GROUPES[z]).join(' \u00B7 '):'')+'</p></div></div>'+
@@ -2428,6 +2533,7 @@ let ecranParams=false, detailSeanceId=null, moisAffiche=null, jourSelectionne=nu
 let vueSpecialeHisto=false, filtreHisto='tous', limiteHisto=25;
 let planif=null;   /* écran de planification : {modeleId,date,mode,jours,occurrences} */
 let periodeCharge='3m', filtreCharge='tous', semainesJournal=3, uniteCharge='reps', uniteCarto='reps';
+let ficheModale=null;   /* identifiant d'exercice affiché en surcouche */
 
 const MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
 const memeJour=(a,b)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
@@ -2552,6 +2658,66 @@ function deltaPeriode(cle,unite){
     const pct = p>0 ? Math.round((a-p)/p*100) : (a>0?null:0);
     return {cat:c, actuel:a, precedent:p, delta:a-p, pct};
   });
+}
+
+function recordsParGroupe(semaines,unite){
+  const t0=Date.now()-semaines*7*86400000, r={};
+  Object.keys(GROUPES).forEach(g=>{
+    r[g]={val:0,valBrute:0,valFac:1,valExo:'',charge:0,chargeBrute:0,chargeFac:1,chargeExo:''};
+  });
+  DB.journal.forEach(a=>{
+    if(new Date(a.debut).getTime()<t0) return;
+    (a.series||[]).forEach(s=>{
+      const e=DB.exercice(s.exerciceId); if(!e) return;
+      const v = serieDansUnite(s,unite) ? (valeurSerie(s)||0) : 0;
+      const kg = s.lestageKg||0;
+      const paires=[].concat(
+        (e.zone1||[]).map(g=>[g,1]), (e.zone2||[]).map(g=>[g,0.5]));
+      paires.forEach(pr=>{
+        const g=pr[0], f=pr[1], c=r[g];
+        if(!c) return;
+        if(v>0 && v*f>c.val){ c.val=v*f; c.valBrute=v; c.valFac=f; c.valExo=e.nom; }
+        if(kg>0 && kg*f>c.charge){ c.charge=kg*f; c.chargeBrute=kg; c.chargeFac=f; c.chargeExo=e.nom; }
+      });
+    });
+  });
+  return r;
+}
+/* Un nombre lisible : pas de décimale inutile, virgule française. */
+function nbCourt(v){
+  const x=Math.round(v*10)/10;
+  return String(x % 1 === 0 ? x : x.toFixed(1)).replace('.',',');
+}
+/* Le tableau par groupe : volume, meilleure série, charge la plus
+   lourde. Trié par volume décroissant — l'ordre porte l'information
+   principale, celle du déséquilibre entre groupes. */
+function tableauGroupes(vol,maxVol,semaines,unite){
+  const rec=recordsParGroupe(semaines,unite);
+  const uEff = unite==='temps' ? 's' : 'rép.';
+  const libEff = unite==='temps' ? 'Tenue max' : 'Série max';
+  const lignes=Object.keys(GROUPES).map(g=>({g,v:vol[g]||0,r:rec[g]}))
+    .sort((a,b)=>b.v-a.v)
+    .map(x=>{
+      const part=maxVol>0?Math.max(0,Math.min(1,x.v/maxVol)):0;
+      const cell=(brut,val,fac,exo,u)=>{
+        if(!(val>0)) return '<span class="vv muet">\u2014</span>';
+        const sous = fac<1 ? nbCourt(brut)+' '+u+' \u00D7 50 %' : (exo?exo:'');
+        return '<span class="vv">'+nbCourt(val)+
+          '<small>'+esc(sous||u)+'</small></span>';
+      };
+      return '<div class="gl"><div class="nm">'+GROUPES[x.g]+
+        '<div class="barre-g"><i style="width:'+(part*100).toFixed(0)+'%"></i></div>'+
+        '<span class="src">'+nbCourt(x.v)+' '+(unite==='temps'?'min':'rép.')+' cumulées'+
+        (x.r.valExo?' \u00B7 '+esc(x.r.valExo):'')+'</span></div>'+
+        cell(x.r.valBrute,x.r.val,x.r.valFac,'',uEff)+
+        cell(x.r.chargeBrute,x.r.charge,x.r.chargeFac,x.r.chargeExo,'kg')+
+        '</div>';
+    }).join('');
+  return '<div class="groupes-tab">'+
+    '<div class="gl"><div class="nm" style="color:var(--texte-3);font-size:11px;letter-spacing:.08em">GROUPE</div>'+
+    '<span class="vv muet" style="font-size:11px;letter-spacing:.04em">'+libEff.toUpperCase()+'</span>'+
+    '<span class="vv muet" style="font-size:11px;letter-spacing:.04em">CHARGE MAX</span></div>'+
+    lignes+'</div>';
 }
 
 function volumeParGroupe(semaines,unite){
@@ -2999,14 +3165,14 @@ function teinteVolume(part){
   return 'rgb('+r+','+g+','+b+')';
 }
 function silhouetteFace(){
-  return '<div class="vue-corps"><svg viewBox="0 0 200 470" role="img" aria-label="Vue de face">'+
+  return '<div class="vue-corps"><svg viewBox="0 0 200 470" width="200" height="470" role="img" aria-label="Vue de face">'+
     '<path class="neutre" d="M100 10 C86 10 79 22 79 38 C79 54 88 66 100 66 Z"/><path class="neutre" d="M100 10 C86 10 79 22 79 38 C79 54 88 66 100 66 Z" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M100 58 C94 58 91 62 90 68 C90 74 94 78 100 80 Z"/><path class="neutre" d="M100 58 C94 58 91 62 90 68 C90 74 94 78 100 80 Z" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M100 62 C93 62 88 65 85 70 C76 74 66 82 60 90 C64 104 66 124 67 140 C69 158 71 180 73 200 C74 210 73 220 72 228 C71 240 72 252 74 262 C75 280 76 296 77 310 C79 330 81 344 82 354 C83 372 80 384 80 396 C80 420 84 434 87 444 L97 446 C97 420 96 400 97 380 C98 350 99 310 100 262 Z"/><path class="neutre" d="M100 62 C93 62 88 65 85 70 C76 74 66 82 60 90 C64 104 66 124 67 140 C69 158 71 180 73 200 C74 210 73 220 72 228 C71 240 72 252 74 262 C75 280 76 296 77 310 C79 330 81 344 82 354 C83 372 80 384 80 396 C80 420 84 434 87 444 L97 446 C97 420 96 400 97 380 C98 350 99 310 100 262 Z" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M63 84 C50 88 41 100 39 116 C37 132 38 150 41 168 C43 186 46 204 48 220 C50 236 49 250 51 262 C53 274 62 274 64 262 C66 248 63 236 63 222 C64 204 66 186 67 168 C68 150 69 130 69 112 C69 100 67 89 65 84 Z"/><path class="neutre" d="M63 84 C50 88 41 100 39 116 C37 132 38 150 41 168 C43 186 46 204 48 220 C50 236 49 250 51 262 C53 274 62 274 64 262 C66 248 63 236 63 222 C64 204 66 186 67 168 C68 150 69 130 69 112 C69 100 67 89 65 84 Z" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M80 440 C72 450 68 460 72 464 C80 466 92 464 96 458 C98 452 97 446 97 444 Z"/><path class="neutre" d="M80 440 C72 450 68 460 72 464 C80 466 92 464 96 458 C98 452 97 446 97 444 Z" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="dos" d="M97 62 C95 68 92 73 88 76 C91 79 96 78 98 74 C99 70 99 65 99 62 Z"/><path class="mus" data-g="dos" d="M97 62 C95 68 92 73 88 76 C91 79 96 78 98 74 C99 70 99 65 99 62 Z" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="dos" d="M96 70 C88 71 78 75 68 82 C65 84 63 86 62 88 C70 90 80 87 88 82 C93 79 96 75 97 72 Z"/><path class="mus" data-g="dos" d="M96 70 C88 71 78 75 68 82 C65 84 63 86 62 88 C70 90 80 87 88 82 C93 79 96 75 97 72 Z" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="epaules" d="M64 88 C52 93 44 103 42 117 C41 129 44 139 49 145 C56 144 61 137 63 126 C65 113 66 97 66 89 Z"/><path class="mus" data-g="epaules" d="M64 88 C52 93 44 103 42 117 C41 129 44 139 49 145 C56 144 61 137 63 126 C65 113 66 97 66 89 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M53 97 C49 107 48 118 50 128"/><path class="stri" d="M53 97 C49 107 48 118 50 128" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M60 93 C57 104 56 116 57 128"/><path class="stri" d="M60 93 C57 104 56 116 57 128" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="pectoraux" d="M99 84 C90 84 79 87 71 93 C66 98 65 108 67 118 C69 128 75 135 83 137 C91 138 97 135 99 131 Z"/><path class="mus" data-g="pectoraux" d="M99 84 C90 84 79 87 71 93 C66 98 65 108 67 118 C69 128 75 135 83 137 C91 138 97 135 99 131 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M96 90 C87 90 78 94 72 100"/><path class="stri" d="M96 90 C87 90 78 94 72 100" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M97 103 C88 103 80 107 73 113"/><path class="stri" d="M97 103 C88 103 80 107 73 113" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M97 118 C90 119 83 123 78 129"/><path class="stri" d="M97 118 C90 119 83 123 78 129" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="biceps" d="M47 133 C42 143 41 157 43 170 C45 182 50 190 56 192 C61 190 63 181 62 170 C61 155 58 141 55 132 Z"/><path class="mus" data-g="biceps" d="M47 133 C42 143 41 157 43 170 C45 182 50 190 56 192 C61 190 63 181 62 170 C61 155 58 141 55 132 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M48 143 C45 155 45 168 48 180"/><path class="stri" d="M48 143 C45 155 45 168 48 180" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M55 140 C53 153 53 167 55 179"/><path class="stri" d="M55 140 C53 153 53 167 55 179" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M44 175 C41 188 42 203 46 216 C49 227 52 234 55 238 C60 237 62 230 61 220 C60 206 57 190 53 178 Z"/><path class="neutre" d="M44 175 C41 188 42 203 46 216 C49 227 52 234 55 238 C60 237 62 230 61 220 C60 206 57 190 53 178 Z" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M50 240 C47 250 47 259 50 265 C54 271 60 271 63 265 C65 258 64 249 61 241 Z"/><path class="neutre" d="M50 240 C47 250 47 259 50 265 C54 271 60 271 63 265 C65 258 64 249 61 241 Z" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="abdo" d="M100 136 C93 136 88 139 86 145 C84 156 84 174 85 189 C86 202 89 211 93 215 C97 219 103 219 107 215 C111 211 114 202 115 189 C116 174 116 156 114 145 C112 139 107 136 100 136 Z"/><path class="stri" d="M87 154 L113 154"/><path class="stri" d="M87 171 L113 171"/><path class="stri" d="M87 188 L113 188"/><path class="stri" d="M100 138 L100 213"/><path class="mus" data-g="abdo" d="M85 142 C78 146 74 156 73 168 C72 182 74 196 78 206 C82 211 85 210 86 204 C84 190 83 172 84 156 Z"/><path class="mus" data-g="abdo" d="M85 142 C78 146 74 156 73 168 C72 182 74 196 78 206 C82 211 85 210 86 204 C84 190 83 172 84 156 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M79 156 C76 170 76 188 79 200"/><path class="stri" d="M79 156 C76 170 76 188 79 200" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="quadriceps" d="M78 268 C73 280 71 296 73 314 C75 332 79 346 84 354 C89 358 94 355 94 347 C94 326 93 300 91 284 C89 272 84 265 80 265 Z"/><path class="mus" data-g="quadriceps" d="M78 268 C73 280 71 296 73 314 C75 332 79 346 84 354 C89 358 94 355 94 347 C94 326 93 300 91 284 C89 272 84 265 80 265 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M77 282 C74 300 75 322 80 340"/><path class="stri" d="M77 282 C74 300 75 322 80 340" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M87 274 C87 298 88 322 89 344"/><path class="stri" d="M87 274 C87 298 88 322 89 344" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="hanche" d="M99 266 C93 268 89 276 88 288 C87 302 89 316 92 326 C95 332 99 331 99 324 Z"/><path class="mus" data-g="hanche" d="M99 266 C93 268 89 276 88 288 C87 302 89 316 92 326 C95 332 99 331 99 324 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M94 276 C92 290 93 308 95 320"/><path class="stri" d="M94 276 C92 290 93 308 95 320" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M83 352 C79 356 78 364 80 370 C85 373 91 372 93 367 C94 360 92 353 89 350 Z"/><path class="neutre" d="M83 352 C79 356 78 364 80 370 C85 373 91 372 93 367 C94 360 92 353 89 350 Z" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="mollets" d="M84 370 C79 382 77 398 79 414 C80 427 83 437 86 442 C90 444 93 441 93 433 C93 414 92 392 90 378 C89 372 87 368 85 368 Z"/><path class="mus" data-g="mollets" d="M84 370 C79 382 77 398 79 414 C80 427 83 437 86 442 C90 444 93 441 93 433 C93 414 92 392 90 378 C89 372 87 368 85 368 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M83 384 C81 400 82 420 85 434"/><path class="stri" d="M83 384 C81 400 82 420 85 434" transform="translate(200,0) scale(-1,1)"/>'+
     '</svg><span class="lg">Face</span></div>';
 }
 function silhouetteDos(){
-  return '<div class="vue-corps"><svg viewBox="0 0 200 470" role="img" aria-label="Vue de dos">'+
+  return '<div class="vue-corps"><svg viewBox="0 0 200 470" width="200" height="470" role="img" aria-label="Vue de dos">'+
     '<path class="neutre" d="M100 10 C86 10 79 22 79 38 C79 54 88 66 100 66 Z"/><path class="neutre" d="M100 10 C86 10 79 22 79 38 C79 54 88 66 100 66 Z" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M100 58 C94 58 91 62 90 68 C90 74 94 78 100 80 Z"/><path class="neutre" d="M100 58 C94 58 91 62 90 68 C90 74 94 78 100 80 Z" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M100 62 C93 62 88 65 85 70 C76 74 66 82 60 90 C64 104 66 124 67 140 C69 158 71 180 73 200 C74 210 73 220 72 228 C71 240 72 252 74 262 C75 280 76 296 77 310 C79 330 81 344 82 354 C83 372 80 384 80 396 C80 420 84 434 87 444 L97 446 C97 420 96 400 97 380 C98 350 99 310 100 262 Z"/><path class="neutre" d="M100 62 C93 62 88 65 85 70 C76 74 66 82 60 90 C64 104 66 124 67 140 C69 158 71 180 73 200 C74 210 73 220 72 228 C71 240 72 252 74 262 C75 280 76 296 77 310 C79 330 81 344 82 354 C83 372 80 384 80 396 C80 420 84 434 87 444 L97 446 C97 420 96 400 97 380 C98 350 99 310 100 262 Z" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M63 84 C50 88 41 100 39 116 C37 132 38 150 41 168 C43 186 46 204 48 220 C50 236 49 250 51 262 C53 274 62 274 64 262 C66 248 63 236 63 222 C64 204 66 186 67 168 C68 150 69 130 69 112 C69 100 67 89 65 84 Z"/><path class="neutre" d="M63 84 C50 88 41 100 39 116 C37 132 38 150 41 168 C43 186 46 204 48 220 C50 236 49 250 51 262 C53 274 62 274 64 262 C66 248 63 236 63 222 C64 204 66 186 67 168 C68 150 69 130 69 112 C69 100 67 89 65 84 Z" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M80 440 C74 450 72 458 76 462 C84 465 93 463 96 457 C98 451 97 446 97 444 Z"/><path class="neutre" d="M80 440 C74 450 72 458 76 462 C84 465 93 463 96 457 C98 451 97 446 97 444 Z" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="dos" d="M99 64 C90 65 79 70 68 78 C64 81 62 85 61 88 C70 91 81 88 89 84 C92 98 95 118 98 140 C99 148 99 152 99 152 Z"/><path class="mus" data-g="dos" d="M99 64 C90 65 79 70 68 78 C64 81 62 85 61 88 C70 91 81 88 89 84 C92 98 95 118 98 140 C99 148 99 152 99 152 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M93 70 C85 76 76 82 68 86"/><path class="stri" d="M93 70 C85 76 76 82 68 86" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M95 86 C90 98 87 112 86 126"/><path class="stri" d="M95 86 C90 98 87 112 86 126" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M97 104 C94 118 93 132 93 144"/><path class="stri" d="M97 104 C94 118 93 132 93 144" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="epaules" d="M63 86 C51 91 43 102 42 116 C41 128 44 138 49 144 C56 143 61 136 63 125 C65 112 65 95 65 87 Z"/><path class="mus" data-g="epaules" d="M63 86 C51 91 43 102 42 116 C41 128 44 138 49 144 C56 143 61 136 63 125 C65 112 65 95 65 87 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M52 96 C48 106 47 117 49 127"/><path class="stri" d="M52 96 C48 106 47 117 49 127" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="dos" d="M98 146 C89 147 79 153 73 163 C68 173 67 189 69 202 C71 212 75 218 80 220 C87 217 93 207 96 192 C98 176 99 160 98 146 Z"/><path class="mus" data-g="dos" d="M98 146 C89 147 79 153 73 163 C68 173 67 189 69 202 C71 212 75 218 80 220 C87 217 93 207 96 192 C98 176 99 160 98 146 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M94 154 C85 158 77 166 73 176"/><path class="stri" d="M94 154 C85 158 77 166 73 176" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M94 170 C86 175 79 184 76 194"/><path class="stri" d="M94 170 C86 175 79 184 76 194" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M93 186 C87 192 82 200 80 208"/><path class="stri" d="M93 186 C87 192 82 200 80 208" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="dos" d="M99 204 C93 205 88 210 86 218 C85 226 87 234 90 238 C94 240 98 238 99 234 Z"/><path class="mus" data-g="dos" d="M99 204 C93 205 88 210 86 218 C85 226 87 234 90 238 C94 240 98 238 99 234 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M95 212 C92 220 92 230 94 236"/><path class="stri" d="M95 212 C92 220 92 230 94 236" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="triceps" d="M46 132 C41 143 40 157 42 170 C44 182 49 190 55 192 C60 190 62 181 61 170 C60 155 57 141 54 131 Z"/><path class="mus" data-g="triceps" d="M46 132 C41 143 40 157 42 170 C44 182 49 190 55 192 C60 190 62 181 61 170 C60 155 57 141 54 131 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M47 143 C44 156 44 169 47 180"/><path class="stri" d="M47 143 C44 156 44 169 47 180" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M54 140 C52 154 52 168 54 179"/><path class="stri" d="M54 140 C52 154 52 168 54 179" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M43 175 C40 188 41 203 45 216 C48 227 51 234 54 238 C59 237 61 230 60 220 C59 206 56 190 52 178 Z"/><path class="neutre" d="M43 175 C40 188 41 203 45 216 C48 227 51 234 54 238 C59 237 61 230 60 220 C59 206 56 190 52 178 Z" transform="translate(200,0) scale(-1,1)"/><path class="neutre" d="M49 240 C46 250 46 259 49 265 C53 271 59 271 62 265 C64 258 63 249 60 241 Z"/><path class="neutre" d="M49 240 C46 250 46 259 49 265 C53 271 59 271 62 265 C64 258 63 249 60 241 Z" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="fessiers" d="M99 232 C88 233 79 240 76 252 C73 264 76 274 82 279 C89 283 97 281 99 274 Z"/><path class="mus" data-g="fessiers" d="M99 232 C88 233 79 240 76 252 C73 264 76 274 82 279 C89 283 97 281 99 274 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M94 240 C86 245 80 253 78 262"/><path class="stri" d="M94 240 C86 245 80 253 78 262" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="ischios" d="M79 284 C73 296 71 314 73 332 C75 344 79 352 84 356 C90 357 95 352 95 342 C96 322 94 300 91 286 C88 280 83 279 79 283 Z"/><path class="mus" data-g="ischios" d="M79 284 C73 296 71 314 73 332 C75 344 79 352 84 356 C90 357 95 352 95 342 C96 322 94 300 91 286 C88 280 83 279 79 283 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M78 298 C75 316 76 334 80 348"/><path class="stri" d="M78 298 C75 316 76 334 80 348" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M88 292 C88 312 89 330 90 344"/><path class="stri" d="M88 292 C88 312 89 330 90 344" transform="translate(200,0) scale(-1,1)"/><path class="mus" data-g="mollets" d="M84 366 C77 375 74 390 75 406 C76 419 80 429 85 433 C90 434 94 429 94 421 C94 404 92 385 90 374 C89 368 86 365 84 365 Z"/><path class="mus" data-g="mollets" d="M84 366 C77 375 74 390 75 406 C76 419 80 429 85 433 C90 434 94 429 94 421 C94 404 92 385 90 374 C89 368 86 365 84 365 Z" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M80 378 C77 393 78 412 82 426"/><path class="stri" d="M80 378 C77 393 78 412 82 426" transform="translate(200,0) scale(-1,1)"/><path class="stri" d="M100 370 L100 428"/><path class="neutre" d="M87 434 C84 439 84 444 86 447 L95 448 C96 442 96 437 95 433 Z"/><path class="neutre" d="M87 434 C84 439 84 444 86 447 L95 448 C96 442 96 437 95 433 Z" transform="translate(200,0) scale(-1,1)"/>'+
-    '</svg>';
+    '</svg><span class="lg">Dos</span></div>';
 }
 
 /* Bloc de cartographie, intégré à l'écran Statistiques.
@@ -3027,10 +3193,14 @@ function blocCartographie(){
   const note = uniteCarto==='temps'
     ? 'Gainage et étirements uniquement, en minutes tenues.'
     : 'Exercices en répétitions uniquement. Gainage et étirements ont leur propre carte, en durée.';
+  /* Le détail par groupe était replié derrière un « Détail » : il
+     portait pourtant l'essentiel. Il devient un tableau visible,
+     enrichi des deux records. */
   const detail = travailles.length
-    ? '<details class="reglages" style="margin-top:12px"><summary>Détail par groupe</summary>'+
-      travailles.map(x=>'<div class="reglage"><span class="nom">'+GROUPES[x.g]+'</span>'+
-        '<span class="pas"><span class="v">'+x.v+' '+unite+'</span></span></div>').join('')+'</details>'
+    ? '<p class="etiquette" style="margin-top:16px">Records par groupe \u00B7 '+sem+' semaines</p>'+
+      '<div class="carte">'+tableauGroupes(vol,max,sem,uniteCarto)+
+      '<p class="aide" style="margin-top:10px">Meilleure s\u00E9rie et charge la plus lourde sur la fen\u00EAtre choisie. '+
+      'Un groupe secondaire compte pour moiti\u00E9 : la valeur brute est alors rappel\u00E9e sous le chiffre.</p></div>'
     : '';
   return '<p class="etiquette" style="margin-top:22px">Cartographie musculaire \u00B7 '+sem+' semaines</p>'+
     '<div class="onglets">'+bU+'</div>'+
@@ -3195,9 +3365,16 @@ document.addEventListener('click',ev=>{
   try{
     Voix.debloquer();
 
+    /* La fiche en surcouche se ferme avant tout le reste : tant
+       qu'elle est ouverte, elle capte ses propres commandes. */
+    const fermeFiche=c('[data-act="fermer-fiche"]');
+    if(fermeFiche){ ficheModale=null; rendre(); return; }
+    const ouvreFiche=c('[data-fiche]');
+    if(ouvreFiche){ ficheModale=ouvreFiche.dataset.fiche; rendre(); return; }
+
     const onglet=c('#barre button');
     if(onglet){ ecranParams=false; detailSeanceId=null; jourSelectionne=null; planif=null;
-      vueSpecialeHisto=false; aller(onglet.dataset.onglet); return; }
+      vueSpecialeHisto=false; ficheModale=null; aller(onglet.dataset.onglet); return; }
 
     /* --- détail d'une séance réalisée --- */
     const det=c('[data-detail]');
