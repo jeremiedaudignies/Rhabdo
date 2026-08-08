@@ -1,0 +1,40 @@
+RHABDO — vérification des illustrations
+
+Exercices par défaut : 33
+Fiches illustrées : 33
+Images WebP intégrées : 66
+Illustrations manquantes : 0
+
+01. OK — Échauffement tapis de course
+02. OK — Course à pied en endurance
+03. OK — Course à pied allure marathon
+04. OK — Course à pied allure semi-marathon
+05. OK — Course à pied allure 10 km
+06. OK — Course à pied allure VMA
+07. OK — Course à pied sprint
+08. OK — Pompes serrées
+09. OK — Pompes larges
+10. OK — Dips
+11. OK — Traction pronation serrée
+12. OK — Traction pronation large
+13. OK — Traction supination serrée
+14. OK — Traction supination large
+15. OK — Biceps
+16. OK — Triceps
+17. OK — Superman
+18. OK — Squat
+19. OK — Flexion latérale
+20. OK — Mollets
+21. OK — Abduction hanche
+22. OK — Adduction hanche
+23. OK — Pont
+24. OK — Crunch
+25. OK — Abdominaux chaise romaine
+26. OK — Gainage horizontal
+27. OK — Gainage latéral
+28. OK — Étirement dos
+29. OK — Étirement épaule
+30. OK — Étirement bras
+31. OK — Étirement jambes
+32. OK — Étirement chevilles
+33. OK — Étirement cou

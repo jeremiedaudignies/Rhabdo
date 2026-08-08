@@ -720,17 +720,6 @@ const modeleSeance=(nom,mn,blocs)=>({id:'seance-'+slug(nom),nom,
 function modelesLafay(){
   const b=blocSeance, m=modeleSeance;
   return [
-    m('Routine Haut',10,[ b('Pompes serrées',6,10,60), b('Traction pronation large',6,6,90),
-      b('Dips',5,8,75), b('Biceps',4,10,60), b('Triceps',4,10,60) ]),
-    m('Routine Bas',10,[ b('Squat',6,15,60), b('Pont',4,15,45),
-      b('Abduction hanche',4,15,45), b('Mollets',4,20,45) ]),
-    m('Routine Abdo/Gainage',5,[ b('Gainage horizontal',3,45,60), b('Gainage latéral',4,30,45),
-      b('Crunch',4,20,45), b('Abdominaux chaise romaine',4,12,60) ]),
-    m('Routine Étirements',0,[ b('Étirement dos',2,30,15,30), b('Étirement épaule',2,30,15,30),
-      b('Étirement bras',2,30,15,30), b('Étirement jambes',2,30,15,30),
-      b('Étirement chevilles',2,30,15,30), b('Étirement cou',2,20,15,30) ]),
-    m('Routine complète',10,[ b('Pompes larges',5,12,60), b('Squat',5,15,60),
-      b('Traction supination large',5,6,90), b('Gainage horizontal',3,45,45) ]),
     m('Lafay Niv II',10,[]),
     m('Lafay Niv III',10,[])
   ];
@@ -944,6 +933,12 @@ function modelesRenfo(){
 }
 function modelesParDefaut(){ return modelesLafay().concat(modelesRenfo()); }
 
+/* Les cinq routines génériques d'origine. Elles faisaient doublon
+   avec les quinze séances des blocs 0 à 4 : retirées du catalogue,
+   et retirées une fois des installations existantes. */
+const ROUTINES_RETIREES = ['seance-routine-haut','seance-routine-bas',
+  'seance-routine-abdo-gainage','seance-routine-etirements','seance-routine-complete'];
+
 const DB = {
   exercices:[], modeles:[], planifiees:[], journal:[], reglages:{},
   charger(){
@@ -960,6 +955,27 @@ const DB = {
       enchainementAuto:true, seancesParSemaine:2, semainesCarto:4,
       seuils:[600,300,180,120,60,30,15,10,5,4,3,2,1], dernierBip:3 }, Store.lire('reglages',{})||{});
     this.majCatalogueRenfo();
+    this.retirerRoutines();
+  },
+  /* Retrait des cinq routines génériques, une seule fois. On enlève
+     avec elles les planifications qui les visaient, et la séance en
+     cours si elle en faisait partie. Le journal, lui, n'est pas
+     touché : chaque entrée porte son propre nom de séance, donc
+     l'historique reste lisible même sans le modèle d'origine. */
+  retirerRoutines(){
+    if(this.reglages.routinesRetirees>=1) return;
+    const avant=this.modeles.length;
+    this.modeles=this.modeles.filter(m=>ROUTINES_RETIREES.indexOf(m.id)<0);
+    if(this.modeles.length!==avant){
+      this.planifiees=this.planifiees.filter(p=>ROUTINES_RETIREES.indexOf(p.modeleId)<0);
+      Store.ecrire('modeles',this.modeles);
+      Store.ecrire('planifiees',this.planifiees);
+    }
+    const enCours=Store.lire('seanceEnCours',null);
+    if(enCours&&enCours.active&&ROUTINES_RETIREES.indexOf(enCours.active.modeleId)>=0)
+      Store.effacer('seanceEnCours');
+    this.reglages.routinesRetirees=1;
+    Store.ecrire('reglages',this.reglages);
   },
   /* Le catalogue de renforcement et les quinze séances des blocs 0 à 4
      sont arrivés après la première installation : une bibliothèque
