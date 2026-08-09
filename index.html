@@ -331,9 +331,9 @@ button.picto.mini::after{width:11px;height:11px}
   .picto.anim .phase-1,.picto.anim .phase-2{animation:none}
   .picto.anim .phase-2{opacity:0}
 }
-.modale{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center}
+.modale{position:fixed;inset:0;z-index:90;display:flex;align-items:flex-end;justify-content:center}
 .modale-fond{position:absolute;inset:0;background:rgba(20,23,28,.42);backdrop-filter:blur(2px)}
-.modale-feuille{position:relative;width:100%;max-width:560px;max-height:92vh;display:flex;
+.modale-feuille{position:relative;width:100%;max-width:560px;max-height:88dvh;display:flex;
   flex-direction:column;background:var(--fond);border-radius:22px 22px 0 0;
   box-shadow:0 -12px 40px rgba(20,23,28,.22);animation:monte .22s ease-out}
 @keyframes monte{from{transform:translateY(14px);opacity:.6}to{transform:none;opacity:1}}
@@ -341,7 +341,8 @@ button.picto.mini::after{width:11px;height:11px}
   border-bottom:1px solid var(--filet)}
 .modale-tete .exo-nom{margin:0}
 .modale-corps{overflow:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 4px;flex:1}
-.modale-pied{padding:10px 16px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--filet)}
+.modale-pied{padding:12px 16px calc(18px + env(safe-area-inset-bottom));border-top:1px solid var(--filet);
+  background:var(--fond);border-radius:0 0 0 0;flex:0 0 auto}
 .chrono-chip{flex:0 0 auto;font-size:12px;font-weight:700;letter-spacing:.02em;
   padding:6px 10px;border-radius:99px;background:var(--accent-doux);color:var(--accent);
   white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -522,6 +523,9 @@ button.picto.mini::after{width:11px;height:11px}
     <button data-onglet="planif"><span class="ic">&#128197;</span><span class="lb">Planning</span></button>
     <button data-onglet="accueil"><span class="ic">&#128200;</span><span class="lb">Statistiques</span></button>
   </nav>
+  <!-- Surcouches : hors du conteneur qui défile, sinon iOS cale la
+       position fixe sur la zone de défilement et non sur l'écran. -->
+  <div id="surcouche"></div>
 </div>
 <script>
 "use strict";
@@ -2076,11 +2080,19 @@ function rendre(){
     else if(ongletCourant==='biblio') html = edition?vueEditeur():vueBiblio();
     else if(ongletCourant==='accueil'){ html = vueAccueil(); carte=true; }
     else html=vuePlanif();
-    /* La fiche se pose par-dessus : la vue dessous reste montée, donc
-       le retour ne coûte rien et le cadran continue de tourner. */
-    v.innerHTML = html + (ficheModale?modaleFiche():'');
+    /* La fiche se pose par-dessus, dans son propre conteneur : la vue
+       dessous reste montée, donc le retour ne coûte rien et le cadran
+       continue de tourner. */
+    v.innerHTML = html;
+    const sur=document.getElementById('surcouche');
+    if(sur) sur.innerHTML = ficheModale?modaleFiche():'';
     if(carte) colorierCorps();
-  }catch(err){ noterPanneSansBoucle(err); v.innerHTML=vuePanne(); }
+  }catch(err){
+    noterPanneSansBoucle(err);
+    ficheModale=null;
+    const sur=document.getElementById('surcouche'); if(sur) sur.innerHTML='';
+    v.innerHTML=vuePanne();
+  }
 }
 function noterPanneSansBoucle(err){
   dernierePanne=(err&&err.message?err.message:String(err))+'\n'+(err&&err.stack?(err.stack.split('\n')[1]||''):'');
