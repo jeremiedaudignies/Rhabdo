@@ -362,6 +362,24 @@ button.picto.mini::after{width:11px;height:11px}
   letter-spacing:.02em;text-transform:uppercase}
 .groupes-tab .vv.muet{color:var(--texte-3);font-weight:600}
 .groupes-tab .src{font-size:11px;color:var(--texte-3);font-weight:500}
+.conseils{margin-top:14px;padding-top:14px;border-top:1px solid var(--filet)}
+.conseils .cs{padding:11px 0;border-bottom:1px solid var(--filet)}
+.conseils .cs:last-of-type{border-bottom:0}
+.conseils .cs-tete{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.conseils .cs-tete b{flex:1;font-size:14.5px;font-weight:800;letter-spacing:-.01em}
+.conseils .rpe{flex:0 0 auto;font-size:11px;font-weight:700;padding:4px 9px;border-radius:99px;
+  background:var(--accent-doux);color:var(--accent);white-space:nowrap}
+.conseils .cs-chiffres{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.conseils .cs-chiffres span{background:var(--surface-2);border-radius:var(--r-s);padding:7px 8px;
+  font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;text-align:center}
+.conseils .cs-chiffres i{display:block;font-style:normal;font-size:9.5px;font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--texte-3);margin-bottom:2px}
+.conseils .cs-note{margin:7px 0 0;font-size:12.5px;line-height:1.45;color:var(--texte-2)}
+.bloc-prog{margin-top:12px;padding:12px 14px;border-radius:var(--r-m);background:var(--accent-doux);
+  font-size:13px;color:var(--texte-2);line-height:1.45}
+.bloc-prog b{color:var(--accent);font-weight:800}
+.reglages-vifs{margin-top:12px;background:var(--surface);border:1px solid var(--filet);
+  border-radius:var(--r-m);padding:4px 15px}
 .exo-tete{display:flex;align-items:center;gap:12px;margin-bottom:6px}
 .exo-tete .exo-nom{margin:0}
 .mois-tete{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
@@ -779,14 +797,10 @@ const blocChauffe=min=>({exerciceId:'exo-echauffement-tapis-de-course',nbSeries:
 const modeleSeance=(nom,mn,blocs)=>({id:'seance-'+slug(nom),nom,
     blocs:(mn?[blocChauffe(mn)]:[]).concat(blocs)});
 
-/* Les séances historiques. */
-function modelesLafay(){
-  const b=blocSeance, m=modeleSeance;
-  return [
-    m('Lafay Niv II',10,[]),
-    m('Lafay Niv III',10,[])
-  ];
-}
+/* Plus aucune séance historique : les cinq routines génériques ont
+   été retirées, les deux niveaux Lafay aussi. Le catalogue livré est
+   celui des quinze séances des blocs 0 à 4. */
+function modelesLafay(){ return []; }
 
 /* Les quinze séances du programme course à pied : cinq blocs de
    périodisation, chacun avec une séance A (bas du corps, mercredi
@@ -1000,7 +1014,8 @@ function modelesParDefaut(){ return modelesLafay().concat(modelesRenfo()); }
    avec les quinze séances des blocs 0 à 4 : retirées du catalogue,
    et retirées une fois des installations existantes. */
 const ROUTINES_RETIREES = ['seance-routine-haut','seance-routine-bas',
-  'seance-routine-abdo-gainage','seance-routine-etirements','seance-routine-complete'];
+  'seance-routine-abdo-gainage','seance-routine-etirements','seance-routine-complete',
+  'seance-lafay-niv-ii','seance-lafay-niv-iii'];
 
 const DB = {
   exercices:[], modeles:[], planifiees:[], journal:[], reglages:{},
@@ -1026,7 +1041,7 @@ const DB = {
      touché : chaque entrée porte son propre nom de séance, donc
      l'historique reste lisible même sans le modèle d'origine. */
   retirerRoutines(){
-    if(this.reglages.routinesRetirees>=1) return;
+    if(this.reglages.routinesRetirees>=2) return;
     const avant=this.modeles.length;
     this.modeles=this.modeles.filter(m=>ROUTINES_RETIREES.indexOf(m.id)<0);
     if(this.modeles.length!==avant){
@@ -1037,7 +1052,7 @@ const DB = {
     const enCours=Store.lire('seanceEnCours',null);
     if(enCours&&enCours.active&&ROUTINES_RETIREES.indexOf(enCours.active.modeleId)>=0)
       Store.effacer('seanceEnCours');
-    this.reglages.routinesRetirees=1;
+    this.reglages.routinesRetirees=2;
     Store.ecrire('reglages',this.reglages);
   },
   /* Le catalogue de renforcement et les quinze séances des blocs 0 à 4
@@ -1138,6 +1153,19 @@ const DB = {
   reglageBloc(exo,bloc,champ){
     if(bloc && bloc[champ]!=null) return bloc[champ];
     if(exo && exo[champ]!=null) return exo[champ];
+    return null;
+  },
+  /* Valeur retenue au dernier passage sur cet exercice : on prend le
+     maximum de la séance la plus récente qui le contient. Renvoie null
+     si l'exercice n'a jamais été réalisé, ou jamais avec ce réglage. */
+  maxPrecedent(exerciceId,champ){
+    for(let i=this.journal.length-1;i>=0;i--){
+      const s=(this.journal[i].series||[]).filter(x=>x.exerciceId===exerciceId);
+      if(!s.length) continue;
+      let m=null;
+      s.forEach(x=>{ const v=x[champ]; if(v!=null && (m==null||v>m)) m=v; });
+      return m;                 /* séance trouvée : on s'arrête là */
+    }
     return null;
   },
   /* Proposition de répétitions pour la prochaine série de ce bloc. */
@@ -1621,6 +1649,52 @@ function modaleFiche(){
         (enSeance?'Retour \u00E0 la s\u00E9ance en cours':'Retour')+'</button></div>'+
     '</div></div>';
 }
+const PLIO = ['exo-pogo-hops','exo-sauts-verticaux','exo-bondissements','exo-corde-a-sauter'];
+
+/* Renvoie les régimes pertinents pour cet exercice.
+   Colonnes : régime, effort, récup entre séries, récup fin d'exercice,
+   RPE, et la raison d'être du régime. */
+function conseilsExercice(exo){
+  if(!exo) return [];
+  if(exo.categorie==='etirement') return [
+    ['Mobilité','2-3 × 20-40 s','15-30 s','30 s','3-4','Mise en tension tenue, jamais douloureuse. Respirer lentement.']
+  ];
+  if(exo.categorie==='echauffement') return [
+    ['Échauffement','5-10 min progressifs','—','60 s','3-5','Monter en température sans entamer la séance qui suit.']
+  ];
+  if(PLIO.indexOf(exo.id)>=0) return [
+    ['Puissance','3-5 × 5-10 contacts','2-3 min','3 min','7-8','Qualité absolue : contacts brefs. On arrête dès que le rythme se dégrade.'],
+    ['Raideur / réactivité','3-4 × 15-25 contacts','90 s','2 min','6-7','Volume plus long, amplitude réduite, pour la tolérance du tendon.']
+  ];
+  if(exo.modeEffort==='temps') return [
+    ['Force / tenue max','3-4 × 10-20 s','2 min','2 min','8-9','Position rendue difficile (levier, lestage) plutôt que tenue allongée.'],
+    ['Endurance','3 × 45-90 s','45-60 s','90 s','7-8','Le format habituel du gainage : tenir propre, arrêter avant que la posture cède.']
+  ];
+  return [
+    ['Force maximale','4-5 × 3-5','3-5 min','3 min','8-9 · 1-2 rép. en réserve','Le seul régime documenté sur l’économie de course. Intention explosive même quand la barre monte lentement.'],
+    ['Vitesse / puissance','4 × 4-6','2-3 min','2 min','6-7 · charge légère','30 à 60 % de la charge maximale, déplacée le plus vite possible. La vitesse prime sur la charge.'],
+    ['Hypertrophie','3-4 × 8-12','60-90 s','2 min','8 · 1-2 rép. en réserve','Zone de prise de volume. À doser si le poids de corps compte pour la performance.'],
+    ['Endurance musculaire','3-4 × 15-25','30-60 s','90 s','7-8','Format dense, proche de la méthode au poids du corps. Peu de transfert pour un coureur : la course le produit déjà.']
+  ];
+}
+function blocConseils(exo){
+  const l=conseilsExercice(exo);
+  if(!l.length) return '';
+  return '<div class="conseils">'+
+    '<p class="etiquette" style="margin:0 0 9px">Conseils par objectif</p>'+
+    l.map(c=>'<div class="cs">'+
+      '<div class="cs-tete"><b>'+esc(c[0])+'</b><span class="rpe">RPE '+esc(c[4])+'</span></div>'+
+      '<div class="cs-chiffres">'+
+        '<span><i>Effort</i>'+esc(c[1])+'</span>'+
+        '<span><i>Récup. série</i>'+esc(c[2])+'</span>'+
+        '<span><i>Récup. fin</i>'+esc(c[3])+'</span>'+
+      '</div>'+
+      '<p class="cs-note">'+esc(c[5])+'</p></div>').join('')+
+    '<p class="aide" style="margin-top:10px">Le RPE est une perception de l’effort de 1 à 10. '+
+    '« 1-2 répétitions en réserve » veut dire qu’au moment de reposer la charge, tu aurais pu '+
+    'en faire une ou deux de plus, pas davantage. C’est la façon la plus fiable de régler '+
+    'l’intensité sans tester un maximum.</p></div>';
+}
 function ficheExerciceHTML(exo,ouverte){
   if(!exo || !(exo.description||exo.execution||exo.erreurs)) return '';
   const source='';   /* plus aucune source externe citée */
@@ -1641,7 +1715,8 @@ function ficheExerciceHTML(exo,ouverte){
   /* Le dépliant n'a plus d'appelant : la fiche s'ouvre par la
      vignette, en surcouche. On garde la forme ouverte, seule
      utilisée par la modale et par l'éditeur. */
-  return '<section class="fiche-exercice guide-rich guide-ouverte">'+corps+'</section>';
+  return '<section class="fiche-exercice guide-rich guide-ouverte">'+corps+
+    blocConseils(exo)+'</section>';
 }
 
 
@@ -1668,8 +1743,14 @@ const Seance = {
     this.active.blocs.forEach(b=>{
       const exo=DB.exercice(b.exerciceId);
       b.derniereSaisie = DB.proposition(exo,b);
+      /* Le vécu prime sur le modèle : ce que tu as réellement soulevé
+         la dernière fois, sinon le réglage de la séance, sinon celui
+         de l'exercice. */
+      b.reglagesRepris=false;
       ['ecartementCm','hauteurCm','lestageKg'].forEach(k=>{
-        b[k]=DB.reglageBloc(exo,b,k);
+        const vu=DB.maxPrecedent(b.exerciceId,k);
+        if(vu!=null){ b[k]=vu; b.reglagesRepris=true; }
+        else b[k]=DB.reglageBloc(exo,b,k);
       });
     });
     this._preparerSaisie(); Ecran.prendre(); ongletCourant='seance'; edition=null;
@@ -2245,7 +2326,7 @@ function editeurExercice(){
       ? 'Laisse vide si non applicable.'+(refZones?' \u00AB Par d\u00E9faut \u00BB restaure les groupes d\u2019origine du catalogue.':'')
       : 'Verrouill\u00E9. Ces deux r\u00E9glages pilotent la cartographie et les records par groupe : '+
         'les changer apr\u00E8s coup d\u00E9place l\u2019historique. Touche \u00AB Modifier \u00BB pour les ouvrir.')+'</p></div>'+
-    '<p class="etiquette" style="margin-top:18px">Objectif et progression</p>'+
+    '<p class="etiquette" style="margin-top:18px">Objectif de l’exercice</p>'+
     '<div class="carte">'+
     '<div class="champ"><label>Objectif par défaut</label><div class="trio" style="grid-template-columns:1fr auto 1fr;align-items:center">'+
     '<input data-champ="objSeries" data-num="1" type="number" inputmode="numeric" value="'+d.objSeries+'">'+
@@ -2257,18 +2338,7 @@ function editeurExercice(){
     'placeholder="par défaut : l’objectif ('+d.objReps+')" value="'+(d.repsInitiales==null?'':d.repsInitiales)+'">'+
     '<p class="aide">Valeur proposée au compteur la première fois. Ensuite, l’app reprend '+
     'automatiquement le maximum de ta dernière réalisation. Laisse vide pour partir de l’objectif.</p></div>'+
-    '<div class="champ"><label>Règle de progression</label>'+
-    '<input data-champ="evolPlus" data-num="1" type="number" inputmode="numeric" value="'+d.evolPlus+'">'+
-    '<p class="aide">Répétitions ajoutées lorsque l’objectif complet est atteint — toutes les séries '+
-    'à l’objectif. Mettre 0 pour ne pas progresser sur ce critère.</p></div>'+
-    '<div class="champ"><label>Autres ajustements au même moment</label><div class="trio">'+
-    '<input data-champ="evolEcartementCm" data-num="1" type="number" inputmode="numeric" placeholder="± cm écart." value="'+(d.evolEcartementCm||0)+'">'+
-    '<input data-champ="evolHauteurCm" data-num="1" type="number" inputmode="numeric" placeholder="± cm haut." value="'+(d.evolHauteurCm||0)+'">'+
-    '<input data-champ="evolLestageKg" data-num="1" type="number" inputmode="decimal" placeholder="± kg lest" value="'+(d.evolLestageKg||0)+'">'+
-    '</div><p class="aide">Écartement, hauteur, lestage. Appliqués automatiquement en même temps que '+
-    'les répétitions, et annoncés en fin de séance puis au début de la suivante. '+
-    'Une valeur négative durcit l’exercice en rapprochant les appuis.</p></div>'+
-    '<div class="champ"><label>Remarque</label><textarea data-champ="remarque" rows="2" '+
+'<div class="champ"><label>Remarque</label><textarea data-champ="remarque" rows="2" '+
     'placeholder="Diminuer l’écartement de 5 cm une fois 15 répétitions atteintes">'+esc(d.remarque)+'</textarea></div>'+
     '</div>'+
     (utilise.length?'<p class="aide" style="margin-top:12px">Utilisé dans : '+
@@ -2444,19 +2514,49 @@ function vueSeanceEnCours(){
     '<p class="exo-meta">'+exo.zone1.map(z=>GROUPES[z]).join(' \u00B7 ')+
     (exo.zone2.length?' \u2192 '+exo.zone2.map(z=>GROUPES[z]).join(' \u00B7 '):'')+'</p></div></div>'+
     '<div class="zone-action">'+action+'</div>'+
-    '<details class="reglages"><summary>Réglages de l’exercice</summary>'+
-    reglageHTML('Écartement','ecartementCm',b.ecartementCm,'cm',1)+
-    reglageHTML('Hauteur','hauteurCm',b.hauteurCm,'cm',1)+
-    reglageLestage(b.lestageKg)+
-    '<div class="reglage"><span class="nom">Progression<br><span style="font-size:11.5px;color:var(--texte-3)">'+
-    (regle.plus?'+'+regle.plus+' rép. si objectif atteint à chaque série':'aucune')+
-    ' \u00B7 '+(regle.herite?'héritée de l’exercice':'propre à cette séance')+'</span></span></div>'+
-    (exo.remarque?'<div class="reglage"><span class="nom" style="font-size:13px">'+esc(exo.remarque)+'</span></div>':'')+
-    '</details>'+
+    blocProgression(exo,b,regle)+
+    reglagesSerie(exo,b)+
+    (exo.remarque?'<p class="aide" style="margin-top:10px">'+esc(exo.remarque)+'</p>':'')+
     '<div class="suite">'+vignetteSuite+'<span>'+ligneSuite+'</span></div>'+
     '<div class="rangee" style="margin-top:14px">'+
     (bs?'<button class="bouton discret" data-act="passer-exo">Passer l’exercice</button>':'')+
     '<button class="bouton discret" data-act="terminer">Terminer la séance</button></div>';
+}
+
+/* Ce que vise l'exercice et comment il progresse. Affiché en clair
+   pendant la séance : c'est au moment de lancer la série qu'on a
+   besoin de savoir ce qui déclenche le palier suivant. */
+function blocProgression(exo,b,regle){
+  const parTemps = exo.modeEffort==='temps';
+  const u = parTemps?'s':'rép.';
+  const vise = DB.proposition(exo,b);
+  const obj = b.nbReps;
+  const regleTxt = regle.plus
+    ? '<b>+'+regle.plus+' '+u+'</b> quand les '+b.nbSeries+' séries atteignent l’objectif'
+    : (exo.evolLestageKg
+        ? '<b>+'+nbCourt(exo.evolLestageKg)+' kg</b> quand les '+b.nbSeries+' séries atteignent l’objectif'
+        : 'aucune progression automatique sur cet exercice');
+  return '<div class="bloc-prog">'+
+    'Série en cours visée à <b>'+vise+' '+u+'</b> sur un objectif de <b>'+obj+' '+u+'</b>.<br>'+
+    'Progression : '+regleTxt+' \u00B7 '+(regle.herite?'règle de l’exercice':'règle propre à cette séance')+'.'+
+    '</div>';
+}
+
+/* Écartement, hauteur, lestage : ouverts quand on s'apprête à lancer
+   une série, repliés pendant l'effort et la récupération, où les
+   toucher n'aurait plus de sens. */
+function reglagesSerie(exo,b){
+  const corps = reglageHTML('Écartement','ecartementCm',b.ecartementCm,'cm',1)+
+    reglageHTML('Hauteur','hauteurCm',b.hauteurCm,'cm',1)+
+    reglageLestage(b.lestageKg)+
+    '<p class="aide" style="padding-bottom:11px">'+
+    (b.reglagesRepris
+      ? 'Repris du maximum de ta dernière séance sur cet exercice. Ajuste avant de lancer : la valeur part avec la série.'
+      : 'Premier passage : valeurs du modèle. Ce que tu régleras ici servira de point de départ la prochaine fois.')+
+    '</p>';
+  if(Seance.etat==='pret')
+    return '<div class="reglages reglages-vifs">'+corps+'</div>';
+  return '<details class="reglages"><summary>Réglages de l’exercice</summary>'+corps+'</details>';
 }
 
 /* Le lestage a son propre affichage : rien saisi = poids du corps. */
@@ -2861,9 +2961,7 @@ function vueAccueil(){
       new Date(p.date).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})+'</span></div>'+
       '<span class="v">'+p.v+'<span style="font-size:12px;color:var(--texte-3);font-weight:500"> '+suffixe+'</span></span></div>';
   };
-  const blocPR='<p class="etiquette" style="margin-top:22px">Meilleures répétitions sur une série</p>'+
-    '<div class="carte">'+['haut','bas','abdo'].map(c=>ligne(c,CATEGORIES[c],med[c],'rép.')).join('')+'</div>'+
-    '<p class="etiquette" style="margin-top:16px">Meilleures tenues</p>'+
+  const blocPR='<p class="etiquette" style="margin-top:22px">Meilleures tenues</p>'+
     '<div class="carte">'+ligne('gainage','Gainage','\u{1F9CD}','s')+
     ligne('etirement','Étirement','\u{1F9D8}','s')+'</div>';
 
