@@ -271,6 +271,17 @@ details.reglages[open] summary::after{content:"\2013"}
 .graph .pt{fill:var(--accent)}
 .graph .courbe{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
 .graph .aire{fill:var(--accent);opacity:.1}
+.histo{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;align-items:end;
+  height:118px;position:relative;margin-top:14px}
+.histo .hb{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
+.histo .hb i{display:block;width:100%;min-height:3px;border-radius:4px 4px 0 0;background:var(--accent)}
+.histo .hb.vide i{background:var(--filet)}
+.histo .hb .v{font-size:10.5px;font-weight:800;line-height:1;margin-bottom:3px;color:var(--texte-2)}
+.histo .cible{position:absolute;left:0;right:0;border-top:1px dashed var(--recup);pointer-events:none}
+.histo .cible b{position:absolute;right:0;top:-13px;font-size:9px;font-weight:700;color:var(--recup);
+  letter-spacing:.03em}
+.histo-lb{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-top:6px}
+.histo-lb span{font-size:9px;color:var(--texte-3);text-align:center;font-variant-numeric:tabular-nums}
 .bulles{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;align-items:center;margin:6px 0}
 .bulle{aspect-ratio:1;display:grid;place-items:center}
 .bulle i{display:block;border-radius:50%;background:var(--accent);color:#fff;font-style:normal;
@@ -652,6 +663,12 @@ Object.assign(FICHES_EXERCICES, {
  'charniere-de-hanche-au-baton':{picto:'deadlift-rdl',description:'Éducatif de charnière de hanche, un bâton maintenu en contact avec la tête, le haut du dos et le sacrum. Le meilleur repère pour vérifier la neutralité de la colonne avant de charger.',execution:'Trois points de contact maintenus, genoux légèrement fléchis. Reculez les hanches en penchant le buste, descendez tant que les trois contacts tiennent, puis revenez.',erreurs:'Perdre le contact lombaire ou cervical, plier les genoux comme pour un squat, descendre au-delà de sa mobilité ou aller vite.',sourceLabel:'',sourceUrl:''}
 });
 
+Object.assign(FICHES_EXERCICES, {
+ 'developpe-couche':{picto:'bench-press',description:'Poussée horizontale allongé sur un banc, barre au-dessus de la poitrine. Le mouvement de force de référence pour les pectoraux, les triceps et le faisceau antérieur de l’épaule.',execution:'Omoplates serrées et plaquées, pieds au sol, léger arc naturel du dos. Descendez la barre au bas de la poitrine en gardant les coudes à environ 45° du buste, puis poussez jusqu’aux bras tendus.',erreurs:'Décoller les omoplates, rebondir la barre sur la poitrine, écarter les coudes à 90° ou décoller le bassin du banc.',sourceLabel:'',sourceUrl:''},
+ 'face-pull':{picto:'face-pull',description:'Tirage à hauteur de visage à la poulie haute, coudes hauts et ouverts. Cible les rotateurs externes et le faisceau postérieur de l’épaule, contrepoids direct de la position assise et du volume de poussée.',execution:'Poulie réglée au niveau du visage, corde saisie en pronation. Tirez vers le front en écartant les mains, coudes au-dessus des poignets, puis revenez lentement bras tendus.',erreurs:'Tirer avec les coudes bas comme un rowing, prendre de l’élan avec le buste, hausser les épaules ou choisir une charge trop lourde.',sourceLabel:'',sourceUrl:''},
+ 'rowing-landmine':{picto:'landmine-row',description:'Tirage horizontal à la barre montée en landmine, buste penché. Permet de charger le dos bien au-delà d’une haltère, avec un appui plus stable pour le bas du dos qu’un rowing barre classique.',execution:'Placez-vous à cheval sur la barre, buste penché et dos plat. Tirez la barre vers le nombril en abaissant d’abord les omoplates, puis redescendez bras tendus sans arrondir le dos.',erreurs:'Se redresser pour arracher la charge, arrondir le haut du dos, tirer uniquement avec les bras ou lâcher la descente.',sourceLabel:'',sourceUrl:''}
+});
+
 const fabriqueExo=(nom,cat,z1,z2,mode,extra)=>Object.assign({
     id:'exo-'+slug(nom), nom, categorie:cat, zone1:z1, zone2:z2||[], modeEffort:mode||'reps',
     ecartementCm:null, hauteurCm:null, lestageKg:null,   /* null = poids du corps */
@@ -778,7 +795,14 @@ function exercicesRenfo(){
     e('Rotations thoraciques','echauffement',['dos'],['epaules'],'reps',
       {objSeries:2,objReps:8,evolPlus:0}),
     e('Monster walk élastique','echauffement',['hanche'],['fessiers'],'reps',
-      {objSeries:2,objReps:15,evolPlus:1})
+      {objSeries:2,objReps:15,evolPlus:1}),
+    /* --- ajoutés par la refonte en trois phases ------------------ */
+    e('Développé couché','haut',['pectoraux'],['triceps','epaules'],'reps',
+      {objSeries:4,objReps:5,lestageKg:20,evolPlus:0,evolLestageKg:2.5}),
+    e('Rowing landmine','haut',['dos'],['biceps'],'reps',
+      {objSeries:4,objReps:8,lestageKg:10,evolPlus:0,evolLestageKg:2.5}),
+    e('Face pull','haut',['epaules'],['dos'],'reps',
+      {objSeries:3,objReps:15,evolPlus:1})
   ];
 }
 function exercicesParDefaut(){ return exercicesLafay().concat(exercicesRenfo()); }
@@ -802,209 +826,108 @@ const modeleSeance=(nom,mn,blocs)=>({id:'seance-'+slug(nom),nom,
    celui des quinze séances des blocs 0 à 4. */
 function modelesLafay(){ return []; }
 
-/* Les quinze séances du programme course à pied : cinq blocs de
-   périodisation, chacun avec une séance A (bas du corps, mercredi
-   soir), une séance B (haut du corps et pliométrie, samedi) et une
-   séance C (courte : dimanche, semaine de course ou affûtage).
+/* Six séances, trois phases, deux moitiés de corps.
 
-   Les récupérations s'allongent d'un bloc à l'autre à mesure que
-   les charges montent et que les séries raccourcissent. Les blocs
-   d'échauffement et de mobilité portent compteObjectif à false :
-   ils ne doivent pas retenir l'objectif global de la séance. */
+   Le haut se fait le mercredi : il n'utilise pas les jambes, donc il
+   ne parasite ni le fractionné de la veille ni celui du lendemain.
+   Le bas se fait le week-end, sur le jour SANS sortie longue, à
+   distance de la séance de qualité du mardi.
+
+   La pliométrie et le gainage vivent dans les séances Bas : les sauts
+   se font sur des jambes fraîches, avant les charges lourdes, et le
+   gainage anti-mouvement appartient au même complexe lombo-pelvien
+   que les fessiers et les ischio-jambiers.
+
+   Les récupérations s'allongent d'une phase à l'autre, à mesure que
+   les charges montent et que les séries raccourcissent. */
 function modelesRenfo(){
   const b=blocSeance, m=modeleSeance, H={compteObjectif:false};
   return [
 
-    /* ===== BLOC 0 — adaptation anatomique, 10 → 30 août ==========
-       Charges légères, séries longues, RPE 6. On apprend les
-       mouvements à la barre sans fatiguer les jambes avant Arras. */
-    m('Bloc 0 · A — Bas · adaptation',8,[
-      b('Mobilité cheville au mur',2,10,30,45,H),
-      b('Charnière de hanche au bâton',2,8,30,45,H),
-      b('Squat overhead',2,5,45,60,H),
-      b('Goblet squat',3,15,90,120),
-      b('Soulevé de terre roumain',3,12,90,120),
-      b('Hip thrust',3,15,90,120),
-      b('Fente arrière chargée',3,12,90,120),
-      b('Mollets debout jambe tendue',3,20,60,90),
-      b('Mollets assis genou fléchi',3,20,60,90),
-      b('Nordic curl',3,5,90,60)
-    ]),
-    m('Bloc 0 · B — Haut & pliométrie',0,[
-      b('Corde à sauter',3,60,45,60,H),
-      b('Pogo hops',3,20,45,75),
-      b('Traction supination serrée',4,8,105,120),
-      b('Rowing haltère un bras',4,12,90,105),
-      b('Dips',3,10,75,90),
-      b('Pompes serrées',3,12,60,90),
-      b('Développé militaire haltères',3,12,75,90),
-      b('Rotateurs externes élastique',2,15,45,60),
-      b('Curl-up McGill',3,10,45,45),
-      b('Gainage latéral',3,30,45,45),
-      b('Bird dog',3,8,45,60)
-    ]),
-    m('Bloc 0 · C — Mobilité & gainage',0,[
-      b('Mobilité hanche fente haute',2,30,30,45,H),
-      b('Mobilité cheville au mur',2,10,30,45,H),
+    /* ===== PHASE 1 — INITIATION, 6 a 8 semaines =================
+       3 x 8 partout, RPE 6-7, deux a quatre repetitions gardees en
+       reserve. Aucune performance recherchee : on apprend les
+       mouvements a la barre et on prepare tendons et articulations.
+       Les deux seances sont volontairement courtes en exercices :
+       la frequence d'apprentissage compte plus que la variete. */
+    m('1a \u00B7 Initiation \u2014 Haut',5,[
       b('Rotations thoraciques',2,8,30,45,H),
-      b('Monster walk élastique',2,15,45,60),
-      b('Curl-up McGill',3,8,45,45),
-      b('Gainage latéral',3,25,45,45),
-      b('Bird dog',3,8,45,45),
-      b('Isométrie mollet unilatéral',3,30,45,60),
-      b('Étirement jambes',2,30,15,30),
-      b('Étirement chevilles',2,30,15,30)
-    ]),
-
-    /* ===== BLOC 1 — maintien, 31 août → 27 septembre =============
-       Trois courses en quatre semaines : on entretient, on ne
-       construit pas. 70 à 80 %, trois répétitions gardées en
-       réserve, rien de lourd dans les 72 h avant une course. */
-    m('Bloc 1 · A — Bas · maintien',8,[
-      b('Charnière de hanche au bâton',2,8,30,45,H),
-      b('Squat overhead',2,5,45,60,H),
-      b('Demi-squat barre',4,5,120,150),
-      b('Soulevé de terre roumain',4,6,120,150),
-      b('Hip thrust',4,8,105,120),
-      b('Mollets debout jambe tendue',3,12,75,90),
-      b('Mollets assis genou fléchi',3,15,75,90),
-      b('Nordic curl',3,5,90,60)
-    ]),
-    m('Bloc 1 · B — Haut & pliométrie',0,[
-      b('Corde à sauter',3,60,45,60,H),
-      b('Pogo hops',3,20,45,75),
-      b('Sauts verticaux',3,5,90,120),
-      b('Traction supination serrée',4,8,105,105),
-      b('Rowing haltère un bras',4,10,90,105),
-      b('Dips',3,10,90,90),
-      b('Développé militaire haltères',3,10,90,90),
-      b('Rotateurs externes élastique',2,15,45,60),
-      b('Pallof press',3,10,45,45),
-      b('Gainage latéral',3,30,45,60)
-    ]),
-    m('Bloc 1 · C — Semaine de course',0,[
-      b('Mobilité hanche fente haute',2,30,30,45,H),
-      b('Monster walk élastique',2,15,45,60,H),
-      b('Pogo hops',2,15,60,90),
-      b('Curl-up McGill',2,10,45,45),
-      b('Bird dog',2,8,45,45),
-      b('Gainage latéral',2,25,45,45),
-      b('Isométrie mollet unilatéral',2,30,45,60),
-      b('Étirement jambes',2,30,15,30),
-      b('Étirement chevilles',2,30,15,30)
-    ]),
-
-    /* ===== BLOC 2 — force maximale, 28 septembre → 18 octobre ====
-       Le bloc qui produit le gain d'économie de course. 85 à 90 %,
-       séries courtes, récupérations longues, une à deux répétitions
-       gardées en réserve : jamais l'échec sous barre. Le demi-squat
-       porte le volume ; la charnière et le hip thrust ne prennent
-       que trois séries, pour que la séance tienne dans l'heure. */
-    m('Bloc 2 · A — Bas · force maximale',10,[
-      b('Charnière de hanche au bâton',2,8,30,45,H),
-      b('Squat overhead',2,5,45,60,H),
-      b('Demi-squat barre',5,4,180,180),
-      b('Soulevé de terre roumain',3,5,150,150),
-      b('Hip thrust',3,5,150,120),
-      b('Mollets debout jambe tendue',3,8,90,90),
-      b('Mollets assis genou fléchi',3,10,90,90),
-      b('Nordic curl',3,4,90,60)
-    ]),
-    m('Bloc 2 · B — Haut · force',0,[
-      b('Corde à sauter',3,60,45,60,H),
-      b('Pogo hops',3,20,45,75),
-      b('Traction supination serrée',5,5,120,120),
-      b('Rowing haltère un bras',4,8,105,105),
-      b('Dips',4,6,105,105),
-      b('Développé militaire haltères',3,8,90,90),
-      b('Rotateurs externes élastique',2,15,45,60),
-      b('Curl-up McGill',3,10,45,45),
-      b('Copenhagen adduction',2,8,45,60)
-    ]),
-    m('Bloc 2 · C — Récupération & gainage',0,[
-      b('Mobilité hanche fente haute',2,30,30,45,H),
-      b('Mobilité cheville au mur',2,10,30,45,H),
-      b('Rotations thoraciques',2,8,30,45,H),
-      b('Curl-up McGill',3,10,45,45),
-      b('Pallof press',3,10,45,45),
-      b('Bird dog',3,8,45,45),
-      b('Gainage latéral',3,30,45,45),
-      b('Isométrie mollet unilatéral',3,30,45,60),
-      b('Étirement jambes',2,30,15,30),
-      b('Étirement chevilles',2,30,15,30)
-    ]),
-
-    /* ===== BLOC 3 — conversion en puissance, 19 octobre → 1er nov.
-       Charges légères déplacées vite, volume réduit, qualité
-       absolue. Dernière séance lourde à J-10, dernière séance
-       explosive à J-4, rien après. */
-    m('Bloc 3 · A — Bas · puissance',10,[
-      b('Squat overhead',2,5,45,60,H),
-      b('Sauts verticaux',3,5,90,120),
-      b('Demi-squat barre',4,5,150,150),
-      b('Fente arrière chargée',3,6,105,105),
-      b('Hip thrust',4,6,105,105),
-      b('Mollets debout jambe tendue',3,10,75,90),
-      b('Nordic curl',3,5,90,60)
-    ]),
-    m('Bloc 3 · B — Pliométrie & haut',0,[
-      b('Corde à sauter',3,60,45,60,H),
-      b('Pogo hops',4,20,45,75),
-      b('Bondissements',3,20,120,150),
-      b('Traction supination serrée',4,6,105,105),
-      b('Rowing haltère un bras',3,10,90,90),
+      b('D\u00E9velopp\u00E9 couch\u00E9',3,8,120,120),
+      b('Traction pronation large',3,8,105,120),
+      b('Rowing halt\u00E8re un bras',3,10,90,105),
       b('Dips',3,8,90,90),
-      b('Rotateurs externes élastique',2,15,45,60),
-      b('Pallof press',3,10,45,45),
-      b('Gainage latéral',3,30,45,60)
+      b('Face pull',2,15,60,75),
+      b('\u00C9l\u00E9vations lat\u00E9rales',2,12,60,60)
     ]),
-    m('Bloc 3 · C — Affûtage',0,[
-      b('Mobilité hanche fente haute',2,30,30,45,H),
-      b('Mobilité cheville au mur',2,10,30,45,H),
-      b('Pogo hops',2,12,60,90),
-      b('Sauts verticaux',2,4,90,120),
-      b('Bird dog',2,8,45,45),
-      b('Étirement jambes',2,30,15,30),
-      b('Étirement chevilles',2,30,15,30)
+    m('1b \u00B7 Initiation \u2014 Bas',5,[
+      b('Mobilit\u00E9 cheville au mur',2,10,30,45,H),
+      b('Charni\u00E8re de hanche au b\u00E2ton',2,8,30,45,H),
+      b('Goblet squat',3,10,75,90),
+      b('Soulev\u00E9 de terre roumain',3,8,90,90),
+      b('Fente bulgare',3,8,75,90),
+      b('Hip thrust',3,12,75,90),
+      b('Mollets debout jambe tendue',3,15,45,60),
+      b('Mollets assis genou fl\u00E9chi',2,15,45,60),
+      b('Nordic curl',3,5,75,60),
+      b('Curl-up McGill',3,10,40,40),
+      b('Pallof press',3,10,40,45)
     ]),
 
-    /* ===== BLOC 4 — intersaison Bompa, novembre → février ========
-       La course repasse en volume facile : c'est le seul moment de
-       l'année où la force se construit vraiment. Trois séances par
-       semaine, montée progressive vers de vrais triplés. */
-    m('Bloc 4 · A — Bas · intersaison',10,[
-      b('Charnière de hanche au bâton',2,8,30,45,H),
-      b('Squat overhead',2,5,45,60,H),
-      b('Demi-squat barre',5,3,180,180),
-      b('Soulevé de terre barre hexagonale',4,5,150,150),
-      b('Hip thrust',3,5,150,120),
-      b('Fente bulgare',3,6,90,90),
-      b('Mollets debout jambe tendue',3,8,90,90),
-      b('Mollets assis genou fléchi',3,10,90,90),
-      b('Nordic curl',3,4,90,60)
+    /* ===== PHASE 2 — PROGRESSION, 12 a 16 semaines ==============
+       Le coeur du programme : 3 a 5 repetitions au-dela de 80 %,
+       recuperations longues sur les mouvements principaux, une a
+       deux repetitions gardees en reserve. Jamais l'echec sous
+       barre. C'est ce regime, et lui seul, qui produit le gain
+       d'economie de course. */
+    m('2a \u00B7 Progression \u2014 Haut',5,[
+      b('Rotateurs externes \u00E9lastique',2,15,45,60,H),
+      b('D\u00E9velopp\u00E9 couch\u00E9',4,5,150,150),
+      b('Traction pronation large',4,5,120,120),
+      b('Rowing landmine',3,6,105,105),
+      b('Dips',3,6,105,90),
+      b('D\u00E9velopp\u00E9 militaire halt\u00E8res',3,6,90,90),
+      b('Face pull',2,15,60,75),
+      b('\u00C9l\u00E9vations lat\u00E9rales',2,12,60,60)
     ]),
-    m('Bloc 4 · B — Haut · intersaison',0,[
-      b('Corde à sauter',3,60,45,60,H),
-      b('Traction supination serrée',5,5,120,120),
-      b('Rowing haltère un bras',4,10,105,105),
-      b('Dips',4,8,105,105),
-      b('Pompes larges',3,12,60,90),
-      b('Développé militaire haltères',4,8,105,105),
-      b('Élévations latérales',3,12,60,90),
-      b('Triceps',3,15,60,90),
-      b('Rotateurs externes élastique',2,15,45,60),
-      b('Curl-up McGill',3,10,45,60)
+    m('2b \u00B7 Progression \u2014 Bas',5,[
+      b('Charni\u00E8re de hanche au b\u00E2ton',2,8,30,45,H),
+      b('Sauts verticaux',3,5,90,90),
+      b('Demi-squat barre',4,4,180,150),
+      b('Soulev\u00E9 de terre roumain',3,5,150,120),
+      b('Hip thrust',3,5,120,105),
+      b('Mollets debout jambe tendue',3,8,75,75),
+      b('Mollets assis genou fl\u00E9chi',2,12,75,75),
+      b('Nordic curl',3,4,90,60),
+      b('Pallof press',2,10,45,45),
+      b('Curl-up McGill',3,10,45,45)
     ]),
-    m('Bloc 4 · C — Full body & pliométrie',8,[
-      b('Pogo hops',3,20,45,75),
-      b('Sauts verticaux',3,5,90,120),
-      b('Goblet squat',3,12,90,105),
-      b('Soulevé de terre roumain',3,10,90,105),
-      b('Fente arrière chargée',3,10,90,105),
-      b('Monster walk élastique',2,15,45,60),
-      b('Copenhagen adduction',3,8,45,60),
-      b('Pallof press',3,10,45,45),
-      b('Bird dog',3,8,45,60)
+
+    /* ===== PHASE 3 — ROUTINE PERMANENTE =========================
+       Une fois le capital de force construit, le volume tombe et
+       ces deux seances se tiennent pendant des annees. C'est aussi
+       le format des semaines de course : la seance Bas se supprime
+       dans les 72 h qui precedent une competition, la seance Haut
+       peut rester telle quelle. */
+    m('3a \u00B7 Routine \u2014 Haut',4,[
+      b('D\u00E9velopp\u00E9 couch\u00E9',3,5,150,120),
+      b('Traction pronation large',3,5,120,105),
+      b('Rowing landmine',3,8,90,90),
+      b('Dips',3,8,90,90),
+      b('D\u00E9velopp\u00E9 militaire halt\u00E8res',2,6,90,75),
+      b('\u00C9l\u00E9vations lat\u00E9rales',2,12,60,60),
+      b('Face pull',2,15,60,60)
+    ]),
+    m('3b \u00B7 Routine \u2014 Bas',5,[
+      b('Charni\u00E8re de hanche au b\u00E2ton',2,8,30,45,H),
+      b('Sauts verticaux',3,4,90,75),
+      b('Demi-squat barre',3,5,150,150),
+      b('Soulev\u00E9 de terre roumain',3,5,120,120),
+      b('Hip thrust',3,6,105,90),
+      b('Fente bulgare',2,6,90,90),
+      b('Mollets debout jambe tendue',3,8,75,75),
+      b('Nordic curl',3,5,90,60),
+      b('Pallof press',2,10,45,45),
+      b('Curl-up McGill',2,10,45,45)
     ])
   ];
 }
@@ -1034,6 +957,27 @@ const DB = {
       seuils:[600,300,180,120,60,30,15,10,5,4,3,2,1], dernierBip:3 }, Store.lire('reglages',{})||{});
     this.majCatalogueRenfo();
     this.retirerRoutines();
+    this.refondreSeances();
+  },
+  /* Passage des quinze séances « Bloc 0 à 4 » aux six séances des
+     trois phases. Une seule fois. Les anciennes séances sont
+     retirées, les planifications qui les visaient aussi ; le journal
+     n'est pas touché, chaque entrée portant son propre nom. */
+  refondreSeances(){
+    if(this.reglages.refonteTroisPhases>=1) return;
+    const ancienne=id=>/^seance-bloc-[0-4]-[abc]-/.test(id);
+    this.modeles=this.modeles.filter(m=>!ancienne(m.id));
+    this.planifiees=(this.planifiees||[]).filter(p=>!ancienne(p.modeleId||''));
+    modelesRenfo().forEach(ref=>{
+      if(!this.modeles.some(m=>m.id===ref.id)) this.modeles.push(ref);
+    });
+    const enCours=Store.lire('seanceEnCours',null);
+    if(enCours&&enCours.active&&ancienne(enCours.active.modeleId||''))
+      Store.effacer('seanceEnCours');
+    Store.ecrire('modeles',this.modeles);
+    Store.ecrire('planifiees',this.planifiees);
+    this.reglages.refonteTroisPhases=1;
+    Store.ecrire('reglages',this.reglages);
   },
   /* Retrait des cinq routines génériques, une seule fois. On enlève
      avec elles les planifications qui les visaient, et la séance en
@@ -1065,7 +1009,7 @@ const DB = {
      volontairement — le crunch, par exemple — ne réapparaît pas au
      lancement suivant. */
   majCatalogueRenfo(){
-    if(this.reglages.catalogueRenfo>=1) return;
+    if(this.reglages.catalogueRenfo>=2) return;
     let touche=false;
     exercicesRenfo().forEach(ref=>{
       if(!this.exercice(ref.id)){ this.exercices.push(ref); touche=true; }
@@ -1075,7 +1019,7 @@ const DB = {
       if(!this.modeles.some(m=>m.id===ref.id)){ this.modeles.push(ref); touche=true; }
     });
     if(touche) Store.ecrire('modeles',this.modeles);
-    this.reglages.catalogueRenfo=1;
+    this.reglages.catalogueRenfo=2;
     Store.ecrire('reglages',this.reglages);
   },
   /* Les séances créées avant que l'échauffement ne devienne un
@@ -1373,6 +1317,13 @@ Object.assign(PICTOS, {
   'bird-dog':'<line class="sol" x1="6" y1="88" x2="94" y2="88"/><circle class="t" cx="26" cy="52" r="6"/><path d="M32 55L64 60M39 57L37 84M64 60L70 84M33 51L14 40M65 59L88 50"/>',
   'curl-up':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><circle class="t" cx="24" cy="65" r="6"/><path d="M30 68L58 76M39 72L35 85M58 76L70 61L78 88M58 76L88 83"/><path class="mvt" d="M19 53Q30 47 41 53"/>',
   'hanging-knee-raise':'<path class="equip" d="M10 14H90"/><circle class="t" cx="50" cy="30" r="6"/><path d="M44 15L47 25M56 15L53 25M50 37L50 60M50 60L69 57M69 57L71 78"/><path class="mvt" d="M80 72V56M75 61L80 56L85 61"/>'
+});
+
+/* --- Pictogrammes ajoutés par la refonte en trois phases --------- */
+Object.assign(PICTOS, {
+  'bench-press':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><path class="equip" d="M14 66H72M21 66V90M66 66V90"/><circle class="t" cx="24" cy="58" r="6"/><path d="M30 61H56M34 60L43 36M56 61L69 76L67 90"/><path class="equip" d="M30 34H56"/><circle class="equip" cx="26" cy="34" r="5"/><circle class="equip" cx="60" cy="34" r="5"/><path class="mvt" d="M80 44V28M75 33L80 28L85 33"/>',
+  'face-pull':'<line class="sol" x1="8" y1="90" x2="92" y2="90"/><path class="equip" d="M90 12V32"/><circle class="t" cx="34" cy="26" r="6"/><path d="M34 33L34 62M34 40L52 30M34 40L52 46M34 62L27 90M34 62L41 90"/><path class="equip" d="M52 30L89 20M52 46L89 24"/><path class="mvt" d="M20 36H8M13 31L8 36L13 41"/>',
+  'landmine-row':'<line class="sol" x1="6" y1="90" x2="94" y2="90"/><path class="equip" d="M88 88L44 58"/><path class="equip" d="M80 82H94"/><circle class="t" cx="22" cy="46" r="6"/><path d="M28 50L56 59M37 53L35 90M56 59L64 74L60 90M44 58L36 63"/><path class="mvt" d="M26 32V20M21 25L26 20L31 25"/>'
 });
 
 const PICTO_EXACT={"exo-echauffement-tapis-de-course":"treadmill","exo-course-a-pied-en-endurance":"run-easy","exo-course-a-pied-allure-marathon":"run-marathon","exo-course-a-pied-allure-semi-marathon":"run-half","exo-course-a-pied-allure-10-km":"run-10k","exo-course-a-pied-allure-vma":"run-vma","exo-course-a-pied-sprint":"run-sprint","exo-pompes-serrees":"pushup-narrow","exo-pompes-larges":"pushup-wide","exo-dips":"dips","exo-traction-pronation-serree":"pullup-pron-narrow","exo-traction-pronation-large":"pullup-pron-wide","exo-traction-supination-serree":"pullup-sup-narrow","exo-traction-supination-large":"pullup-sup-wide","exo-biceps":"biceps-curl","exo-triceps":"triceps-overhead","exo-superman":"superman","exo-squat":"squat","exo-flexion-laterale":"lateral-lunge","exo-mollets":"calf-raise","exo-abduction-hanche":"hip-abduction","exo-adduction-hanche":"hip-adduction","exo-pont":"glute-bridge","exo-crunch":"crunch","exo-abdominaux-chaise-romaine":"roman-chair-leg-raise","exo-gainage-horizontal":"front-plank","exo-gainage-lateral":"side-plank","exo-etirement-dos":"stretch-back","exo-etirement-epaule":"stretch-shoulder","exo-etirement-bras":"stretch-triceps","exo-etirement-jambes":"stretch-hamstring","exo-etirement-chevilles":"stretch-calf","exo-etirement-cou":"stretch-neck"};
@@ -2013,13 +1964,14 @@ const Seance = {
   },
   ajusterReps(d){
     const exo=this._exo();
-    this.repsSaisies=Math.max(0,this.repsSaisies+d*(exo.modeEffort==='temps'?5:1));
+    const pas=pasSaisie(exo);
+    this.repsSaisies=Math.max(0,this.repsSaisies+d*pas);
     /* le conteneur s'appelle .saisie-rangee depuis que l'objectif est
        passé à gauche ; si le nœud manque, on redessine plutôt que de
        laisser l'écran mentir sur la valeur réelle. */
     const n=document.querySelector('.saisie-rangee .val');
     if(!n){ rendre(); return; }
-    n.textContent=this.repsSaisies;
+    n.textContent=valeurSaisieAffichee(exo,this.repsSaisies);
     const o=this._bloc().nbReps;
     n.className='val'+(this.repsSaisies<o?' sous-objectif':this.repsSaisies>o?' sur-objectif':'');
   },
@@ -2490,14 +2442,16 @@ function vueSeanceEnCours(){
     /* Correction 4 : l'objectif est un cadre à gauche du compteur,
        de même hauteur que les commandes. */
     const c=Seance.repsSaisies<b.nbReps?'sous-objectif':Seance.repsSaisies>b.nbReps?'sur-objectif':'';
+    const enMin=saisieEnMinutes(exo);
     action='<div class="carte">'+
-      '<p class="rappel-obj">'+(parTemps?'Temps tenu':'Répétitions réalisées')+'</p>'+
+      '<p class="rappel-obj">'+(parTemps?(enMin?'Durée réalisée':'Temps tenu'):'Répétitions réalisées')+'</p>'+
       '<div class="saisie-rangee">'+
-      '<div class="objectif-box"><span class="lb">Objectif</span><span class="nb">'+b.nbReps+'</span></div>'+
+      '<div class="objectif-box"><span class="lb">Objectif</span><span class="nb">'+
+        valeurSaisieAffichee(exo,b.nbReps)+'</span></div>'+
       '<button class="rond" data-act="reps-" aria-label="Retirer">\u2212</button>'+
-      '<span class="val '+c+'">'+Seance.repsSaisies+'</span>'+
+      '<span class="val '+c+'">'+valeurSaisieAffichee(exo,Seance.repsSaisies)+'</span>'+
       '<button class="rond" data-act="reps+" aria-label="Ajouter">+</button></div>'+
-      '<p class="rappel-obj">'+(parTemps?'secondes':'répétitions')+'</p></div>'+
+      '<p class="rappel-obj">'+(parTemps?(enMin?'minutes':'secondes'):'répétitions')+'</p></div>'+
       '<button class="bouton principal" data-act="valider">Valider et récupérer</button>';
   } else if(Seance.etat==='recup'){
     action='<div class="rangee">'+
@@ -2523,6 +2477,46 @@ function vueSeanceEnCours(){
     '<button class="bouton discret" data-act="terminer">Terminer la séance</button></div>';
 }
 
+const ECARTEMENT_UTILE = ['exo-pompes-serrees','exo-pompes-larges',
+  'exo-traction-pronation-serree','exo-traction-pronation-large',
+  'exo-traction-supination-serree','exo-traction-supination-large',
+  'exo-dips','exo-squat','exo-abduction-hanche','exo-adduction-hanche'];
+const HAUTEUR_UTILE = ['exo-pompes-serrees','exo-pompes-larges',
+  'exo-fente-bulgare','exo-copenhagen-adduction',
+  'exo-mollets-debout-jambe-tendue','exo-mollets-assis-genou-flechi',
+  'exo-isometrie-mollet-unilateral','exo-mobilite-cheville-au-mur'];
+const SANS_LESTAGE = ['exo-pogo-hops','exo-sauts-verticaux','exo-bondissements',
+  'exo-corde-a-sauter','exo-pallof-press','exo-rotateurs-externes-elastique',
+  'exo-monster-walk-elastique','exo-face-pull','exo-bird-dog','exo-curl-up-mcgill',
+  'exo-charniere-de-hanche-au-baton','exo-mobilite-cheville-au-mur',
+  'exo-mobilite-hanche-fente-haute','exo-rotations-thoraciques','exo-superman'];
+
+/* Quels réglages ont un sens pour cet exercice. */
+function reglagesUtiles(exo){
+  if(!exo) return [];
+  const hors = exo.categorie==='etirement' || exo.categorie==='course' ||
+    exo.id==='exo-echauffement-tapis-de-course';
+  const l=[];
+  if(!hors && ECARTEMENT_UTILE.indexOf(exo.id)>=0) l.push('ecartementCm');
+  if(!hors && HAUTEUR_UTILE.indexOf(exo.id)>=0) l.push('hauteurCm');
+  if(!hors && SANS_LESTAGE.indexOf(exo.id)<0) l.push('lestageKg');
+  return l;
+}
+
+/* Les durées longues — échauffement, course — se saisissent en
+   minutes ; les tenues courtes restent en secondes. */
+function saisieEnMinutes(exo){
+  return !!exo && exo.modeEffort==='temps' &&
+    (exo.categorie==='echauffement' || exo.categorie==='course');
+}
+function pasSaisie(exo){
+  if(saisieEnMinutes(exo)) return 60;
+  return exo && exo.modeEffort==='temps' ? 5 : 1;
+}
+function valeurSaisieAffichee(exo,v){
+  return saisieEnMinutes(exo) ? Math.round(v/60) : v;
+}
+
 /* Ce que vise l'exercice et comment il progresse. Affiché en clair
    pendant la séance : c'est au moment de lancer la série qu'on a
    besoin de savoir ce qui déclenche le palier suivant. */
@@ -2546,9 +2540,12 @@ function blocProgression(exo,b,regle){
    une série, repliés pendant l'effort et la récupération, où les
    toucher n'aurait plus de sens. */
 function reglagesSerie(exo,b){
-  const corps = reglageHTML('Écartement','ecartementCm',b.ecartementCm,'cm',1)+
-    reglageHTML('Hauteur','hauteurCm',b.hauteurCm,'cm',1)+
-    reglageLestage(b.lestageKg)+
+  const utiles=reglagesUtiles(exo);
+  if(!utiles.length) return '';
+  const corps =
+    (utiles.indexOf('ecartementCm')>=0?reglageHTML('Écartement','ecartementCm',b.ecartementCm,'cm',1):'')+
+    (utiles.indexOf('hauteurCm')>=0?reglageHTML('Hauteur','hauteurCm',b.hauteurCm,'cm',1):'')+
+    (utiles.indexOf('lestageKg')>=0?reglageLestage(b.lestageKg):'')+
     '<p class="aide" style="padding-bottom:11px">'+
     (b.reglagesRepris
       ? 'Repris du maximum de ta dernière séance sur cet exercice. Ajuste avant de lancer : la valeur part avec la série.'
@@ -2978,9 +2975,50 @@ function vueAccueil(){
     '<div class="carte">'+lignesD+
     '<p class="aide" style="margin-top:8px">Comparaison avec la période précédente de même durée.</p></div>';
 
-  return blocSerie+blocCharge+blocJournal+blocPR+blocD+blocCartographie()+
+  return blocSerie+blocCharge+blocFrequence()+blocJournal+blocPR+blocD+blocCartographie()+
     '<button class="bouton discret" style="margin-top:20px" data-act="histo">'+
     'Historique complet des séances \u203A</button>';
+}
+
+/* Nombre de séances réalisées, semaine par semaine. */
+function frequenceHebdo(nb){
+  const auj=new Date(), out=[];
+  for(let w=nb-1;w>=0;w--){
+    const lundi=lundiDe(auj); lundi.setDate(lundi.getDate()-7*w);
+    const fin=new Date(lundi); fin.setDate(fin.getDate()+7);
+    const c=DB.journal.filter(a=>{ const d=new Date(a.debut); return d>=lundi&&d<fin; }).length;
+    out.push({lundi:new Date(lundi), n:c});
+  }
+  return out;
+}
+function blocFrequence(){
+  const sem=frequenceHebdo(12);
+  const total=sem.reduce((t,s)=>t+s.n,0);
+  if(!total) return '';
+  const CIBLE=2;
+  const max=Math.max(CIBLE+1,...sem.map(s=>s.n));
+  const actives=sem.filter(s=>s.n>0).length;
+  const moy=Math.round(total/sem.length*10)/10;
+  const barres=sem.map((s,i)=>
+    '<div class="hb'+(s.n?'':' vide')+'">'+
+      '<span class="v">'+(s.n||'')+'</span>'+
+      '<i style="height:'+(s.n?Math.max(6,Math.round(s.n/max*100)):1)+'%"></i>'+
+    '</div>').join('');
+  const etiq=sem.map((s,i)=>'<span>'+((i%2===0||i===sem.length-1)
+    ? s.lundi.getDate()+'/'+(s.lundi.getMonth()+1) : '')+'</span>').join('');
+  return '<p class="etiquette" style="margin-top:22px">Séances par semaine \u00B7 12 semaines</p>'+
+    '<div class="carte">'+
+    '<div class="delta"><span>Moyenne</span><span class="n">'+String(moy).replace('.',',')+
+      ' / semaine</span></div>'+
+    '<div class="histo">'+barres+
+      '<div class="cible" style="bottom:'+Math.round(CIBLE/max*100)+'%"><b>cible '+CIBLE+'</b></div>'+
+    '</div>'+
+    '<div class="histo-lb">'+etiq+'</div>'+
+    '<p class="aide" style="margin-top:10px">Une barre par semaine, du lundi au dimanche. '+
+    'Le repère est à deux séances : c\u2019est la fréquence du programme en trois phases, '+
+    'et le minimum efficace retenu par la litt\u00E9rature chez le coureur. '+
+    (actives<sem.length?'Semaines sans s\u00E9ance : '+(sem.length-actives)+'.':'Aucune semaine blanche.')+
+    '</p></div>';
 }
 
 function journalBulles(){
