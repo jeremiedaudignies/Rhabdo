@@ -853,103 +853,114 @@ function modelesRenfo(){
   const b=blocSeance, m=modeleSeance, H={compteObjectif:false};
   return [
 
+    /* ===============================================================
+       Six seances, trois phases, deux passages par semaine.
+
+       Chaque seance a une dominante — haut le mercredi, bas le
+       week-end — et emprunte a l'autre moitie du corps de quoi voir
+       chaque groupe deux fois. Le second passage est volontairement
+       leger : deux series a RPE 7, repos courts. On double la
+       frequence sans doubler la fatigue ni la duree.
+
+       Ce qui rejoint le mercredi est trie sur son cout pour la
+       course : le hip thrust n'a ni impact ni compression axiale,
+       l'isometrie de mollet charge le tendon sans excentrique, le
+       gainage ne coute rien. Le demi-squat, le nordic curl et les
+       mollets lourds restent au week-end — ils laisseraient des
+       courbatures a 48 h du fractionne du vendredi.
+
+       Restent a une seule stimulation : quadriceps (par choix, c'est
+       la course qui prime), triceps et biceps (servis indirectement
+       par le couche, les dips et les tractions). */
+
     /* ===== PHASE 1 — INITIATION, 6 a 8 semaines =================
-       3 x 8 partout, RPE 6-7, deux a quatre repetitions gardees en
-       reserve. Aucune performance recherchee : on apprend les
-       mouvements a la barre et on prepare tendons et articulations.
-       Les deux seances sont volontairement courtes en exercices :
-       la frequence d'apprentissage compte plus que la variete. */
-    m('1a \u00B7 Initiation \u2014 Haut',5,[
+       3 x 8, RPE 6-7, deux a quatre repetitions gardees en reserve. */
+    m('1a \u00B7 Initiation \u2014 Haut+',5,[
       b('Rotations thoraciques',2,8,30,45,H),
-      b('D\u00E9velopp\u00E9 couch\u00E9',3,8,120,120),
-      b('Traction pronation large',3,8,105,120),
-      b('Rowing halt\u00E8re un bras',3,10,90,105),
-      b('Dips',3,8,90,90),
-      b('Face pull',2,15,60,75),
-      b('\u00C9l\u00E9vations lat\u00E9rales',2,12,60,60)
+      b('D\u00E9velopp\u00E9 couch\u00E9',3,8,105,105),
+      b('Traction pronation large',3,8,105,105),
+      b('Rowing halt\u00E8re un bras',3,10,90,90),
+      b('Dips',2,8,90,90),
+      b('Face pull',2,15,55,70),
+      b('Hip thrust',3,12,75,75),
+      b('Isom\u00E9trie mollet unilat\u00E9ral',2,30,40,50),
+      b('Pallof press',2,10,40,45)
     ]),
-    m('1b \u00B7 Initiation \u2014 Bas',5,[
+    m('1b \u00B7 Initiation \u2014 Bas+',5,[
       b('Mobilit\u00E9 cheville au mur',2,10,30,45,H),
       b('Charni\u00E8re de hanche au b\u00E2ton',2,8,30,45,H),
       b('Goblet squat',3,10,75,90),
       b('Soulev\u00E9 de terre roumain',3,8,90,90),
-      b('Fente bulgare',3,8,75,90),
-      b('Hip thrust',3,12,75,90),
+      b('Fente bulgare',2,8,75,90),
       b('Mollets debout jambe tendue',3,15,45,60),
       b('Mollets assis genou fl\u00E9chi',2,15,45,60),
-      b('Nordic curl',3,5,75,60),
-      b('Curl-up McGill',3,10,40,40),
-      b('Pallof press',3,10,40,45)
+      b('Nordic curl',2,5,75,60),
+      b('Pompes larges',2,12,50,60),
+      b('Traction pronation large',2,6,75,60),
+      b('Curl-up McGill',2,10,40,45)
     ]),
 
     /* ===== PHASE 2 — PROGRESSION, 12 a 16 semaines ==============
-       Le coeur du programme : 3 a 5 repetitions au-dela de 80 %,
-       recuperations longues sur les mouvements principaux, une a
-       deux repetitions gardees en reserve. Jamais l'echec sous
-       barre. C'est ce regime, et lui seul, qui produit le gain
-       d'economie de course. */
-    m('2a \u00B7 Progression \u2014 Haut',5,[
+       3 a 5 repetitions au-dela de 80 %, une a deux repetitions en
+       reserve, jamais l'echec sous barre. C'est la phase longue :
+       les recuperations de trois minutes sont ce qui fait la qualite
+       de la serie lourde, on ne les raccourcit pas. */
+    m('2a \u00B7 Progression \u2014 Haut+',5,[
       b('Rotateurs externes \u00E9lastique',2,15,45,60,H),
       b('D\u00E9velopp\u00E9 couch\u00E9',4,5,150,150),
       b('Traction pronation large',4,5,120,120),
       b('Rowing landmine',3,6,105,105),
       b('Dips',3,6,105,90),
-      b('D\u00E9velopp\u00E9 militaire halt\u00E8res',3,6,90,90),
-      b('Face pull',2,15,60,75),
-      b('\u00C9l\u00E9vations lat\u00E9rales',2,12,60,60)
+      b('\u00C9l\u00E9vations lat\u00E9rales',2,12,60,75),
+      b('Hip thrust',3,8,90,90),
+      b('Isom\u00E9trie mollet unilat\u00E9ral',2,30,40,50),
+      b('Pallof press',2,10,40,45)
     ]),
-    m('2b \u00B7 Progression \u2014 Bas',5,[
+    m('2b \u00B7 Progression \u2014 Bas+',5,[
       b('Charni\u00E8re de hanche au b\u00E2ton',2,8,30,45,H),
       b('Sauts verticaux',3,5,90,90),
       b('Demi-squat barre',4,4,180,150),
       b('Soulev\u00E9 de terre roumain',3,5,150,120),
-      b('Hip thrust',3,5,120,105),
       b('Mollets debout jambe tendue',3,8,75,75),
       b('Mollets assis genou fl\u00E9chi',2,12,75,75),
-      b('Nordic curl',3,4,90,60),
-      b('Pallof press',2,10,45,45),
-      b('Curl-up McGill',3,10,45,45)
+      b('Nordic curl',3,4,90,75),
+      b('Traction pronation large',2,6,90,75),
+      b('Pompes larges',2,10,45,55),
+      b('Curl-up McGill',2,10,40,45)
     ]),
 
     /* ===== PHASE 3 — ROUTINE PERMANENTE =========================
-       Une fois le capital de force construit, le volume tombe et
-       ces deux seances se tiennent pendant des annees. C'est aussi
-       le format des semaines de course : la seance Bas se supprime
-       dans les 72 h qui precedent une competition, la seance Haut
-       peut rester telle quelle. */
-    m('3a \u00B7 Routine \u2014 Haut',4,[
+       Le format a tenir pendant des annees, et celui des semaines de
+       course : la seance Bas+ se supprime dans les 72 h qui precedent
+       une competition, la seance Haut+ peut rester telle quelle. */
+    m('3a \u00B7 Routine \u2014 Haut+',4,[
       b('D\u00E9velopp\u00E9 couch\u00E9',3,5,150,120),
       b('Traction pronation large',3,5,120,105),
-      b('Rowing landmine',3,8,90,90),
-      b('Dips',3,8,90,90),
-      b('D\u00E9velopp\u00E9 militaire halt\u00E8res',2,6,90,75),
-      b('\u00C9l\u00E9vations lat\u00E9rales',2,12,60,60),
-      b('Face pull',2,15,60,60)
+      b('Rowing landmine',2,8,90,90),
+      b('Dips',2,8,90,90),
+      b('\u00C9l\u00E9vations lat\u00E9rales',2,12,60,75),
+      b('Hip thrust',3,8,90,90),
+      b('Isom\u00E9trie mollet unilat\u00E9ral',2,30,40,50),
+      b('Pallof press',2,10,40,45)
     ]),
-    m('3b \u00B7 Routine \u2014 Bas',5,[
+    m('3b \u00B7 Routine \u2014 Bas+',5,[
       b('Charni\u00E8re de hanche au b\u00E2ton',2,8,30,45,H),
       b('Sauts verticaux',3,4,90,75),
       b('Demi-squat barre',3,5,150,150),
       b('Soulev\u00E9 de terre roumain',3,5,120,120),
-      b('Hip thrust',3,6,105,90),
-      b('Fente bulgare',2,6,90,90),
       b('Mollets debout jambe tendue',3,8,75,75),
-      b('Nordic curl',3,5,90,60),
-      b('Pallof press',2,10,45,45),
-      b('Curl-up McGill',2,10,45,45)
+      b('Nordic curl',3,5,90,75),
+      b('Traction pronation large',2,6,90,75),
+      b('Pompes larges',2,10,45,55),
+      b('Curl-up McGill',2,10,40,45)
     ]),
 
-    /* ===== SÉANCE DÉCOUVERTE — ENFANTS ==========================
-       9 et 11 ans, une demi-heure, deux à trois fois par semaine sur
-       des jours non consécutifs. Charges minuscules ou poids du
-       corps, séries faciles arrêtées bien avant l'échec, et de quoi
-       jouer au milieu : à cet âge les gains sont nerveux et
-       coordinatifs, et ce qui compte est qu'ils reviennent la
-       semaine suivante.
-       Les pompes se règlent par la hauteur des mains — plus l'appui
-       est haut, plus c'est facile. La suspension à la barre est là
-       autant pour la poigne que pour le plaisir de tenir plus
-       longtemps que l'autre. */
+    /* ===== SEANCE DECOUVERTE — ENFANTS ==========================
+       9 et 11 ans, une demi-heure, deux a trois fois par semaine sur
+       des jours non consecutifs. Charges minuscules ou poids du
+       corps, series faciles arretees bien avant l'echec.
+       Les pompes se reglent par la hauteur des mains — plus l'appui
+       est haut, plus c'est facile. */
     m('D\u00E9couverte \u2014 Enfants',3,[
       b('Corde \u00E0 sauter',2,40,30,45,H),
       b('Goblet squat',2,12,40,60),
@@ -991,6 +1002,28 @@ const DB = {
     this.majCatalogueRenfo();
     this.retirerRoutines();
     this.refondreSeances();
+    this.majSeancesRenfo();
+  },
+  /* Le contenu des six séances a changé (combinaison haut/bas) mais
+     leurs identifiants sont restés les mêmes : l'insertion ci-dessous
+     ne les aurait donc jamais mises à jour. On réécrit leur contenu
+     une fois, en laissant intacte toute séance créée à la main. */
+  majSeancesRenfo(){
+    if(this.reglages.seancesCombinees>=1) return;
+    const refs=modelesRenfo();
+    let touche=false;
+    refs.forEach(ref=>{
+      const i=this.modeles.findIndex(m=>m.id===ref.id);
+      if(i<0){ this.modeles.push(ref); touche=true; }
+      else { this.modeles[i]=ref; touche=true; }
+    });
+    if(touche) Store.ecrire('modeles',this.modeles);
+    /* une séance en cours issue d'un ancien modèle n'a plus de sens */
+    const enCours=Store.lire('seanceEnCours',null);
+    if(enCours&&enCours.active&&refs.some(r=>r.id===enCours.active.modeleId))
+      Store.effacer('seanceEnCours');
+    this.reglages.seancesCombinees=1;
+    Store.ecrire('reglages',this.reglages);
   },
   /* Passage des quinze séances « Bloc 0 à 4 » aux six séances des
      trois phases. Une seule fois. Les anciennes séances sont
@@ -1811,6 +1844,16 @@ const Seance = {
     rendre();
   },
   terminerSerie(){ this.effortEcoule=Chrono.ecouleSec(); Chrono.arreter(); this._versSaisie(); },
+  /* Fin de série et validation en un seul geste, avec la valeur
+     proposée. Le compteur reste accessible par « Autre nombre ». */
+  terminerEtValider(){
+    this.effortEcoule=Chrono.ecouleSec(); Chrono.arreter();
+    const exo=this._exo(), b=this._bloc();
+    this.repsSaisies = exo.modeEffort==='temps'
+      ? Math.round(this.effortEcoule)
+      : ((b.derniereSaisie!=null) ? b.derniereSaisie : b.nbReps);
+    this.validerSerie();
+  },
   _versSaisie(){
     const exo=this._exo();
     this.etat='saisie';
@@ -1862,7 +1905,7 @@ const Seance = {
     const p=this.prochaine();
     if(!p){ this._terminer(); return; }
     Voix.dire('Récupération terminée. '+p.exo.nom+', série '+p.iSerie+' sur '+p.nbSeries+
-      '. Objectif '+p.nbReps+' '+(p.exo.modeEffort==='temps'?'secondes':'répétitions')+'.');
+      '. Objectif '+direQuantite(p.exo,p.nbReps)+'.');
     if(DB.reglages.enchainementAuto === false){
       this.etat='recup-termine'; this.persister(); Voix.gong(); rendre(); return;
     }
@@ -1886,7 +1929,7 @@ const Seance = {
   commencerApresAnnonce(){
     this.annonces=[]; this.etat='pret'; this.persister(); rendre();
     Voix.dire(this.active.nom+'. '+this._exo().nom+', série 1 sur '+this._bloc().nbSeries+
-      ', viser '+this.repsSaisies+(this._exo().modeEffort==='temps'?' secondes.':' répétitions.'));
+      ', viser '+direQuantite(this._exo(),this.repsSaisies)+'.');
   },
 
   /* Abandonne les séries restantes de l'exercice courant et passe au
@@ -2098,13 +2141,13 @@ function etatCadran(){
   const b=Seance._bloc(), exo=Seance._exo();
   if(!b||!exo) return {cls:'',mode:'',gros:'',sous:'',serie:'',arc:0};
   const parTemps=exo.modeEffort==='temps';
-  const serieEnCours='Série '+Seance.iSerie+'/'+b.nbSeries;
+  const serieEnCours='Série '+Seance.iSerie+' sur '+b.nbSeries;
 
   if(Seance.etat==='recup-termine'){
     const p=Seance.prochaine();
     return {cls:'recup', mode:'Récupération terminée', gros:'00',
       sous: p ? (p.memeExercice?'même exercice':'exercice suivant') : 'fin de séance',
-      serie: p ? 'Série '+p.iSerie+'/'+p.nbSeries : '', arc:C};
+      serie: p ? 'Série '+p.iSerie+' sur '+p.nbSeries : '', arc:C};
   }
   if(Seance.etat==='effort'){
     if(parTemps){
@@ -2124,8 +2167,9 @@ function etatCadran(){
   if(Seance.etat==='saisie')
     return {cls:'', mode:'Série terminée', gros:mmss(Seance.effortEcoule),
       sous:'temps sous tension', serie:serieEnCours, arc:0};
-  return {cls:'', mode:'Prêt', gros:parTemps?dureeLisible(b.nbReps):b.nbReps,
-    sous:parTemps?'à tenir':'répétitions visées', serie:serieEnCours, arc:0};
+  return {cls:'', mode:'Série '+Seance.iSerie+' sur '+b.nbSeries,
+    gros:parTemps?dureeLisible(b.nbReps):b.nbReps,
+    sous:parTemps?'objectif à tenir':'répétitions à réaliser', serie:'', arc:0};
 }
 
 function cadranHTML(){
@@ -2484,9 +2528,13 @@ function vueSeanceEnCours(){
   } else if(Seance.etat==='recup-termine'){
     action='<button class="bouton principal" data-act="enchainer">Lancer la série suivante</button>';
   } else if(Seance.etat==='effort'){
-    action='<div class="rangee">'+
+    const prevu = parTemps
+      ? dureeLisible(b.nbReps)
+      : ((b.derniereSaisie!=null?b.derniereSaisie:b.nbReps)+' rép.');
+    action='<button class="bouton effort" data-act="finValider">Série terminée \u00B7 '+prevu+'</button>'+
+      '<div class="rangee" style="margin-top:8px">'+
       (parTemps?'<button class="bouton discret" data-act="pause">'+(Chrono.enPause()?'Reprendre':'Pause')+'</button>':'')+
-      '<button class="bouton effort" data-act="finSerie">Série terminée</button></div>';
+      '<button class="bouton discret" data-act="finSerie">Autre nombre</button></div>';
   } else if(Seance.etat==='saisie'){
     /* Correction 4 : l'objectif est un cadre à gauche du compteur,
        de même hauteur que les commandes. */
@@ -2566,21 +2614,27 @@ function valeurSaisieAffichee(exo,v){
   return saisieEnMinutes(exo) ? Math.round(v/60) : v;
 }
 
+/* Une quantité dite à voix haute : « 10 min » plutôt que « 600
+   secondes », « 12 répétitions » pour le reste. */
+function direQuantite(exo,v){
+  return exo && exo.modeEffort==='temps' ? dureeLisible(v) : v+' répétitions';
+}
+
 /* Ce que vise l'exercice et comment il progresse. Affiché en clair
    pendant la séance : c'est au moment de lancer la série qu'on a
    besoin de savoir ce qui déclenche le palier suivant. */
 function blocProgression(exo,b,regle){
   const parTemps = exo.modeEffort==='temps';
   const u = parTemps?'s':'rép.';
-  const vise = DB.proposition(exo,b);
-  const obj = b.nbReps;
+  const vise = parTemps?dureeLisible(DB.proposition(exo,b)):DB.proposition(exo,b)+' '+u;
+  const obj = parTemps?dureeLisible(b.nbReps):b.nbReps+' '+u;
   const regleTxt = regle.plus
-    ? '<b>+'+regle.plus+' '+u+'</b> quand les '+b.nbSeries+' séries atteignent l’objectif'
+    ? '<b>+'+regle.plus+' '+(parTemps?'s':'rép.')+'</b> quand les '+b.nbSeries+' séries atteignent l’objectif'
     : (exo.evolLestageKg
         ? '<b>+'+nbCourt(exo.evolLestageKg)+' kg</b> quand les '+b.nbSeries+' séries atteignent l’objectif'
         : 'aucune progression automatique sur cet exercice');
   return '<div class="bloc-prog">'+
-    'Série en cours visée à <b>'+vise+' '+u+'</b> sur un objectif de <b>'+obj+' '+u+'</b>.<br>'+
+    'Série en cours visée à <b>'+vise+'</b> sur un objectif de <b>'+obj+'</b>.<br>'+
     'Progression : '+regleTxt+' \u00B7 '+(regle.herite?'règle de l’exercice':'règle propre à cette séance')+'.'+
     '</div>'+chargesReference(exo);
 }
@@ -3349,7 +3403,29 @@ function vuePlanif(){
     '<p class="aide" style="margin-top:10px">Point plein : séance réalisée. Cercle : séance planifiée.</p></div>'+
     (jourSelectionne?panneauJour():'')+
     '<button class="ajout" style="margin-top:12px" data-act="ouvrir-planif">+ Planifier une séance</button>'+
-    '<p class="etiquette" style="margin-top:22px">Programmé</p>'+liste;
+    '<p class="etiquette" style="margin-top:22px">Programmé</p>'+liste+
+    blocRealisees();
+}
+
+/* Les séances réalisées sur les quatorze derniers jours, de la plus
+   récente à la plus ancienne. Chaque ligne ouvre son détail. */
+function blocRealisees(){
+  const t0=Date.now()-14*86400000;
+  const faites=DB.journal.filter(a=>new Date(a.debut).getTime()>=t0)
+    .sort((a,b)=>new Date(b.debut)-new Date(a.debut));
+  const corps = faites.length
+    ? faites.map(a=>{
+        const d=new Date(a.debut);
+        return '<div class="ligne" data-detail="'+esc(a.id)+'"><div class="txt">'+
+          '<b>'+esc(a.nom||'Séance')+'</b><span>'+
+          d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})+
+          ' \u00B7 '+dureeLisible(a.dureeSec||0)+
+          ' \u00B7 '+(a.series||[]).length+' séries</span></div>'+
+          '<span class="fleche">\u203A</span></div>';
+      }).join('')
+    : '<div class="vide" style="padding:22px"><p>Aucune séance sur les 14 derniers jours.</p></div>';
+  return '<p class="etiquette" style="margin-top:22px">Réalisé \u00B7 14 derniers jours</p>'+
+    '<div class="carte" style="padding:4px 15px">'+corps+'</div>';
 }
 function panneauJour(){
   const d=jourSelectionne, a=activiteDuJour(d);
@@ -3759,6 +3835,7 @@ document.addEventListener('click',ev=>{
         case 'demarrer':       Seance.demarrerSerie(); break;
         case 'enchainer':      Seance.avancerEtDemarrer(); break;
         case 'finSerie':       Seance.terminerSerie(); break;
+        case 'finValider':     Seance.terminerEtValider(); break;
         case 'reps+':          Seance.ajusterReps(1); break;
         case 'reps-':          Seance.ajusterReps(-1); break;
         case 'valider':        Seance.validerSerie(); break;
