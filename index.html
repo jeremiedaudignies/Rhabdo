@@ -391,6 +391,16 @@ button.picto.mini::after{width:11px;height:11px}
 .bloc-prog b{color:var(--accent);font-weight:800}
 .reglages-vifs{margin-top:12px;background:var(--surface);border:1px solid var(--filet);
   border-radius:var(--r-m);padding:4px 15px}
+.charges-ref{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.charges-ref span{background:var(--surface);border:1px solid var(--filet);border-radius:var(--r-m);
+  padding:9px 10px;text-align:center;font-size:15px;font-weight:800;
+  font-variant-numeric:tabular-nums;line-height:1.2}
+.charges-ref span:only-child{grid-column:1 / -1}
+.charges-ref i{display:block;font-style:normal;font-size:9.5px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--texte-3);margin-bottom:3px}
+.charges-ref em{display:block;font-style:normal;font-size:10px;font-weight:600;color:var(--texte-3);
+  margin-top:2px}
+.charges-ref .record{border-color:var(--accent);color:var(--accent)}
 .exo-tete{display:flex;align-items:center;gap:12px;margin-bottom:6px}
 .exo-tete .exo-nom{margin:0}
 .mois-tete{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
@@ -1112,6 +1122,18 @@ const DB = {
     }
     return null;
   },
+  /* Meilleure valeur jamais enregistrée sur cet exercice, avec sa date. */
+  recordDeTousTemps(exerciceId,champ){
+    let m=null, quand=null;
+    this.journal.forEach(a=>{
+      (a.series||[]).forEach(s=>{
+        if(s.exerciceId!==exerciceId) return;
+        const v=s[champ];
+        if(v!=null && (m==null||v>m)){ m=v; quand=a.debut; }
+      });
+    });
+    return m==null?null:{val:m, date:quand};
+  },
   /* Proposition de répétitions pour la prochaine série de ce bloc. */
   proposition(exo,bloc){
     if(bloc && bloc.repsProposees!=null) return bloc.repsProposees;
@@ -1490,7 +1512,10 @@ const GUIDE_TITRES_EXO={
  'exo-mobilite-cheville-au-mur':['Position de départ','Genou vers le mur'],
  'exo-mobilite-hanche-fente-haute':['Mise en place','Bassin avancé'],
  'exo-rotations-thoraciques':['Coude rentré','Ouverture thoracique'],
- 'exo-monster-walk-elastique':['Position basse','Pas latéral']
+ 'exo-monster-walk-elastique':['Position basse','Pas latéral'],
+ 'exo-developpe-couche':['Barre en haut','Barre à la poitrine'],
+ 'exo-rowing-landmine':['Bras tendu','Tirage'],
+ 'exo-face-pull':['Bras tendus','Tirage au visage']
 };
 function guideTitres(exo){
   if(GUIDE_TITRES_EXO[exo.id]) return GUIDE_TITRES_EXO[exo.id];
@@ -2533,7 +2558,32 @@ function blocProgression(exo,b,regle){
   return '<div class="bloc-prog">'+
     'Série en cours visée à <b>'+vise+' '+u+'</b> sur un objectif de <b>'+obj+' '+u+'</b>.<br>'+
     'Progression : '+regleTxt+' \u00B7 '+(regle.herite?'règle de l’exercice':'règle propre à cette séance')+'.'+
-    '</div>';
+    '</div>'+chargesReference(exo);
+}
+
+/* Les deux charges qui situent la série : celle de la dernière fois,
+   et le record. Affiché seulement là où le lestage a un sens — inutile
+   sur un étirement ou un Pallof press — et seulement s'il y a
+   quelque chose à montrer. */
+function chargesReference(exo){
+  if(reglagesUtiles(exo).indexOf('lestageKg')<0) return '';
+  const der=DB.maxPrecedent(exo.id,'lestageKg');
+  const rec=DB.recordDeTousTemps(exo.id,'lestageKg');
+  if(der==null && !rec) return '';
+  const cases=[];
+  cases.push('<span><i>Dernière séance</i>'+(der!=null?nbCourt(der)+' kg':'\u2014')+'</span>');
+  if(rec) cases.push('<span class="record"><i>Record</i>'+nbCourt(rec.val)+' kg'+
+    '<em>'+dateCourte(rec.date)+'</em></span>');
+  return '<div class="charges-ref">'+cases.join('')+'</div>';
+}
+/* Date compacte, pour tenir dans une pastille. Abréviations écrites
+   plutôt que tronquées : « avril » coupé à quatre lettres donne
+   « avri », et juin/juillet se confondent sur trois. */
+const MOIS_COURT=['janv.','févr.','mars','avr.','mai','juin',
+  'juil.','août','sept.','oct.','nov.','déc.'];
+function dateCourte(iso){
+  const d=new Date(iso);
+  return isNaN(d)?'':d.getDate()+' '+MOIS_COURT[d.getMonth()];
 }
 
 /* Écartement, hauteur, lestage : ouverts quand on s'apprête à lancer
