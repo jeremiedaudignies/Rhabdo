@@ -14,7 +14,7 @@
    cache hors connexion. Le noyau seul est bien plus sûr, et les images
    se cachent d'elles-mêmes dès la première consultation d'une fiche.
 */
-const CACHE = 'rhabdo-v31';
+const CACHE = 'rhabdo-v32';
 const NOYAU = ['./', './index.html', './manifest.json',
                './icone-180.png', './icone-192.png', './icone-512.png'];
 
@@ -31,6 +31,11 @@ self.addEventListener('activate', e => {
   e.waitUntil(caches.keys()
     .then(cles => Promise.all(cles.filter(k => k !== CACHE).map(k => caches.delete(k))))
     .then(() => self.clients.claim()));
+});
+
+/* La page peut demander une prise de contrôle immédiate. */
+self.addEventListener('message', e => {
+  if (e.data === 'passe-devant') self.skipWaiting();
 });
 
 /* Réseau d'abord pour le code, cache d'abord pour les images :

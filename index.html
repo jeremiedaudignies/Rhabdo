@@ -3824,6 +3824,16 @@ function vueParametres(){
         'activation de Pages dans les réglages du dépôt. Tu obtiens une adresse permanente '+
         'et gratuite, et l’option apparaît alors dans Safari.')+
     '</p><p class="aide" style="margin:0">Adresse actuelle : '+esc(location.protocol)+'</p></div>'+
+    '<p class="etiquette" style="margin-top:20px">Version</p>'+
+    '<div class="carte">'+
+    '<div class="delta" style="border-top:none;padding-top:0"><span>Code chargé</span>'+
+      '<span class="n">'+esc(VERSION)+'</span></div>'+
+    '<p class="aide" style="margin:6px 0 0">Si ce numéro ne change pas après une mise en ligne, '+
+    'c’est le cache qui sert l’ancien fichier — pas le code qui est en cause.</p>'+
+    '<button class="bouton discret" style="margin-top:10px" data-act="forcer-maj">'+
+      'Forcer la mise à jour</button>'+
+    '<p class="aide" style="margin:8px 0 0">Vide le cache et recharge depuis le serveur. '+
+    'Tes séances, ton journal et tes réglages ne sont pas touchés.</p></div>'+
     '<p class="aide" style="margin-top:16px;text-align:center">RHABDO \u00B7 données conservées sur cet appareil uniquement</p>';
 }
 
@@ -4133,6 +4143,8 @@ document.addEventListener('click',ev=>{
           Store.toutEffacer(); Seance.active=null; edition=null; dernierePanne=null;
           ecranParams=false; detailSeanceId=null;
           DB.charger(); ongletCourant='seance'; rendre(); toast('Données réinitialisées.'); break;
+        case 'forcer-maj':
+          toast('Mise à jour en cours\u2026'); forcerMiseAJour(); break;
       }
       return;
     }
@@ -4147,11 +4159,48 @@ document.addEventListener('click',ev=>{
 /* Le mode « écran d'accueil » n'existe que pour une page servie en
    http(s). Sur un fichier ouvert localement (file://), iOS ne propose
    pas l'option et refuse les service workers : on n'essaie même pas. */
+const VERSION = 'v32 \u00B7 19 août 2026';
 const SERVI = location.protocol==='http:' || location.protocol==='https:';
 if(SERVI && 'serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
+    navigator.serviceWorker.register('sw.js').then(reg=>{
+      /* iOS ne revérifie le service worker que de loin en loin : on
+         le pousse à chaque ouverture, sinon une mise à jour peut
+         mettre des heures à arriver. */
+      reg.update().catch(()=>{});
+      /* Si une version attend son tour, on lui demande de passer
+         devant plutôt que d'attendre la fermeture de l'app. */
+      const pousser=w=>{ if(w) w.postMessage('passe-devant'); };
+      pousser(reg.waiting);
+      reg.addEventListener('updatefound',()=>{
+        const w=reg.installing;
+        if(w) w.addEventListener('statechange',()=>{
+          if(w.state==='installed' && navigator.serviceWorker.controller) pousser(w);
+        });
+      });
+      /* Un nouveau worker a pris la main : le code a changé sous nos
+         pieds, on recharge pour ne pas rester sur l'ancien écran. */
+      navigator.serviceWorker.addEventListener('controllerchange',()=>{
+        if(!window._majEnCours){ window._majEnCours=true; location.reload(); }
+      });
+    }).catch(()=>{});
   });
+}
+
+/* Repart de zéro côté cache, sans toucher aux données. */
+function forcerMiseAJour(){
+  window._majEnCours=true;
+  const fini=()=>location.replace(location.pathname+'?maj='+Date.now());
+  const taches=[];
+  try{
+    if('serviceWorker' in navigator)
+      taches.push(navigator.serviceWorker.getRegistrations()
+        .then(rs=>Promise.all(rs.map(r=>r.unregister()))).catch(()=>{}));
+    if(window.caches)
+      taches.push(caches.keys().then(ks=>Promise.all(ks.map(k=>caches.delete(k)))).catch(()=>{}));
+  }catch(e){}
+  Promise.all(taches).then(fini,fini);
+  setTimeout(fini,2500);   /* filet, si une promesse ne revient jamais */
 }
 
 DB.charger();
