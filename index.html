@@ -991,21 +991,30 @@ function modelesRenfo(){
     ]),
 
     /* ===== SÉANCES COURTES ======================================
-       Un plan B assumé : 35 et 43 minutes, à utiliser quand la
+       Un plan B assumé : 38 et 43 minutes, à utiliser quand la
        séance de phase ne rentre pas dans la semaine. Mieux vaut une
-       mini séance faite qu'une séance complète sautée. */
+       mini séance faite qu'une séance complète sautée.
+
+       Elles gardent la règle des deux stimulations hebdomadaires :
+       chacune emprunte deux mouvements à l'autre moitié du corps,
+       pour que faire les deux minis dans la semaine reste une
+       semaine complète et non une demi-semaine. */
     m('Mini séance \u2014 Haut',4,[
       b('D\u00E9velopp\u00E9 couch\u00E9',3,5,135,105),
       b('Traction pronation large',3,5,135,105),
       b('Rowing landmine',3,8,90,75),
-      b('D\u00E9velopp\u00E9 militaire halt\u00E8res',2,6,105,60)
+      /* rappel bas du corps : ni impact ni compression axiale */
+      b('Hip thrust',2,8,90,75),
+      b('Isom\u00E9trie mollet unilat\u00E9ral',2,30,40,50)
     ]),
     m('Mini séance \u2014 Bas',4,[
       b('Pogo hops',3,10,60,75),
       b('Demi-squat barre',3,4,150,120),
       b('Soulev\u00E9 de terre roumain',3,5,120,105),
-      b('Hip thrust',3,5,120,90),
-      b('Mollets debout jambe tendue',3,6,75,60)
+      b('Mollets debout jambe tendue',3,6,75,60),
+      /* rappel haut du corps, format entretien */
+      b('Traction pronation large',2,6,90,75),
+      b('Pompes larges',2,10,45,55)
     ]),
 
     /* ===== SEANCE DECOUVERTE — ENFANTS ==========================
@@ -1066,6 +1075,18 @@ const DB = {
     modelesRenfo().forEach(ref=>{
       if(!this.modeles.some(m=>m.id===ref.id)){ this.modeles.push(ref); touche=true; }
     });
+    /* Les deux mini séances sont livrées corrigées : la première
+       version ne portait pas les rappels de l'autre moitié du corps.
+       Réécriture unique, sur ces deux séances seulement. */
+    if(!(this.reglages.minisCroisees>=1)){
+      ['seance-mini-seance-haut','seance-mini-seance-bas'].forEach(id=>{
+        const ref=modelesRenfo().filter(m=>m.id===id)[0];
+        const i=this.modeles.findIndex(m=>m.id===id);
+        if(ref && i>=0){ this.modeles[i]=ref; touche=true; }
+      });
+      this.reglages.minisCroisees=1;
+      Store.ecrire('reglages',this.reglages);
+    }
     if(touche) Store.ecrire('modeles',this.modeles);
   },
   /* Le contenu des six séances a changé (combinaison haut/bas) mais
