@@ -54,6 +54,15 @@ input,select,textarea{font-family:inherit;font-size:16px;color:var(--texte);back
   border:1px solid var(--filet);border-radius:var(--r-s);padding:11px 12px;width:100%;appearance:none}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
   box-shadow:0 0 0 3px var(--accent-doux)}
+/* La coche est peinte en fond plutôt qu'en ::after : les pseudo-
+   éléments sur un <input> ne sont pas fiables d'un navigateur à
+   l'autre, une image de fond l'est partout. */
+input[type="checkbox"]{width:24px;height:24px;flex:0 0 auto;padding:0;border-radius:7px;
+  border:1.5px solid var(--filet);background:var(--surface);cursor:pointer;
+  transition:background-color .15s,border-color .15s}
+input[type="checkbox"]:checked{border-color:var(--accent);background-color:var(--accent);
+  background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23fff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round' d='M3.2 8.4l3.4 3.4L12.8 5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:center;background-size:15px 15px}
 
 #app{display:flex;flex-direction:column;height:100dvh}
 #entete{flex:0 0 auto;padding:calc(var(--safe-t) + 12px) 16px 12px;display:flex;align-items:center;
@@ -86,6 +95,32 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
   text-transform:uppercase;padding:4px 9px;border-radius:99px;background:var(--surface-2);color:var(--texte-2)}
 .pastille.haut{color:var(--haut)} .pastille.bas{color:var(--bas)} .pastille.abdo{color:var(--abdo)}
 .pastille.mixte{color:var(--mixte)} .pastille.etirement{color:var(--etirement)}
+.repart{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:11px}
+.repart .col{display:flex;flex-direction:column;gap:4px;min-width:0}
+.repart .tete{display:block;font-size:8.5px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--texte-3);padding-bottom:5px;
+  border-bottom:1px solid var(--filet);margin-bottom:2px}
+.repart .tete b{display:block;font-size:14px;line-height:1.15;margin-top:3px;color:var(--texte);
+  font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.repart .p{font-size:10.5px;font-weight:600;color:var(--texte-2);background:var(--surface-2);
+  border-radius:99px;padding:4px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.repart .p b{color:var(--accent);font-weight:800;font-variant-numeric:tabular-nums}
+.repart .p.muet{background:none;color:var(--texte-3);padding-left:2px}
+.item .cmds .ellipse{margin-left:auto;min-width:46px;padding:9px 12px;font-size:17px;line-height:1;
+  letter-spacing:.06em;font-weight:800;color:var(--texte-3)}
+.detail-tab .l{display:grid;grid-template-columns:1fr 52px;align-items:center;gap:10px;
+  padding:9px 0;border-bottom:1px solid var(--filet)}
+.detail-tab .l:last-child{border-bottom:0}
+.detail-tab .nm{font-size:13.5px;font-weight:700;min-width:0}
+.detail-tab .barre{height:6px;border-radius:99px;background:var(--surface-2);margin-top:5px;overflow:hidden}
+.detail-tab .barre i{display:block;height:100%;border-radius:99px;background:var(--accent)}
+.detail-tab .pc{text-align:right;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+.detail-tab .src{font-size:11px;color:var(--texte-3);font-weight:500}
+.detail-exos .l{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:baseline;
+  padding:8px 0;border-bottom:1px solid var(--filet);font-size:13px}
+.detail-exos .l:last-child{border-bottom:0}
+.detail-exos .q{font-variant-numeric:tabular-nums;font-weight:700;color:var(--texte-2);white-space:nowrap}
+.detail-exos .z{display:block;font-size:11px;color:var(--texte-3);font-weight:500}
 .bouton{display:block;width:100%;padding:16px;border-radius:99px;background:var(--surface-2);
   font-weight:700;font-size:16px;letter-spacing:-.01em;transition:transform .08s,filter .15s}
 .bouton:active{transform:scale(.98)}
@@ -188,7 +223,7 @@ details.reglages[open] summary::after{content:"\2013"}
 /* --- formulaires --- */
 .champ{margin-bottom:14px}
 .champ > label{display:block;font-size:12.5px;font-weight:600;color:var(--texte-2);margin-bottom:6px}
-.trio{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.trio{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:9px}
 .puces{display:flex;flex-wrap:wrap;gap:7px}
 .puces label{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;border-radius:99px;
   background:var(--surface);border:1px solid var(--filet);font-size:13.5px;font-weight:500;cursor:pointer}
@@ -955,6 +990,24 @@ function modelesRenfo(){
       b('Curl-up McGill',2,10,40,45)
     ]),
 
+    /* ===== SÉANCES COURTES ======================================
+       Un plan B assumé : 35 et 43 minutes, à utiliser quand la
+       séance de phase ne rentre pas dans la semaine. Mieux vaut une
+       mini séance faite qu'une séance complète sautée. */
+    m('Mini séance \u2014 Haut',4,[
+      b('D\u00E9velopp\u00E9 couch\u00E9',3,5,135,105),
+      b('Traction pronation large',3,5,135,105),
+      b('Rowing landmine',3,8,90,75),
+      b('D\u00E9velopp\u00E9 militaire halt\u00E8res',2,6,105,60)
+    ]),
+    m('Mini séance \u2014 Bas',4,[
+      b('Pogo hops',3,10,60,75),
+      b('Demi-squat barre',3,4,150,120),
+      b('Soulev\u00E9 de terre roumain',3,5,120,105),
+      b('Hip thrust',3,5,120,90),
+      b('Mollets debout jambe tendue',3,6,75,60)
+    ]),
+
     /* ===== SEANCE DECOUVERTE — ENFANTS ==========================
        9 et 11 ans, une demi-heure, deux a trois fois par semaine sur
        des jours non consecutifs. Charges minuscules ou poids du
@@ -1003,6 +1056,17 @@ const DB = {
     this.retirerRoutines();
     this.refondreSeances();
     this.majSeancesRenfo();
+    this.ajouterSeancesManquantes();
+  },
+  /* Les séances livrées après coup s'ajoutent sans rien réécrire :
+     contrairement à majSeancesRenfo, on n'insère que ce qui manque,
+     pour ne pas effacer une séance retouchée à la main. */
+  ajouterSeancesManquantes(){
+    let touche=false;
+    modelesRenfo().forEach(ref=>{
+      if(!this.modeles.some(m=>m.id===ref.id)){ this.modeles.push(ref); touche=true; }
+    });
+    if(touche) Store.ecrire('modeles',this.modeles);
   },
   /* Le contenu des six séances a changé (combinaison haut/bas) mais
      leurs identifiants sont restés les mêmes : l'insertion ci-dessous
@@ -1657,6 +1721,65 @@ function guideRepli(img){
    elle se pose dessus. Pendant une séance, le cadran reste donc
    présent et le chronomètre continue — la pastille de la tête en
    donne la lecture, rafraîchie par rafraichirCadran(). */
+/* Répartition complète d'une séance : tous les groupes, sans seuil,
+   puis le détail des exercices. */
+function modaleRepartition(){
+  const m=DB.modele(repartModale);
+  if(!m) return '';
+  const f=partsFamilles(m);
+  const compte={}; let travail=0, total=0;
+  (m.blocs||[]).forEach(b=>{
+    const e=DB.exercice(b.exerciceId); if(!e) return;
+    total+=b.nbSeries;
+    if(e.categorie==='echauffement'||e.categorie==='etirement'||e.categorie==='course') return;
+    travail+=b.nbSeries;
+    (e.zone1||[]).forEach(g=>{ compte[g]=(compte[g]||0)+b.nbSeries; });
+    (e.zone2||[]).forEach(g=>{ compte[g]=(compte[g]||0)+b.nbSeries*0.5; });
+  });
+  const lignes=Object.keys(GROUPES)
+    .map(g=>({g, v:compte[g]||0, pct:travail?Math.round((compte[g]||0)/travail*100):0}))
+    .sort((a,b)=>b.v-a.v);
+  const maxi=Math.max(1,...lignes.map(x=>x.v));
+  const tableau=lignes.map(x=>
+    '<div class="l"><div class="nm">'+GROUPES[x.g]+
+      '<div class="barre"><i style="width:'+Math.round(x.v/maxi*100)+'%"></i></div>'+
+      '<span class="src">'+nbCourt(x.v)+' série'+(x.v>=2?'s':'')+' pondérée'+(x.v>=2?'s':'')+
+      ' sur '+travail+'</span></div>'+
+    '<span class="pc"'+(x.pct?'':' style="color:var(--texte-3);font-weight:600"')+'>'+
+      x.pct+'\u2009%</span></div>').join('');
+  const exos=(m.blocs||[]).map(b=>{
+    const e=DB.exercice(b.exerciceId); if(!e) return '';
+    const z=[].concat((e.zone1||[]).map(g=>GROUPES[g]),
+      (e.zone2||[]).map(g=>GROUPES[g]+' (50\u2009%)'));
+    const q=e.modeEffort==='temps'
+      ? b.nbSeries+' \u00D7 '+dureeLisible(b.nbReps)
+      : b.nbSeries+' \u00D7 '+b.nbReps;
+    return '<div class="l"><div><b>'+esc(e.nom)+'</b><span class="z">'+
+      (z.join(' \u00B7 ')||CATEGORIES[e.categorie])+'</span></div>'+
+      '<span class="q">'+q+'</span></div>';
+  }).join('');
+  return '<div class="modale" role="dialog" aria-modal="true" aria-label="Répartition : '+esc(m.nom)+'">'+
+    '<div class="modale-fond" data-act="fermer-repart"></div>'+
+    '<div class="modale-feuille">'+
+      '<div class="modale-tete">'+
+        '<div style="flex:1;min-width:0"><h2 class="exo-nom">'+esc(m.nom)+'</h2>'+
+        '<p class="exo-meta">'+total+' séries \u00B7 '+travail+' de travail \u00B7 '+
+        f.prep+'\u2009% préparation, '+f.haut+'\u2009% haut, '+f.bas+'\u2009% bas</p></div>'+
+        '<button class="rond" data-act="fermer-repart" aria-label="Fermer">\u00D7</button>'+
+      '</div>'+
+      '<div class="modale-corps">'+
+        '<p class="etiquette">Tous les groupes musculaires</p>'+
+        '<div class="carte detail-tab">'+tableau+'</div>'+
+        '<p class="aide" style="margin-top:10px">Part des séries de travail : un groupe prioritaire '+
+        'compte pour une série entière, un groupe secondaire pour une demie. Échauffement et '+
+        'étirements sont hors du calcul. La somme dépasse 100\u2009% — une série sollicite '+
+        'plusieurs muscles.</p>'+
+        '<p class="etiquette" style="margin-top:20px">Les '+(m.blocs||[]).length+' exercices</p>'+
+        '<div class="carte detail-exos">'+exos+'</div>'+
+      '</div>'+
+      '<div class="modale-pied"><button class="bouton principal" data-act="fermer-repart">Retour</button></div>'+
+    '</div></div>';
+}
 function modaleFiche(){
   const exo=DB.exercice(ficheModale);
   if(!exo) return '';
@@ -2211,11 +2334,11 @@ function rendre(){
        continue de tourner. */
     v.innerHTML = html;
     const sur=document.getElementById('surcouche');
-    if(sur) sur.innerHTML = ficheModale?modaleFiche():'';
+    if(sur) sur.innerHTML = ficheModale?modaleFiche():(repartModale?modaleRepartition():'');
     if(carte) colorierCorps();
   }catch(err){
     noterPanneSansBoucle(err);
-    ficheModale=null;
+    ficheModale=null; repartModale=null;
     const sur=document.getElementById('surcouche'); if(sur) sur.innerHTML='';
     v.innerHTML=vuePanne();
   }
@@ -2257,18 +2380,17 @@ function vueListeSeances(){
     const n=(m.blocs||[]).length;
     const series=(m.blocs||[]).reduce((s,b)=>s+b.nbSeries,0);
     return '<div class="item">'+
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">'+
-      '<div style="min-width:0"><h3>'+esc(m.nom)+'</h3><div class="quand">'+
-      (n?n+' exercice'+(n>1?'s':'')+' \u00B7 '+series+' séries':'Aucun exercice — à compléter')+
-      (function(){ const b=DB.bilanObjectifSeance(m);
-         return b.requis ? ' \u00B7 objectif '+b.atteints+'/'+b.requis : ''; })()+
-      '</div></div>'+
-      '<div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end">'+
-      (DB.bilanObjectifSeance(m).maitrisee?'<span class="pastille" style="color:var(--recup)">maîtrisée</span>':'')+
-      pastillesSeance(m)+'</div></div>'+
+      '<h3>'+esc(m.nom)+
+      (DB.bilanObjectifSeance(m).maitrisee?' <span class="pastille" style="color:var(--recup)">maîtrisée</span>':'')+
+      '</h3>'+
+      '<div class="quand">'+(n? n+' exercice'+(n>1?'s':'')+' \u00B7 '+series+' séries'
+        : 'Aucun exercice — à compléter')+'</div>'+
+      pastillesSeance(m)+
       '<div class="cmds">'+(n?'<button class="go" data-go="'+m.id+'">Débuter</button>':'')+
       '<button data-planifier="'+m.id+'">Planifier</button>'+
-      '<button data-editer-s="'+m.id+'">Modifier</button></div></div>';
+      '<button data-editer-s="'+m.id+'">Modifier</button>'+
+      (n?'<button class="ellipse" data-repart="'+m.id+'" aria-label="Détail de la répartition">\u2026</button>':'')+
+      '</div></div>';
   }).join('');
   return (planif.length?'<p class="etiquette">À faire</p>'+lp:'')+
     '<p class="etiquette" style="margin-top:'+(planif.length?'24px':'0')+'">Toutes les séances</p>'+lm;
@@ -2312,10 +2434,77 @@ function listeSeances(){
     }).join('') : '<div class="vide"><p>Aucune séance dans ce filtre.</p></div>');
 }
 
+/* Part de chaque groupe musculaire dans les séries d'une séance.
+   Renvoie une liste triée, du plus sollicité au moins sollicité. */
+function repartitionSeance(m){
+  const compte={}; let total=0;
+  (m.blocs||[]).forEach(b=>{
+    const e=DB.exercice(b.exerciceId);
+    if(!e || e.categorie==='echauffement' || e.categorie==='etirement') return;
+    total += b.nbSeries;
+    (e.zone1||[]).forEach(g=>{ compte[g]=(compte[g]||0)+b.nbSeries; });
+    (e.zone2||[]).forEach(g=>{ compte[g]=(compte[g]||0)+b.nbSeries*0.5; });
+  });
+  if(!total) return [];
+  return Object.keys(compte)
+    .map(g=>({g, pct:Math.round(compte[g]/total*100)}))
+    .filter(x=>x.pct>=5)       /* le détail complet est dans la modale */
+    .sort((a,b)=>b.pct-a.pct);
+}
+/* À quelle colonne appartient chaque groupe musculaire. */
+const COL_HAUT = ['pectoraux','dos','epaules','triceps','biceps'];
+const COL_BAS  = ['fessiers','quadriceps','ischios','mollets','hanche','abdo'];
+/* Noms raccourcis : trois colonnes sur un écran de téléphone ne
+   laissent pas la place à « Ischio-jambiers ». */
+const GROUPES_COURTS = {abdo:'Gainage', ischios:'Ischios', quadriceps:'Quadriceps'};
+const nomCourt = g => GROUPES_COURTS[g] || GROUPES[g];
+
+/* Part de chaque grande famille dans le total des séries. Les trois
+   font 100 %. */
+function partsFamilles(m){
+  let prep=0, haut=0, bas=0, total=0;
+  (m.blocs||[]).forEach(b=>{
+    const e=DB.exercice(b.exerciceId); if(!e) return;
+    total+=b.nbSeries;
+    if(e.categorie==='echauffement'||e.categorie==='etirement'||e.categorie==='course') prep+=b.nbSeries;
+    else if(e.categorie==='haut') haut+=b.nbSeries;
+    else bas+=b.nbSeries;
+  });
+  if(!total) return null;
+  /* Les arrondis séparés donnaient 99 % ou 101 % : on arrondit les
+     deux premières familles et la troisième prend le reste, pour que
+     les trois colonnes affichent toujours exactement 100 %. */
+  const a=Math.round(prep/total*100), b=Math.round(haut/total*100);
+  return {prep:a, haut:b, bas:100-a-b};
+}
+
+/* Y a-t-il de l'échauffement, des étirements dans cette séance ? */
+function preparationSeance(m){
+  const out={chauffe:false, etire:false};
+  (m.blocs||[]).forEach(b=>{
+    const e=DB.exercice(b.exerciceId); if(!e) return;
+    if(e.categorie==='echauffement'||e.categorie==='course') out.chauffe=true;
+    if(e.categorie==='etirement') out.etire=true;
+  });
+  return out;
+}
+
 function pastillesSeance(m){
-  const cats=DB.categoriesModele(m);
-  if(!cats.length) return '<span class="pastille">vide</span>';
-  return cats.map(c=>'<span class="pastille '+c+'">'+CATEGORIES[c]+'</span>').join(' ');
+  const r=repartitionSeance(m), f=partsFamilles(m);
+  if(!f) return '<p class="aide" style="margin:8px 0 0">Aucun exercice — à compléter.</p>';
+  const prep=preparationSeance(m);
+  const colonne=(titre,pct,contenu)=>
+    '<div class="col"><span class="tete">'+titre+'<b>'+pct+'\u2009%</b></span>'+contenu+'</div>';
+  const badges=liste=>r.filter(x=>liste.indexOf(x.g)>=0).slice(0,5)
+    .map(x=>'<span class="p"><b>'+x.pct+'\u2009%</b> '+nomCourt(x.g)+'</span>').join('');
+  return '<div class="repart">'+
+    colonne('Préparation', f.prep,
+      (prep.chauffe?'<span class="p">Échauffement</span>':'')+
+      (prep.etire?'<span class="p">Étirements</span>':'')+
+      (!prep.chauffe&&!prep.etire?'<span class="p muet">\u2014</span>':''))+
+    colonne('Haut', f.haut, badges(COL_HAUT)||'<span class="p muet">\u2014</span>')+
+    colonne('Bas / gainage', f.bas, badges(COL_BAS)||'<span class="p muet">\u2014</span>')+
+    '</div>';
 }
 function vueEditeur(){ return edition.type==='exo'?editeurExercice():editeurSeance(); }
 
@@ -2350,11 +2539,26 @@ function editeurExercice(){
     '<option value="reps"'+(d.modeEffort==='reps'?' selected':'')+'>Répétitions</option>'+
     '<option value="temps"'+(d.modeEffort==='temps'?' selected':'')+'>Temps (gainage, étirement)</option></select>'+
     '<p class="aide">En mode temps, le chrono décompte au lieu de monter.</p></div>'+
-    '<div class="champ"><label>Réglages de référence</label><div class="trio">'+
-    '<input data-champ="ecartementCm" data-num="1" type="number" inputmode="numeric" placeholder="Écart. cm" value="'+(d.ecartementCm==null?'':d.ecartementCm)+'">'+
-    '<input data-champ="hauteurCm" data-num="1" type="number" inputmode="numeric" placeholder="Haut. cm" value="'+(d.hauteurCm==null?'':d.hauteurCm)+'">'+
-    '<input data-champ="lestageKg" data-num="1" type="number" inputmode="decimal" placeholder="Poids du corps ou kg" value="'+(d.lestageKg==null?'':d.lestageKg)+'"></div>'+
-    '<p class="aide">Écartement, hauteur, lestage. Repris à chaque séance, modifiables série par série.</p></div>'+
+    (function(){
+      /* Mêmes réglages qu'ailleurs : ce qui n'a pas de sens pour cet
+         exercice ne s'affiche pas. */
+      const u=reglagesUtiles(d), champs=[];
+      if(u.indexOf('ecartementCm')>=0) champs.push(
+        '<input data-champ="ecartementCm" data-num="1" type="number" inputmode="numeric" placeholder="Écart. cm" value="'+(d.ecartementCm==null?'':d.ecartementCm)+'">');
+      if(u.indexOf('hauteurCm')>=0) champs.push(
+        '<input data-champ="hauteurCm" data-num="1" type="number" inputmode="numeric" placeholder="Haut. cm" value="'+(d.hauteurCm==null?'':d.hauteurCm)+'">');
+      if(u.indexOf('lestageKg')>=0) champs.push(
+        '<input data-champ="lestageKg" data-num="1" type="number" inputmode="decimal" placeholder="Poids du corps ou kg" value="'+(d.lestageKg==null?'':d.lestageKg)+'">');
+      if(!champs.length) return '';
+      const noms=[];
+      if(u.indexOf('ecartementCm')>=0) noms.push('écartement');
+      if(u.indexOf('hauteurCm')>=0) noms.push('hauteur');
+      if(u.indexOf('lestageKg')>=0) noms.push('lestage');
+      return '<div class="champ"><label>Réglages de référence</label>'+
+        '<div class="trio">'+champs.join('')+'</div>'+
+        '<p class="aide">'+noms.join(', ').replace(/^./,c=>c.toUpperCase())+
+        '. Repris à chaque séance, modifiables série par série.</p></div>';
+    })()+
     '</div>'+
     ficheExerciceHTML(d,true)+
     '<div class="tete-section">'+
@@ -2433,46 +2637,47 @@ function editeurSeance(){
         : pas({lib:'Répétitions',cle:'nbReps',min:1},b.nbReps,'reps',1))+
       pas({lib:'Récup. entre séries',cle:'recupSerieSec',min:0},b.recupSerieSec,'s',15)+
       pas({lib:'Récup. fin d’exercice',cle:'recupFinSec',min:0},b.recupFinSec,'s',15)+
-      (exo.modeEffort==='temps' ? '' :
-        '<div class="reglage" style="padding:8px 0"><span class="nom">Écartement</span><span class="pas">'+
-        '<button data-inc="blocs.'+i+'.ecartementCm" data-pas="-1" data-min="0" data-suffixe="cm">\u2212</button>'+
-        '<span class="v">'+(b.ecartementCm==null?'\u2014':b.ecartementCm+' cm')+'</span>'+
-        '<button data-inc="blocs.'+i+'.ecartementCm" data-pas="1" data-min="0" data-suffixe="cm">+</button></span></div>'+
-        '<div class="reglage" style="padding:8px 0"><span class="nom">Hauteur</span><span class="pas">'+
-        '<button data-inc="blocs.'+i+'.hauteurCm" data-pas="-1" data-min="0" data-suffixe="cm">\u2212</button>'+
-        '<span class="v">'+(b.hauteurCm==null?'\u2014':b.hauteurCm+' cm')+'</span>'+
-        '<button data-inc="blocs.'+i+'.hauteurCm" data-pas="1" data-min="0" data-suffixe="cm">+</button></span></div>'+
-        '<div class="reglage" style="padding:8px 0"><span class="nom">Lestage</span><span class="pas">'+
-        '<button data-inc="blocs.'+i+'.lestageKg" data-pas="-0.5" data-min="0" data-suffixe="kg">\u2212</button>'+
-        '<span class="v" style="min-width:96px">'+(b.lestageKg==null||b.lestageKg===0?'Poids du corps':b.lestageKg+' kg')+'</span>'+
-        '<button data-inc="blocs.'+i+'.lestageKg" data-pas="0.5" data-min="0" data-suffixe="kg">+</button></span></div>')+
+      (function(){
+        /* Mêmes réglages qu'à l'écran de séance : ce qui n'a pas de
+           sens pour l'exercice ne s'affiche nulle part. */
+        const u=reglagesUtiles(exo);
+        return (u.indexOf('hauteurCm')<0?'':
+          '<div class="reglage" style="padding:8px 0"><span class="nom">Hauteur</span><span class="pas">'+
+          '<button data-inc="blocs.'+i+'.hauteurCm" data-pas="-1" data-min="0" data-suffixe="cm">\u2212</button>'+
+          '<span class="v">'+(b.hauteurCm==null?'\u2014':b.hauteurCm+' cm')+'</span>'+
+          '<button data-inc="blocs.'+i+'.hauteurCm" data-pas="1" data-min="0" data-suffixe="cm">+</button></span></div>')+
+        (u.indexOf('lestageKg')<0?'':
+          '<div class="reglage" style="padding:8px 0"><span class="nom">Lestage</span><span class="pas">'+
+          '<button data-inc="blocs.'+i+'.lestageKg" data-pas="-0.5" data-min="0" data-suffixe="kg">\u2212</button>'+
+          '<span class="v" style="min-width:96px">'+(b.lestageKg==null||b.lestageKg===0?'Poids du corps':b.lestageKg+' kg')+'</span>'+
+          '<button data-inc="blocs.'+i+'.lestageKg" data-pas="0.5" data-min="0" data-suffixe="kg">+</button></span></div>');
+      })()+
       '<label style="display:flex;align-items:center;gap:9px;margin-top:12px;font-size:13px;color:var(--texte-2)">'+
-      '<input type="checkbox" data-objectif="'+i+'"'+(b.compteObjectif!==false?' checked':'')+' style="width:auto">'+
+      '<input type="checkbox" data-objectif="'+i+'"'+(b.compteObjectif!==false?' checked':'')+'>'+
       'Compte pour l\u2019objectif de la séance'+
       (b.objectifAtteintLe?' <span class="pastille abdo">validé</span>':'')+'</label>'+
-      '<div class="champ" style="margin:10px 0 0"><label>Répétitions au départ, pour cette séance</label>'+
+      '<div class="champ" style="margin:10px 0 0"><label>Point de départ</label>'+
       '<input data-champ="blocs.'+i+'.repsInitiales" data-num="1" type="number" inputmode="numeric" '+
-      'placeholder="hérite de l’exercice ('+DB.repsDepart(exo,null).val+')" value="'+
+      'placeholder="comme l’exercice ('+DB.repsDepart(exo,null).val+')" value="'+
       (b.repsInitiales==null?'':b.repsInitiales)+'">'+
-      '<p class="aide">Ce réglage l’emporte sur celui de l’exercice.</p></div>'+
+      '<p class="aide">Ce qui sera proposé à la première série, avant toute réalisation.</p></div>'+
       '<label style="display:flex;align-items:center;gap:9px;margin-top:10px;font-size:13px;color:var(--texte-2)">'+
-      '<input type="checkbox" data-surcharge="'+i+'"'+(surcharge?' checked':'')+' style="width:auto">'+
-      'Règle de progression propre à cette séance</label>'+
+      '<input type="checkbox" data-surcharge="'+i+'"'+(surcharge?' checked':'')+'>'+
+      'Progresser différemment ici</label>'+
       (surcharge
         ? '<input data-champ="blocs.'+i+'.evolPlus" data-num="1" type="number" inputmode="numeric" '+
           'style="margin-top:8px" value="'+b.evolPlus+'">'+
-          '<p class="aide">Répétitions ajoutées si l’objectif est atteint à chaque série.</p>'
-        : '<p class="aide">Hérite de l’exercice : '+(regle.plus?'+'+regle.plus+' répétition'+(regle.plus>1?'s':'')+
-          ' si l’objectif est atteint à chaque série de la séance précédente':'aucune progression')+'.</p>')+
+          '<p class="aide">Répétitions ajoutées quand toutes les séries atteignent l’objectif.</p>'
+        : '<p class="aide">'+(regle.plus?'Comme l’exercice : <b>+'+regle.plus+'</b> quand toutes les séries atteignent l’objectif.'
+          :'Comme l’exercice : pas de progression automatique.')+'</p>')+
       '</div>';
   }).join('');
 
   const total=(d.blocs||[]).reduce((s,b)=>s+b.nbSeries,0);
   return '<p class="etiquette">'+(edition.nouveau?'Nouvelle séance':'Modifier la séance')+'</p>'+
     '<div class="carte">'+
-    '<div class="champ"><label>Nom</label><input data-champ="nom" value="'+esc(d.nom)+'" placeholder="Routine Haut"></div>'+
-    '<p class="aide">Les catégories de la séance se déduisent des exercices qu’elle contient : '+
-    (DB.categoriesModele(d).map(c=>CATEGORIES[c]).join(', ')||'aucun exercice pour l’instant')+'.</p>'+
+    '<div class="champ" style="margin:0"><label>Nom</label>'+
+    '<input data-champ="nom" value="'+esc(d.nom)+'" placeholder="Routine Haut"></div>'+
     '</div>'+
     '<p class="etiquette" style="margin-top:20px">Exercices'+
     (total?' \u00B7 '+d.blocs.length+' exercice'+(d.blocs.length>1?'s':'')+', '+total+' séries':'')+'</p>'+
@@ -2574,14 +2779,12 @@ function vueSeanceEnCours(){
     '<button class="bouton discret" data-act="terminer">Terminer la séance</button></div>';
 }
 
-const ECARTEMENT_UTILE = ['exo-pompes-serrees','exo-pompes-larges',
-  'exo-traction-pronation-serree','exo-traction-pronation-large',
-  'exo-traction-supination-serree','exo-traction-supination-large',
-  'exo-dips','exo-squat','exo-abduction-hanche','exo-adduction-hanche'];
-const HAUTEUR_UTILE = ['exo-pompes-serrees','exo-pompes-larges',
-  'exo-fente-bulgare','exo-copenhagen-adduction',
-  'exo-mollets-debout-jambe-tendue','exo-mollets-assis-genou-flechi',
-  'exo-isometrie-mollet-unilateral','exo-mobilite-cheville-au-mur'];
+/* Plus aucun exercice ne se règle par l'écartement : la liste reste,
+   vide, pour que la mécanique tienne si le besoin réapparaît. */
+const ECARTEMENT_UTILE = [];
+/* La hauteur ne sert qu'aux pompes, où surélever les pieds ou les
+   mains est le seul moyen de doser la difficulté. */
+const HAUTEUR_UTILE = ['exo-pompes-serrees','exo-pompes-larges'];
 const SANS_LESTAGE = ['exo-pogo-hops','exo-sauts-verticaux','exo-bondissements',
   'exo-corde-a-sauter','exo-pallof-press','exo-rotateurs-externes-elastique',
   'exo-monster-walk-elastique','exo-face-pull','exo-bird-dog','exo-curl-up-mcgill',
@@ -2624,6 +2827,9 @@ function direQuantite(exo,v){
    pendant la séance : c'est au moment de lancer la série qu'on a
    besoin de savoir ce qui déclenche le palier suivant. */
 function blocProgression(exo,b,regle){
+  /* Un échauffement ou un étirement n'a ni objectif à battre ni
+     progression : l'encart n'y disait rien d'utile. */
+  if(exo.categorie==='echauffement' || exo.categorie==='etirement') return '';
   const parTemps = exo.modeEffort==='temps';
   const u = parTemps?'s':'rép.';
   const vise = parTemps?dureeLisible(DB.proposition(exo,b)):DB.proposition(exo,b)+' '+u;
@@ -2793,6 +2999,7 @@ let vueSpecialeHisto=false, filtreHisto='tous', limiteHisto=25;
 let planif=null;   /* écran de planification : {modeleId,date,mode,jours,occurrences} */
 let periodeCharge='3m', filtreCharge='tous', semainesJournal=3, uniteCharge='reps', uniteCarto='reps';
 let ficheModale=null;   /* identifiant d'exercice affiché en surcouche */
+let repartModale=null;  /* identifiant de séance dont on détaille la répartition */
 
 const MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
 const memeJour=(a,b)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
@@ -3683,6 +3890,10 @@ document.addEventListener('click',ev=>{
 
     /* La fiche en surcouche se ferme avant tout le reste : tant
        qu'elle est ouverte, elle capte ses propres commandes. */
+    const fermeRepart=c('[data-act="fermer-repart"]');
+    if(fermeRepart){ repartModale=null; rendre(); return; }
+    const ouvreRepart=c('[data-repart]');
+    if(ouvreRepart){ repartModale=ouvreRepart.dataset.repart; rendre(); return; }
     const fermeFiche=c('[data-act="fermer-fiche"]');
     if(fermeFiche){ ficheModale=null; rendre(); return; }
     const ouvreFiche=c('[data-fiche]');
@@ -3712,7 +3923,8 @@ document.addEventListener('click',ev=>{
 
     const onglet=c('#barre button');
     if(onglet){ ecranParams=false; detailSeanceId=null; jourSelectionne=null; planif=null;
-      vueSpecialeHisto=false; ficheModale=null; aller(onglet.dataset.onglet); return; }
+      vueSpecialeHisto=false; ficheModale=null; repartModale=null;
+      aller(onglet.dataset.onglet); return; }
 
     /* --- détail d'une séance réalisée --- */
     const det=c('[data-detail]');
