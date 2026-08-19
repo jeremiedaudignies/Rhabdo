@@ -315,6 +315,19 @@ details.reglages[open] summary::after{content:"\2013"}
 .histo .cible{position:absolute;left:0;right:0;border-top:1px dashed var(--recup);pointer-events:none}
 .histo .cible b{position:absolute;right:0;top:-13px;font-size:9px;font-weight:700;color:var(--recup);
   letter-spacing:.03em}
+.chips{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 12px;
+  padding-bottom:2px;scrollbar-width:none;max-width:100%}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:0 0 auto;padding:7px 12px;border-radius:99px;background:var(--surface-2);
+  color:var(--texte-2);font-size:12px;font-weight:600;white-space:nowrap}
+.chips button.on{background:var(--accent);color:#fff}
+.courbe{width:100%;max-width:100%;height:auto;display:block;margin-top:10px;aspect-ratio:320/150}
+.courbe .grille line{stroke:#E1E5EA;stroke-width:1}
+.courbe .grille text{fill:#9AA3B2;font-size:9px;font-family:var(--mono)}
+.courbe .aire{fill:#FFEDE4}
+.courbe .trait{fill:none;stroke:#F94E00;stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round}
+.courbe .pts circle{fill:#FFFFFF;stroke:#F94E00;stroke-width:2}
+.courbe .axe text{fill:#9AA3B2;font-size:9px;font-family:var(--mono)}
 .histo-lb{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-top:6px}
 .histo-lb span{font-size:9px;color:var(--texte-3);text-align:center;font-variant-numeric:tabular-nums}
 .bulles{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;align-items:center;margin:6px 0}
@@ -324,13 +337,6 @@ details.reglages[open] summary::after{content:"\2013"}
 .bulle.vide i{background:var(--filet);width:5px;height:5px}
 .semaine-lg{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;
   color:var(--texte-2);margin-top:2px}
-.pr{display:flex;align-items:center;gap:11px;padding:11px 0;border-top:1px solid var(--filet)}
-.pr:first-of-type{border-top:none}
-.pr .med{font-size:24px;width:34px;text-align:center}
-.pr .co{flex:1;min-width:0}
-.pr .co b{display:block;font-size:15px;font-weight:700}
-.pr .co span{font-size:12px;color:var(--texte-2)}
-.pr .v{font-family:var(--mono);font-weight:700;font-size:19px}
 .delta{display:flex;justify-content:space-between;align-items:center;padding:9px 0;
   border-top:1px solid var(--filet);font-size:14px}
 .delta:first-of-type{border-top:none}
@@ -711,16 +717,42 @@ Object.assign(FICHES_EXERCICES, {
  'rowing-landmine':{picto:'landmine-row',description:'Tirage horizontal à la barre montée en landmine, buste penché. Permet de charger le dos bien au-delà d’une haltère, avec un appui plus stable pour le bas du dos qu’un rowing barre classique.',execution:'Placez-vous à cheval sur la barre, buste penché et dos plat. Tirez la barre vers le nombril en abaissant d’abord les omoplates, puis redescendez bras tendus sans arrondir le dos.',erreurs:'Se redresser pour arracher la charge, arrondir le haut du dos, tirer uniquement avec les bras ou lâcher la descente.',sourceLabel:'',sourceUrl:''}
 });
 
-const fabriqueExo=(nom,cat,z1,z2,mode,extra)=>Object.assign({
+const _fabriqueExoBrut=(nom,cat,z1,z2,mode,extra)=>Object.assign({
     id:'exo-'+slug(nom), nom, categorie:cat, zone1:z1, zone2:z2||[], modeEffort:mode||'reps',
     ecartementCm:null, hauteurCm:null, lestageKg:null,   /* null = poids du corps */
     objSeries:6, objReps:mode==='temps'?30:10,
     repsInitiales:null,          /* point de départ ; null = on part de l'objectif */
-    evolPlus:1,                  /* répétitions ajoutées quand l'objectif complet tombe */
-    evolEcartementCm:0, evolHauteurCm:0, evolLestageKg:0,
-    evolToutesLesN:1, compteurReussites:0, remarque:'',
+    conseilProgression:'',       /* comment charger la fois suivante — texte libre */
+    remarque:'',
     description:'', execution:'', erreurs:'', sourceLabel:'', sourceUrl:'', picto:''
-  }, FICHES_EXERCICES[slug(nom)]||{}, extra||{});
+  }, FICHES_EXERCICES[slug(nom)]||{}, extra||{},
+     {conseilProgression: (extra&&extra.conseilProgression) || conseilParDefaut(cat,mode,extra||{})});
+/* Les anciens paramètres d'évolution ne servent plus qu'à rédiger le
+   conseil ci-dessus : on les retire de l'objet une fois celui-ci
+   composé, pour ne pas traîner des champs sans emploi. */
+const fabriqueExo=(nom,cat,z1,z2,mode,extra)=>{
+  const o=_fabriqueExoBrut(nom,cat,z1,z2,mode,extra);
+  ['evolPlus','evolLestageKg','evolEcartementCm','evolHauteurCm','evolToutesLesN',
+   'compteurReussites'].forEach(k=>{ delete o[k]; });
+  return o;
+};
+
+/* Le conseil livré avec chaque exercice. Il décrit une règle de
+   surcharge concrète, chiffrée à partir des séries et répétitions
+   visées — pas une intention générale. */
+function conseilParDefaut(cat,mode,x){
+  if(cat==='echauffement'||cat==='course') return '';
+  if(cat==='etirement')
+    return 'Tenir sans douleur. Allonger de 5 s par série quand la position devient facile.';
+  const s=x.objSeries||3, r=x.objReps||10;
+  if(x.evolLestageKg)
+    return 'Ajoute '+String(x.evolLestageKg).replace('.',',')+' kg quand les '+s+' séries passent à '+
+      r+' répétitions avec 1 à 2 en réserve. Sinon, reste à la même charge.';
+  if(mode==='temps')
+    return 'Ajoute 5 s par série quand les '+s+' séries tiennent '+r+' s proprement.';
+  return 'Ajoute 1 répétition quand les '+s+' séries atteignent '+r+'. '+
+    'Au-delà, augmente la difficulté (lestage, hauteur, levier) et repars plus bas.';
+}
 
 /* Les trente-trois exercices historiques, hérités de la méthode au
    poids du corps et du travail de course. */
@@ -854,14 +886,10 @@ const blocSeance=(nom,series,reps,recup,recupFin,opts)=>Object.assign({
     exerciceId:'exo-'+slug(nom), nbSeries:series, nbReps:reps,
     recupSerieSec:recup, recupFinSec:recupFin==null?120:recupFin,
     repsInitiales:null,          /* null = hérite de l'exercice */
-    repsProposees:null,          /* proposition courante, entretenue par le moteur */
-    ecartementCm:null, hauteurCm:null, lestageKg:null,
-    compteObjectif:true,         /* compte pour l'objectif global de la séance */
-    objectifAtteintLe:null,
-    evolPlus:null, evolToutesLesN:null
+    ecartementCm:null, hauteurCm:null, lestageKg:null
   }, opts||{});
 const blocChauffe=min=>({exerciceId:'exo-echauffement-tapis-de-course',nbSeries:1,nbReps:min*60,
-    recupSerieSec:0,recupFinSec:60,repsInitiales:null,evolPlus:null,evolToutesLesN:null});
+    recupSerieSec:0,recupFinSec:60,repsInitiales:null});
 const modeleSeance=(nom,mn,blocs)=>({id:'seance-'+slug(nom),nom,
     blocs:(mn?[blocChauffe(mn)]:[]).concat(blocs)});
 
@@ -885,7 +913,7 @@ function modelesLafay(){ return []; }
    Les récupérations s'allongent d'une phase à l'autre, à mesure que
    les charges montent et que les séries raccourcissent. */
 function modelesRenfo(){
-  const b=blocSeance, m=modeleSeance, H={compteObjectif:false};
+  const b=blocSeance, m=modeleSeance, H={};
   return [
 
     /* ===============================================================
@@ -1008,10 +1036,11 @@ function modelesRenfo(){
       b('Isom\u00E9trie mollet unilat\u00E9ral',2,30,40,50)
     ]),
     m('Mini séance \u2014 Bas',4,[
-      b('Pogo hops',3,10,60,75),
+      b('Pogo hops',2,10,60,75),
       b('Demi-squat barre',3,4,150,120),
       b('Soulev\u00E9 de terre roumain',3,5,120,105),
-      b('Mollets debout jambe tendue',3,6,75,60),
+      b('Fente bulgare',2,6,90,90),
+      b('Mollets debout jambe tendue',3,6,60,60),
       /* rappel haut du corps, format entretien */
       b('Traction pronation large',2,6,90,75),
       b('Pompes larges',2,10,45,55)
@@ -1078,13 +1107,13 @@ const DB = {
     /* Les deux mini séances sont livrées corrigées : la première
        version ne portait pas les rappels de l'autre moitié du corps.
        Réécriture unique, sur ces deux séances seulement. */
-    if(!(this.reglages.minisCroisees>=1)){
-      ['seance-mini-seance-haut','seance-mini-seance-bas'].forEach(id=>{
+    if(!(this.reglages.minisCroisees>=2)){
+      ['seance-mini-seance-haut','seance-mini-seance-bas'].forEach(id=>{ /* v2 : rappels croisés + bulgare */
         const ref=modelesRenfo().filter(m=>m.id===id)[0];
         const i=this.modeles.findIndex(m=>m.id===id);
         if(ref && i>=0){ this.modeles[i]=ref; touche=true; }
       });
-      this.reglages.minisCroisees=1;
+      this.reglages.minisCroisees=2;
       Store.ecrire('reglages',this.reglages);
     }
     if(touche) Store.ecrire('modeles',this.modeles);
@@ -1178,13 +1207,20 @@ const DB = {
      premier bloc, une fois pour toutes. */
   migrerEchauffement(){
     let touche=false;
-    /* champs apparus avec le moteur de progression complet */
     const refsExercices=exercicesParDefaut();
     this.exercices.forEach(e=>{
-      ['evolEcartementCm','evolHauteurCm','evolLestageKg'].forEach(k=>{
-        if(e[k]===undefined){ e[k]=0; touche=true; }
+      /* Les anciens paramètres d'évolution disparaissent ; le conseil
+         de progression prend leur place, repris du catalogue quand
+         l'exercice y figure. */
+      ['evolEcartementCm','evolHauteurCm','evolLestageKg','evolPlus',
+       'evolToutesLesN','compteurReussites'].forEach(k=>{
+        if(k in e){ delete e[k]; touche=true; }
       });
       const ref=refsExercices.find(r=>r.id===e.id);
+      if(e.conseilProgression===undefined){
+        e.conseilProgression = ref ? ref.conseilProgression : '';
+        touche=true;
+      }
       ['description','execution','erreurs','sourceLabel','sourceUrl','picto'].forEach(k=>{
         if(e[k]===undefined){ e[k]=ref&&ref[k]!=null?ref[k]:''; touche=true; }
       });
@@ -1193,9 +1229,6 @@ const DB = {
     if(touche){ Store.ecrire('exercices',this.exercices); touche=false; }
     this.modeles.forEach(m=>{
       (m.blocs||[]).forEach(b=>{
-        if(b.repsProposees===undefined){ b.repsProposees=null; touche=true; }
-        if(b.compteObjectif===undefined){ b.compteObjectif=true; touche=true; }
-        if(b.objectifAtteintLe===undefined){ b.objectifAtteintLe=null; touche=true; }
         ['ecartementCm','hauteurCm','lestageKg'].forEach(k=>{
           if(b[k]===undefined){ b[k]=null; touche=true; }
         });
@@ -1216,7 +1249,7 @@ const DB = {
          !(m.blocs||[]).some(b=>b.exerciceId==='exo-echauffement-tapis-de-course')){
         m.blocs=[{exerciceId:'exo-echauffement-tapis-de-course',nbSeries:1,
                   nbReps:m.echauffementMin*60,recupSerieSec:0,recupFinSec:60,
-                  repsInitiales:null,evolPlus:null,evolToutesLesN:null}].concat(m.blocs||[]);
+                  repsInitiales:null}].concat(m.blocs||[]);
         touche=true;
       }
       if(m.echauffementMin!==undefined){ delete m.echauffementMin; touche=true; }
@@ -1277,18 +1310,7 @@ const DB = {
   },
   /* Proposition de répétitions pour la prochaine série de ce bloc. */
   proposition(exo,bloc){
-    if(bloc && bloc.repsProposees!=null) return bloc.repsProposees;
     return this.repsDepart(exo,bloc).val;
-  },
-  /* Objectif complet d'un bloc : toutes les séries à l'objectif. */
-  objectifComplet(bloc,series){
-    return series.length>=bloc.nbSeries && series.every(s=>s.repsRealisees>=bloc.nbReps);
-  },
-  /* Séance maîtrisée : tous les exercices qui comptent ont validé leur objectif. */
-  bilanObjectifSeance(m){
-    const req=(m.blocs||[]).filter(b=>b.compteObjectif!==false && DB.exercice(b.exerciceId));
-    const ok=req.filter(b=>!!b.objectifAtteintLe);
-    return {requis:req.length, atteints:ok.length, maitrisee:req.length>0 && ok.length===req.length};
   },
   /* Répétitions de départ : le réglage de la séance l'emporte sur
      celui de l'exercice ; à défaut on part de l'objectif. */
@@ -1309,13 +1331,7 @@ const DB = {
     }
     return null;
   },
-  regleEvolution(exo,bloc){
-    return {
-      plus:(bloc&&bloc.evolPlus!=null)?bloc.evolPlus:(exo?exo.evolPlus:0),
-      tous:(bloc&&bloc.evolToutesLesN!=null)?bloc.evolToutesLesN:(exo?exo.evolToutesLesN:0),
-      herite:!(bloc&&bloc.evolPlus!=null)
-    };
-  },
+
   idLibre(prefixe,nom,liste){
     let base = prefixe+slug(nom), id=base, n=2;
     while(liste.some(x=>x.id===id)){ id = base+'-'+(n++); }
@@ -1892,7 +1908,11 @@ function ficheExerciceHTML(exo,ouverte){
   /* Le dépliant n'a plus d'appelant : la fiche s'ouvre par la
      vignette, en surcouche. On garde la forme ouverte, seule
      utilisée par la modale et par l'éditeur. */
-  return '<section class="fiche-exercice guide-rich guide-ouverte">'+corps+
+  const cp=(exo.conseilProgression||'').trim();
+  const bloc = cp
+    ? '<div class="bloc-prog" style="margin-top:12px"><b>Progression :</b> '+esc(cp)+'</div>'
+    : '';
+  return '<section class="fiche-exercice guide-rich guide-ouverte">'+corps+bloc+
     blocConseils(exo)+'</section>';
 }
 
@@ -1931,14 +1951,6 @@ const Seance = {
       });
     });
     this._preparerSaisie(); Ecran.prendre(); ongletCourant='seance'; edition=null;
-    /* Changements appliqués à la fin de la séance précédente : on les
-       montre AVANT de commencer, échauffement compris. */
-    const attente=modele.progressionsAAfficher||[];
-    if(attente.length){
-      this.annonces=attente.slice();
-      modele.progressionsAAfficher=[]; DB.sauver('modeles');
-      this.etat='annonce'; this.persister(); rendre(); return;
-    }
     this.annonces=[];
     this.etat='pret';
     this.persister(); rendre();
@@ -2121,73 +2133,14 @@ const Seance = {
         lestage. Ces changements sont annoncés en fin de séance, puis
         rappelés au démarrage de la suivante.
      ------------------------------------------------------------ */
-  _appliquerEvolution(){
-    const modele=DB.modele(this.active.modeleId);
-    const parBloc={};
-    this.active.series.forEach(s=>(parBloc[s.indexBloc]=parBloc[s.indexBloc]||[]).push(s));
-
-    Object.keys(parBloc).forEach(k=>{
-      const series=parBloc[k], bloc=this.active.blocs[+k];
-      if(!bloc) return;
-      const exo=DB.exercice(bloc.exerciceId); if(!exo) return;
-      const bm=modele ? (modele.blocs||[]).find(b=>b.exerciceId===bloc.exerciceId) : null;
-      const unite=exo.modeEffort==='temps'?' s':' rép.';
-      const prop=DB.proposition(exo,bloc);
-
-      /* 1. proposition pour la prochaine fois */
-      const maxi=Math.max.apply(null,series.map(s=>s.repsRealisees));
-      const toutesTenues=series.length>=bloc.nbSeries && series.every(s=>s.repsRealisees>=prop);
-      const nouvelle=Math.max(1, toutesTenues ? prop+1 : maxi);
-      if(bm) bm.repsProposees=nouvelle;
-      if(nouvelle!==prop)
-        this.progressions.push(exo.nom+' : proposition '+prop+unite+' \u2192 '+nouvelle+unite);
-
-      /* 2. objectif complet ? on applique le paquet */
-      if(DB.objectifComplet(bloc,series)){
-        const regle=DB.regleEvolution(exo,bloc);
-        const faits=[];
-        if(regle.plus){
-          exo.objReps+=regle.plus;
-          if(bm) bm.nbReps+=regle.plus;
-          faits.push('+'+regle.plus+unite+' par série');
-        }
-        const bouger=(champ,pas,lib,u)=>{
-          if(!pas) return;
-          const base=DB.reglageBloc(exo,bloc,champ);
-          const val=Math.round(((base==null?0:base)+pas)*10)/10;
-          exo[champ]=val; if(bm) bm[champ]=val;
-          faits.push((pas>0?'+':'')+pas+' '+u+' de '+lib);
-        };
-        bouger('ecartementCm',exo.evolEcartementCm,'écartement','cm');
-        bouger('hauteurCm',exo.evolHauteurCm,'hauteur','cm');
-        bouger('lestageKg',exo.evolLestageKg,'lestage','kg');
-
-        if(bm){ bm.objectifAtteintLe=new Date().toISOString(); bm.repsProposees=null; }
-        const texte = faits.length
-          ? exo.nom+' : objectif atteint \u2014 '+faits.join(', ')
-          : exo.nom+' : objectif atteint';
-        this.progressions.push(texte);
-        this.aAnnoncer.push(texte);
-      }
-    });
-
-    if(modele){
-      modele.progressionsAAfficher=this.aAnnoncer.slice();
-      const bil=DB.bilanObjectifSeance(modele);
-      if(bil.maitrisee && !modele.maitriseeLe){
-        modele.maitriseeLe=new Date().toISOString();
-        const t='Séance maîtrisée : tous les objectifs sont atteints. Tu peux passer à une séance plus difficile.';
-        this.progressions.push(t); modele.progressionsAAfficher.push(t);
-      }
-    }
-    DB.sauver('exercices'); DB.sauver('modeles');
-  },
+  /* Plus de progression automatique : la fin de séance n'écrit plus
+     que dans le journal. Les objectifs de l'exercice ne bougent que
+     si Jérém les change lui-même. */
   _terminer(){
     Chrono.arreter(); Ecran.relacher();
     const a=this.active;
     a.fin=new Date().toISOString();
     a.dureeSec=Math.round((new Date(a.fin)-new Date(a.debut))/1000);
-    this._appliquerEvolution();
     DB.journal.push(a); DB.sauver('journal');
     const p=DB.planifiees.find(p=>p.modeleId===a.modeleId&&p.statut==='planifiee');
     if(p){ p.statut='realisee'; DB.sauver('planifiees'); }
@@ -2402,7 +2355,6 @@ function vueListeSeances(){
     const series=(m.blocs||[]).reduce((s,b)=>s+b.nbSeries,0);
     return '<div class="item">'+
       '<h3>'+esc(m.nom)+
-      (DB.bilanObjectifSeance(m).maitrisee?' <span class="pastille" style="color:var(--recup)">maîtrisée</span>':'')+
       '</h3>'+
       '<div class="quand">'+(n? n+' exercice'+(n>1?'s':'')+' \u00B7 '+series+' séries'
         : 'Aucun exercice — à compléter')+'</div>'+
@@ -2447,11 +2399,11 @@ function listeSeances(){
     '<button class="ajout" data-nouvelle-seance="1">+ Créer une séance</button>'+
     (liste.length ? liste.map(m=>{
       const n=(m.blocs||[]).length;
+      const series=(m.blocs||[]).reduce((s,b)=>s+b.nbSeries,0);
       return '<div class="ligne" data-editer-s="'+m.id+'"><div class="txt"><b>'+esc(m.nom)+'</b><span>'+
-        (n?n+' exercice'+(n>1?'s':''):'vide')+
-        '</span></div><span style="display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;max-width:44%">'+
-        pastillesSeance(m)+'</span>'+
-        '<span class="fleche">\u203A</span></div>';
+        (n? n+' exercice'+(n>1?'s':'')+' \u00B7 '+series+' séries<br>'+resumeSeance(m)
+          : 'vide')+
+        '</span></div><span class="fleche">\u203A</span></div>';
     }).join('') : '<div class="vide"><p>Aucune séance dans ce filtre.</p></div>');
 }
 
@@ -2510,6 +2462,17 @@ function preparationSeance(m){
   return out;
 }
 
+/* Résumé d'une ligne, pour les vues qui n'ont pas la place de la
+   grille : bibliothèque et planning. */
+function resumeSeance(m){
+  const f=partsFamilles(m);
+  if(!f) return 'vide';
+  const bouts=[];
+  if(f.prep) bouts.push(f.prep+'\u2009% prépa.');
+  if(f.haut) bouts.push(f.haut+'\u2009% haut');
+  if(f.bas)  bouts.push(f.bas+'\u2009% bas');
+  return bouts.join(' \u00B7 ');
+}
 function pastillesSeance(m){
   const r=repartitionSeance(m), f=partsFamilles(m);
   if(!f) return '<p class="aide" style="margin:8px 0 0">Aucun exercice — à compléter.</p>';
@@ -2608,8 +2571,15 @@ function editeurExercice(){
     'placeholder="par défaut : l’objectif ('+d.objReps+')" value="'+(d.repsInitiales==null?'':d.repsInitiales)+'">'+
     '<p class="aide">Valeur proposée au compteur la première fois. Ensuite, l’app reprend '+
     'automatiquement le maximum de ta dernière réalisation. Laisse vide pour partir de l’objectif.</p></div>'+
-'<div class="champ"><label>Remarque</label><textarea data-champ="remarque" rows="2" '+
-    'placeholder="Diminuer l’écartement de 5 cm une fois 15 répétitions atteintes">'+esc(d.remarque)+'</textarea></div>'+
+'<div class="champ"><label>Conseil de progression</label>'+
+    '<textarea data-champ="conseilProgression" rows="3" '+
+    'placeholder="Ajoute 2,5 kg quand les 4 séries passent à 5 répétitions avec 1 à 2 en réserve">'+
+    esc(d.conseilProgression||'')+'</textarea>'+
+    '<p class="aide">Affiché pendant la séance, sous le bouton. Rien n’est appliqué '+
+    'automatiquement : c’est toi qui décides de charger, en fonction de la technique '+
+    'et de la course du lendemain.</p></div>'+
+    '<div class="champ"><label>Remarque</label><textarea data-champ="remarque" rows="2" '+
+    'placeholder="Point technique à ne pas oublier">'+esc(d.remarque)+'</textarea></div>'+
     '</div>'+
     (utilise.length?'<p class="aide" style="margin-top:12px">Utilisé dans : '+
       utilise.map(m=>esc(m.nom)).join(', ')+'.</p>':'')+
@@ -2641,8 +2611,6 @@ function editeurSeance(){
   const blocs=(d.blocs||[]).map((b,i)=>{
     const exo=DB.exercice(b.exerciceId);
     if(!exo) return '';
-    const surcharge=b.evolPlus!=null;
-    const regle=DB.regleEvolution(exo,b);
     const pas=(champ,val,unite,step)=>
       '<div class="reglage" style="padding:8px 0"><span class="nom">'+champ.lib+'</span><span class="pas">'+
       '<button data-inc="blocs.'+i+'.'+champ.cle+'" data-pas="'+(-step)+'" data-min="'+(champ.min||0)+'" data-suffixe="'+unite+'">\u2212</button>'+
@@ -2673,24 +2641,14 @@ function editeurSeance(){
           '<span class="v" style="min-width:96px">'+(b.lestageKg==null||b.lestageKg===0?'Poids du corps':b.lestageKg+' kg')+'</span>'+
           '<button data-inc="blocs.'+i+'.lestageKg" data-pas="0.5" data-min="0" data-suffixe="kg">+</button></span></div>');
       })()+
-      '<label style="display:flex;align-items:center;gap:9px;margin-top:12px;font-size:13px;color:var(--texte-2)">'+
-      '<input type="checkbox" data-objectif="'+i+'"'+(b.compteObjectif!==false?' checked':'')+'>'+
-      'Compte pour l\u2019objectif de la séance'+
-      (b.objectifAtteintLe?' <span class="pastille abdo">validé</span>':'')+'</label>'+
-      '<div class="champ" style="margin:10px 0 0"><label>Point de départ</label>'+
+      '<div class="champ" style="margin:12px 0 0"><label>Point de départ</label>'+
       '<input data-champ="blocs.'+i+'.repsInitiales" data-num="1" type="number" inputmode="numeric" '+
       'placeholder="comme l’exercice ('+DB.repsDepart(exo,null).val+')" value="'+
       (b.repsInitiales==null?'':b.repsInitiales)+'">'+
       '<p class="aide">Ce qui sera proposé à la première série, avant toute réalisation.</p></div>'+
-      '<label style="display:flex;align-items:center;gap:9px;margin-top:10px;font-size:13px;color:var(--texte-2)">'+
-      '<input type="checkbox" data-surcharge="'+i+'"'+(surcharge?' checked':'')+'>'+
-      'Progresser différemment ici</label>'+
-      (surcharge
-        ? '<input data-champ="blocs.'+i+'.evolPlus" data-num="1" type="number" inputmode="numeric" '+
-          'style="margin-top:8px" value="'+b.evolPlus+'">'+
-          '<p class="aide">Répétitions ajoutées quand toutes les séries atteignent l’objectif.</p>'
-        : '<p class="aide">'+(regle.plus?'Comme l’exercice : <b>+'+regle.plus+'</b> quand toutes les séries atteignent l’objectif.'
-          :'Comme l’exercice : pas de progression automatique.')+'</p>')+
+      (exo.conseilProgression
+        ? '<p class="aide" style="margin-top:10px"><b>Conseil :</b> '+esc(exo.conseilProgression)+'</p>'
+        : '')+
       '</div>';
   }).join('');
 
@@ -2782,7 +2740,6 @@ function vueSeanceEnCours(){
       '<button class="bouton recup" data-act="passer">Passer à la suite</button></div>';
   }
 
-  const regle=DB.regleEvolution(exo,b);
   return '<div class="fil"><span>Exercice '+(Seance.iBloc+1)+'/'+a.blocs.length+'</span>'+
     '<span>'+prog.pct+' %</span></div>'+
     '<div class="jauge"><i style="width:'+prog.pct+'%"></i></div>'+cadranHTML()+
@@ -2791,7 +2748,7 @@ function vueSeanceEnCours(){
     '<p class="exo-meta">'+exo.zone1.map(z=>GROUPES[z]).join(' \u00B7 ')+
     (exo.zone2.length?' \u2192 '+exo.zone2.map(z=>GROUPES[z]).join(' \u00B7 '):'')+'</p></div></div>'+
     '<div class="zone-action">'+action+'</div>'+
-    blocProgression(exo,b,regle)+
+    blocProgression(exo,b)+
     reglagesSerie(exo,b)+
     (exo.remarque?'<p class="aide" style="margin-top:10px">'+esc(exo.remarque)+'</p>':'')+
     '<div class="suite">'+vignetteSuite+'<span>'+ligneSuite+'</span></div>'+
@@ -2847,23 +2804,14 @@ function direQuantite(exo,v){
 /* Ce que vise l'exercice et comment il progresse. Affiché en clair
    pendant la séance : c'est au moment de lancer la série qu'on a
    besoin de savoir ce qui déclenche le palier suivant. */
-function blocProgression(exo,b,regle){
-  /* Un échauffement ou un étirement n'a ni objectif à battre ni
-     progression : l'encart n'y disait rien d'utile. */
-  if(exo.categorie==='echauffement' || exo.categorie==='etirement') return '';
-  const parTemps = exo.modeEffort==='temps';
-  const u = parTemps?'s':'rép.';
-  const vise = parTemps?dureeLisible(DB.proposition(exo,b)):DB.proposition(exo,b)+' '+u;
-  const obj = parTemps?dureeLisible(b.nbReps):b.nbReps+' '+u;
-  const regleTxt = regle.plus
-    ? '<b>+'+regle.plus+' '+(parTemps?'s':'rép.')+'</b> quand les '+b.nbSeries+' séries atteignent l’objectif'
-    : (exo.evolLestageKg
-        ? '<b>+'+nbCourt(exo.evolLestageKg)+' kg</b> quand les '+b.nbSeries+' séries atteignent l’objectif'
-        : 'aucune progression automatique sur cet exercice');
-  return '<div class="bloc-prog">'+
-    'Série en cours visée à <b>'+vise+'</b> sur un objectif de <b>'+obj+'</b>.<br>'+
-    'Progression : '+regleTxt+' \u00B7 '+(regle.herite?'règle de l’exercice':'règle propre à cette séance')+'.'+
-    '</div>'+chargesReference(exo);
+/* Le conseil de progression, plus les deux charges de référence.
+   Un échauffement ou un étirement n'a rien à charger : on n'affiche
+   rien plutôt qu'une phrase vide. */
+function blocProgression(exo,b){
+  if(exo.categorie==='echauffement' || exo.categorie==='course') return '';
+  const c=(exo.conseilProgression||'').trim();
+  return (c?'<div class="bloc-prog"><b>Progression :</b> '+esc(c)+'</div>':'')+
+    chargesReference(exo);
 }
 
 /* Les deux charges qui situent la série : celle de la dernière fois,
@@ -2931,20 +2879,22 @@ function vueBilan(){
   const totalReps=a.series.reduce((n,s)=>n+s.repsRealisees,0);
   const atteints=a.series.filter(s=>s.repsRealisees>=s.repsObjectif).length;
   const stats=[[mmss(a.dureeSec),'durée'],[totalReps,'répétitions'],[atteints+'/'+a.series.length,'objectifs']];
-  const bil=DB.modele(a.modeleId) ? DB.bilanObjectifSeance(DB.modele(a.modeleId)) : null;
-  const objSeance = bil && bil.requis
-    ? '<div class="carte" style="margin-top:12px'+(bil.maitrisee?';border-color:var(--recup)':'')+'">'+
-      '<p class="etiquette"'+(bil.maitrisee?' style="color:var(--recup)"':'')+'>Objectif de séance</p>'+
-      '<div class="delta"><span>'+bil.atteints+' exercice'+(bil.atteints>1?'s':'')+' sur '+bil.requis+' validé'+(bil.atteints>1?'s':'')+'</span>'+
-      '<span class="n">'+Math.round(bil.atteints/bil.requis*100)+' %</span></div>'+
-      (bil.maitrisee?'<p class="aide" style="margin-top:6px;color:var(--recup)">Séance maîtrisée. '+
-        'Tu peux passer à une séance plus difficile.</p>':'')+'</div>'
+
+  /* Rappel des conseils de progression des exercices chargés :
+     c'est le moment de décider ce qu'on mettra la prochaine fois. */
+  const vus={};
+  (a.series||[]).forEach(s=>{ if(s.lestageKg>0) vus[s.exerciceId]=Math.max(vus[s.exerciceId]||0,s.lestageKg); });
+  const conseils=Object.keys(vus).map(id=>{
+    const e=DB.exercice(id); if(!e||!e.conseilProgression) return '';
+    return '<div style="padding:9px 0;border-bottom:1px solid var(--filet);font-size:13.5px">'+
+      '<b>'+esc(e.nom)+'</b> \u00B7 '+nbCourt(vus[id])+' kg<br>'+
+      '<span style="color:var(--texte-2)">'+esc(e.conseilProgression)+'</span></div>';
+  }).filter(Boolean).join('');
+  const prog = conseils
+    ? '<div class="carte" style="margin-top:12px">'+
+      '<p class="etiquette">Pour la prochaine fois</p>'+conseils+'</div>'
     : '';
-  const prog=Seance.progressions.length
-    ? '<div class="carte" style="margin-top:12px;border-color:var(--accent)">'+
-      '<p class="etiquette" style="color:var(--accent)">Progression déclenchée</p>'+
-      Seance.progressions.map(p=>'<div style="font-size:14.5px;font-weight:500">\u2197 '+esc(p)+'</div>').join('')+'</div>'
-    : '';
+  const objSeance='';
   return '<div style="text-align:center;padding:26px 0 18px"><div style="font-size:46px">\u{1F3C5}</div>'+
     '<h2 style="font-weight:800;font-size:25px;letter-spacing:-.025em;margin:8px 0 2px">Séance terminée</h2>'+
     '<p style="color:var(--texte-2);margin:0">'+esc(a.nom)+'</p></div>'+
@@ -2966,7 +2916,7 @@ function lireChemin(obj,chemin){ return chemin.split('.').reduce((o,k)=>o==null?
 function nouvelExercice(){
   return {id:null,nom:'',categorie:'haut',zone1:[],zone2:[],modeEffort:'reps',
     ecartementCm:null,hauteurCm:null,lestageKg:0,objSeries:4,objReps:10,
-    evolPlus:1,evolToutesLesN:3,compteurReussites:0,remarque:'',
+    conseilProgression:'',remarque:'',
     description:'',execution:'',erreurs:'',sourceLabel:'',sourceUrl:'',picto:''};
 }
 function ouvrirExo(id){
@@ -2979,16 +2929,15 @@ function ouvrirSeance(id){
   edition={type:'seance',nouveau:!m,
     data:m?JSON.parse(JSON.stringify(m)):{id:null,nom:'',blocs:[
       {exerciceId:'exo-echauffement-tapis-de-course',nbSeries:1,nbReps:600,
-       recupSerieSec:0,recupFinSec:60,repsInitiales:null,evolPlus:null,evolToutesLesN:null}]}};
+       recupSerieSec:0,recupFinSec:60,repsInitiales:null}]}};
   ongletCourant='biblio'; ecranParams=false; detailSeanceId=null; rendre();
 }
 function sauverExo(){
   const d=edition.data;
   if(!String(d.nom).trim()){ toast('Donne un nom à l’exercice.'); return; }
   if(!d.zone1.length){ toast('Choisis au moins un groupe musculaire prioritaire.'); return; }
-  ['objSeries','objReps','evolPlus'].forEach(k=>d[k]=Math.max(0,parseInt(d[k],10)||0));
-  ['evolEcartementCm','evolHauteurCm'].forEach(k=>d[k]=parseInt(d[k],10)||0);
-  d.evolLestageKg=parseFloat(d.evolLestageKg)||0;
+  ['objSeries','objReps'].forEach(k=>d[k]=Math.max(0,parseInt(d[k],10)||0));
+  d.conseilProgression=String(d.conseilProgression||'').trim();
   d.lestageKg=(d.lestageKg===''||d.lestageKg==null)?null:Math.max(0,parseFloat(d.lestageKg)||0);
   d.repsInitiales = (d.repsInitiales==null||d.repsInitiales==='') ? null : Math.max(0,parseInt(d.repsInitiales,10)||0);
   if(!d.id) d.id=DB.idLibre('exo-',d.nom,DB.exercices);
@@ -3003,8 +2952,6 @@ function sauverSeance(){
     ['nbSeries','nbReps','recupSerieSec','recupFinSec'].forEach(k=>b[k]=Math.max(0,parseInt(b[k],10)||0));
     if(b.nbSeries<1) b.nbSeries=1;
     b.repsInitiales = (b.repsInitiales==null||b.repsInitiales==='') ? null : Math.max(0,parseInt(b.repsInitiales,10)||0);
-    if(b.evolPlus!=null) b.evolPlus=Math.max(0,parseInt(b.evolPlus,10)||0);
-    if(b.evolToutesLesN!=null) b.evolToutesLesN=Math.max(1,parseInt(b.evolToutesLesN,10)||1);
   });
   if(!d.id) d.id=DB.idLibre('seance-',d.nom,DB.modeles);
   const i=DB.modeles.findIndex(x=>x.id===d.id);
@@ -3021,6 +2968,7 @@ let planif=null;   /* écran de planification : {modeleId,date,mode,jours,occurr
 let periodeCharge='3m', filtreCharge='tous', semainesJournal=3, uniteCharge='reps', uniteCarto='reps';
 let ficheModale=null;   /* identifiant d'exercice affiché en surcouche */
 let repartModale=null;  /* identifiant de séance dont on détaille la répartition */
+let exoCourbe=null;     /* exercice affiché dans la courbe de charge */
 
 const MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
 const memeJour=(a,b)=>a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
@@ -3107,17 +3055,6 @@ function seancesPeriode(cle,filtre,unite){
     })
     .filter(x=>x.nb>0)
     .sort((a,b)=>a.date-b.date);
-}
-
-function meilleursEfforts(){
-  const best={};
-  DB.journal.forEach(a=>(a.series||[]).forEach(s=>{
-    const c=categorieSerie(s), u=uniteSerie(s);
-    const k=(u==='temps')?(c==='etirement'?'etirement':'gainage'):c;
-    const v=Math.round(valeurSerie(s));
-    if(!best[k]||v>best[k].v) best[k]={v,unite:u,exo:s.exerciceId,date:a.debut,seanceId:a.id};
-  }));
-  return best;
 }
 
 function deltaPeriode(cle,unite){
@@ -3262,7 +3199,6 @@ function vueAccueil(){
   /* les étirements ne se lisent qu'en durée : on force l'unité */
   if(filtreCharge==='etirement') uniteCharge='temps';
   const pts=seancesPeriode(periodeCharge,filtreCharge,uniteCharge);
-  const best=meilleursEfforts();
   const deltas=deltaPeriode(periodeCharge,uniteCharge);
   const U=UNITES[uniteCharge];
 
@@ -3302,22 +3238,6 @@ function vueAccueil(){
 
   const blocJournal=journalBulles();
 
-  /* --- meilleurs efforts : répétitions et tenues, séparés --- */
-  const med={haut:'\u{1F947}',bas:'\u{1F948}',abdo:'\u{1F949}'};
-  const ligne=(k,titre,icone,suffixe)=>{
-    const p=best[k];
-    if(!p) return '<div class="pr"><span class="med">'+icone+'</span><div class="co"><b>'+titre+'</b>'+
-      '<span>aucune série enregistrée</span></div><span class="v" style="color:var(--texte-3)">\u2014</span></div>';
-    const e=DB.exercice(p.exo);
-    return '<div class="pr" data-detail="'+p.seanceId+'"><span class="med">'+icone+'</span>'+
-      '<div class="co"><b>'+esc(e?e.nom:'?')+'</b><span>'+titre+' \u00B7 '+
-      new Date(p.date).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})+'</span></div>'+
-      '<span class="v">'+p.v+'<span style="font-size:12px;color:var(--texte-3);font-weight:500"> '+suffixe+'</span></span></div>';
-  };
-  const blocPR='<p class="etiquette" style="margin-top:22px">Meilleures tenues</p>'+
-    '<div class="carte">'+ligne('gainage','Gainage','\u{1F9CD}','s')+
-    ligne('etirement','Étirement','\u{1F9D8}','s')+'</div>';
-
   /* --- évolution, dans l'unité choisie --- */
   const lignesD=deltas.map(d=>{
     const cls=d.delta>0?'up':d.delta<0?'down':'flat';
@@ -3331,7 +3251,7 @@ function vueAccueil(){
     '<div class="carte">'+lignesD+
     '<p class="aide" style="margin-top:8px">Comparaison avec la période précédente de même durée.</p></div>';
 
-  return blocSerie+blocCharge+blocFrequence()+blocJournal+blocPR+blocD+blocCartographie()+
+  return blocSerie+blocCharge+blocCharges()+blocFrequence()+blocJournal+blocD+blocCartographie()+
     '<button class="bouton discret" style="margin-top:20px" data-act="histo">'+
     'Historique complet des séances \u203A</button>';
 }
@@ -3347,6 +3267,87 @@ function frequenceHebdo(nb){
   }
   return out;
 }
+/* Charge maximale retenue à chaque séance, pour un exercice. */
+function serieCharges(exerciceId){
+  const pts=[];
+  DB.journal.forEach(a=>{
+    let m=null;
+    (a.series||[]).forEach(s=>{
+      if(s.exerciceId!==exerciceId) return;
+      if(s.lestageKg!=null && s.lestageKg>0 && (m==null||s.lestageKg>m)) m=s.lestageKg;
+    });
+    if(m!=null) pts.push({t:new Date(a.debut).getTime(), kg:m});
+  });
+  return pts.sort((a,b)=>a.t-b.t);
+}
+/* Les exercices qui ont au moins un point, du mieux fourni au moins
+   fourni : c'est l'ordre dans lequel on propose les onglets. */
+function exercicesAvecCharge(){
+  return DB.exercices.map(e=>({e, pts:serieCharges(e.id)}))
+    .filter(x=>x.pts.length>0)
+    .sort((a,b)=>b.pts.length-a.pts.length || b.pts[b.pts.length-1].kg-a.pts[a.pts.length-1].kg);
+}
+
+function blocCharges(){
+  const dispo=exercicesAvecCharge();
+  const titre='<p class="etiquette" style="margin-top:22px">Charge maximale par exercice</p>';
+  if(!dispo.length)
+    return titre+'<div class="carte"><div class="vide" style="padding:20px 0">'+
+      '<p>Aucune charge enregistrée pour l’instant.</p>'+
+      '<p style="font-size:13px">La courbe apparaîtra dès la première série réalisée avec un '+
+      'lestage : un point par séance, la charge la plus lourde validée ce jour-là.</p></div></div>';
+  if(!exoCourbe || !dispo.some(x=>x.e.id===exoCourbe)) exoCourbe=dispo[0].e.id;
+  const cible=dispo.filter(x=>x.e.id===exoCourbe)[0];
+  const pts=cible.pts, exo=cible.e;
+
+  const onglets='<div class="chips">'+dispo.slice(0,12).map(x=>
+    '<button'+(x.e.id===exoCourbe?' class="on"':'')+' data-courbe="'+esc(x.e.id)+'">'+
+    esc(x.e.nom)+'</button>').join('')+'</div>';
+
+  const premier=pts[0], dernier=pts[pts.length-1];
+  const gain=Math.round((dernier.kg-premier.kg)*10)/10;
+  const entete='<div class="delta"><span>'+esc(exo.nom)+'</span>'+
+    '<span class="n">'+nbCourt(dernier.kg)+' kg</span></div>'+
+    '<p class="aide" style="margin:2px 0 0">'+pts.length+' séance'+(pts.length>1?'s':'')+
+    ' \u00B7 '+(pts.length>1
+      ? (gain>0?'+':'')+nbCourt(gain)+' kg depuis le '+dateCourte(new Date(premier.t).toISOString())
+      : 'premier point enregistré')+'</p>';
+
+  if(pts.length<2)
+    return titre+'<div class="carte">'+onglets+entete+
+      '<p class="aide" style="margin-top:10px">Une deuxième séance sur cet exercice et la courbe '+
+      'apparaîtra.</p></div>';
+
+  /* --- tracé ------------------------------------------------------ */
+  const W=320, H=150, mg={g:42,d:10,h:12,b:22};
+  const t0=pts[0].t, t1=pts[pts.length-1].t, dt=Math.max(1,t1-t0);
+  const kgs=pts.map(p=>p.kg);
+  let lo=Math.min.apply(null,kgs), hi=Math.max.apply(null,kgs);
+  if(hi===lo){ hi=lo+5; lo=Math.max(0,lo-5); }
+  const marge=(hi-lo)*0.15; lo=Math.max(0,lo-marge); hi=hi+marge;
+  const X=t=>mg.g+(t-t0)/dt*(W-mg.g-mg.d);
+  const Y=k=>mg.h+(1-(k-lo)/(hi-lo))*(H-mg.h-mg.b);
+  const d=pts.map((p,i)=>(i?'L':'M')+X(p.t).toFixed(1)+' '+Y(p.kg).toFixed(1)).join('');
+  const aire=d+'L'+X(t1).toFixed(1)+' '+(H-mg.b)+'L'+X(t0).toFixed(1)+' '+(H-mg.b)+'Z';
+  const cercles=pts.map(p=>'<circle cx="'+X(p.t).toFixed(1)+'" cy="'+Y(p.kg).toFixed(1)+'" r="3"/>').join('');
+  const bas=Math.min.apply(null,kgs), haut=Math.max.apply(null,kgs);
+  const grad=[bas,(bas+haut)/2,haut].map(v=>
+    '<line x1="'+mg.g+'" y1="'+Y(v).toFixed(1)+'" x2="'+(W-mg.d)+'" y2="'+Y(v).toFixed(1)+'"/>'+
+    '<text x="'+(mg.g-5)+'" y="'+(Y(v)+3.5).toFixed(1)+'" text-anchor="end">'+nbCourt(v)+'</text>').join('');
+  const dates='<text x="'+mg.g+'" y="'+(H-6)+'">'+dateCourte(new Date(t0).toISOString())+'</text>'+
+    '<text x="'+(W-mg.d)+'" y="'+(H-6)+'" text-anchor="end">'+dateCourte(new Date(t1).toISOString())+'</text>';
+
+  return titre+'<div class="carte">'+onglets+entete+
+    '<svg class="courbe" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" '+
+      'role="img" aria-label="Évolution de la charge maximale">'+
+      '<g class="grille">'+grad+'</g>'+
+      '<path class="aire" d="'+aire+'"/><path class="trait" d="'+d+'"/>'+
+      '<g class="pts">'+cercles+'</g><g class="axe">'+dates+'</g></svg>'+
+    '<p class="aide" style="margin-top:8px">Un point par séance : la charge la plus lourde validée '+
+    'ce jour-là. L\u2019axe horizontal suit les dates réelles — un creux après une coupure se voit.</p>'+
+    '</div>';
+}
+
 function blocFrequence(){
   const sem=frequenceHebdo(12);
   const total=sem.reduce((t,s)=>t+s.n,0);
@@ -3610,11 +3611,12 @@ function vuePlanif(){
   const aVenir=DB.planifiees.filter(p=>p.statut==='planifiee').sort((a,b)=>new Date(a.date)-new Date(b.date));
   const liste=aVenir.length?aVenir.map(p=>{
     const m=DB.modele(p.modeleId), d=new Date(p.date), a0=new Date(); a0.setHours(0,0,0,0);
-    return '<div class="item"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">'+
-      '<div style="min-width:0"><h3>'+esc(p.nom||(m?m.nom:'Séance supprimée'))+'</h3>'+
+    return '<div class="item">'+
+      '<h3>'+esc(p.nom||(m?m.nom:'Séance supprimée'))+'</h3>'+
       '<div class="quand"'+(d<a0?' style="color:var(--effort);font-weight:600"':'')+'>'+
-      d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})+'</div></div>'+
-      (m?'<span style="display:flex;flex-wrap:wrap;gap:4px">'+pastillesSeance(m)+'</span>':'')+'</div><div class="cmds">'+
+      d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})+
+      (m?' \u00B7 '+resumeSeance(m):'')+'</div>'+
+      '<div class="cmds">'+
       (m&&(m.blocs||[]).length?'<button class="go" data-go="'+m.id+'">Débuter</button>':'')+
       '<button data-decaler="'+p.id+'" data-n="1">+1 jour</button>'+
       '<button data-decaler="'+p.id+'" data-n="7">+1 sem.</button>'+
@@ -3890,15 +3892,6 @@ document.addEventListener('change',ev=>{
     if(g.checked){ if(i<0) arr.push(g.value); } else if(i>=0) arr.splice(i,1);
     return;
   }
-  const ob=ev.target.closest('[data-objectif]');
-  if(ob&&edition){ edition.data.blocs[+ob.dataset.objectif].compteObjectif=ob.checked; return; }
-  const s=ev.target.closest('[data-surcharge]');
-  if(s&&edition){
-    const b=edition.data.blocs[+s.dataset.surcharge], exo=DB.exercice(b.exerciceId);
-    if(s.checked){ b.evolPlus=exo?exo.evolPlus:1; b.evolToutesLesN=exo?exo.evolToutesLesN:3; }
-    else { b.evolPlus=null; b.evolToutesLesN=null; }
-    rendre(); return;
-  }
   if(ev.target.id==='fichierImport'&&ev.target.files&&ev.target.files[0]){
     importerSauvegarde(ev.target.files[0]);
   }
@@ -3913,6 +3906,8 @@ document.addEventListener('click',ev=>{
        qu'elle est ouverte, elle capte ses propres commandes. */
     const fermeRepart=c('[data-act="fermer-repart"]');
     if(fermeRepart){ repartModale=null; rendre(); return; }
+    const courbe=c('[data-courbe]');
+    if(courbe){ exoCourbe=courbe.dataset.courbe; rendre(); return; }
     const ouvreRepart=c('[data-repart]');
     if(ouvreRepart){ repartModale=ouvreRepart.dataset.repart; rendre(); return; }
     const fermeFiche=c('[data-act="fermer-fiche"]');
@@ -4116,7 +4111,7 @@ document.addEventListener('click',ev=>{
           if(!sel||!sel.value){ toast('Choisis d’abord un exercice.'); break; }
           const exo=DB.exercice(sel.value);
           edition.data.blocs.push({exerciceId:exo.id,nbSeries:exo.objSeries||4,nbReps:exo.objReps||10,
-            recupSerieSec:60,recupFinSec:120,repsInitiales:null,evolPlus:null,evolToutesLesN:null});
+            recupSerieSec:60,recupFinSec:120,repsInitiales:null});
           rendre(); break;
         }
         case 'suppr-exo': {
