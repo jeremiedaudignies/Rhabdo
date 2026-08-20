@@ -3055,15 +3055,30 @@ function serieActivites(){
   return {semaines,total,objectif:N,cetteSemaine};
 }
 
+/* Durée d'entraînement d'une séance : sa durée totale, moins le
+   temps passé à s'échauffer en courant. Ce n'est pas du travail de
+   force, et le compter gonflerait mécaniquement les séances qui
+   commencent par un long échauffement. */
+function dureeUtile(a){
+  const chauffe=(a.series||[]).reduce((n,s)=>{
+    const e=DB.exercice(s.exerciceId);
+    return n + (e && (e.categorie==='echauffement'||e.categorie==='course')
+      ? (s.effortSec||s.repsRealisees||0) : 0);
+  },0);
+  return Math.max(0,(a.dureeSec||0)-chauffe);
+}
 function seancesPeriode(cle,filtre,unite){
   const t0=debutPeriode(cle);
   return DB.journal.filter(a=>new Date(a.debut).getTime()>=t0)
     .map(a=>{
+      if(unite==='temps'){
+        const sec=dureeUtile(a);
+        return {date:new Date(a.debut), nom:a.nom, id:a.id, nb:sec?1:0, val:Math.round(sec/60)};
+      }
       const series=(a.series||[]).filter(x=>
         serieDansUnite(x,unite) && (filtre==='tous'||categorieSerie(x)===filtre));
       const brut=series.reduce((n,x)=>n+valeurSerie(x),0);
-      return {date:new Date(a.debut), nom:a.nom, id:a.id, nb:series.length,
-              val: unite==='temps' ? Math.round(brut/60) : Math.round(brut)};
+      return {date:new Date(a.debut), nom:a.nom, id:a.id, nb:series.length, val:Math.round(brut)};
     })
     .filter(x=>x.nb>0)
     .sort((a,b)=>a.date-b.date);
@@ -3073,12 +3088,13 @@ function deltaPeriode(cle,unite){
   const n=PERIODES[cle]||91;
   const fin=Date.now(), deb=cle==='annee'?debutPeriode('annee'):fin-n*86400000;
   const duree=fin-deb, debPrec=deb-duree;
-  const cats = unite==='temps' ? ['abdo','etirement'] : ['haut','bas','abdo'];
+  const cats = unite==='temps' ? ['seance'] : ['haut','bas','abdo'];
   const somme=(t0,t1)=>{
     const r={}; cats.forEach(c=>r[c]=0);
     DB.journal.forEach(a=>{
       const t=new Date(a.debut).getTime();
       if(t<t0||t>=t1) return;
+      if(unite==='temps'){ r.seance+=dureeUtile(a); return; }
       (a.series||[]).forEach(s=>{
         if(!serieDansUnite(s,unite)) return;
         const c=categorieSerie(s);
@@ -3209,7 +3225,7 @@ function vueAccueil(){
   /* garde-fou : jamais d'unité inconnue, quoi qu'il arrive en amont */
   if(!UNITES[uniteCharge]) uniteCharge='reps';
   /* les étirements ne se lisent qu'en durée : on force l'unité */
-  if(filtreCharge==='etirement') uniteCharge='temps';
+  if(filtreCharge==='etirement') uniteCharge='reps';
   const pts=seancesPeriode(periodeCharge,filtreCharge,uniteCharge);
   const deltas=deltaPeriode(periodeCharge,uniteCharge);
   const U=UNITES[uniteCharge];
@@ -3236,17 +3252,20 @@ function vueAccueil(){
     '<button data-unite="'+u+'" aria-selected="'+(uniteCharge===u)+'">'+UNITES[u].lib+'</button>').join('');
   const bP=Object.keys(LIB_PERIODES).map(k=>
     '<button data-periode="'+k+'" aria-pressed="'+(periodeCharge===k)+'">'+LIB_PERIODES[k]+'</button>').join('');
-  const bF=CATS_STAT.filter(c=>uniteCharge==='reps'?c[0]!=='etirement':true).map(c=>
-    '<button data-fcharge="'+c[0]+'" aria-pressed="'+(filtreCharge===c[0])+'">'+c[1]+'</button>').join('');
+  /* En durée, on mesure la séance entière : la filtrer par groupe
+     musculaire n'aurait pas de sens. */
+  const bF=uniteCharge==='temps' ? '' :
+    CATS_STAT.filter(c=>c[0]!=='etirement').map(c=>
+      '<button data-fcharge="'+c[0]+'" aria-pressed="'+(filtreCharge===c[0])+'">'+c[1]+'</button>').join('');
   const noteU = uniteCharge==='temps'
-    ? 'Gainage et étirements, en minutes tenues.'
+    ? 'Durée réelle de chaque séance, échauffement en course déduit.'
     : 'Exercices comptés en répétitions. Gainage et étirements sont exclus : ils se lisent en durée.';
   const blocCharge='<div class="onglets" style="margin-top:22px">'+bU+'</div>'+
     '<p class="etiquette">Charge d’entraînement \u00B7 '+U.axe+'</p>'+
     '<div class="filtres">'+bP+'</div>'+
     '<div class="carte">'+graphCharge(pts,uniteCharge)+
     '<p class="aide" style="margin-top:8px">'+noteU+'</p></div>'+
-    '<div class="filtres" style="margin-top:10px">'+bF+'</div>';
+    (bF?'<div class="filtres" style="margin-top:10px">'+bF+'</div>':'');
 
   const blocJournal=journalBulles();
 
@@ -3255,7 +3274,7 @@ function vueAccueil(){
     const cls=d.delta>0?'up':d.delta<0?'down':'flat';
     const fl=d.delta>0?'\u25B2':d.delta<0?'\u25BC':'=';
     const pct=d.pct==null?'nouveau':(d.pct>0?'+':'')+d.pct+' %';
-    return '<div class="delta"><span>'+CATEGORIES[d.cat]+'</span>'+
+    return '<div class="delta"><span>'+(CATEGORIES[d.cat]||'Durée des séances')+'</span>'+
       '<span class="n '+cls+'">'+fl+' '+(d.delta>0?'+':'')+d.delta+' '+U.court+' \u00B7 '+pct+'</span></div>';
   }).join('');
   const blocD='<p class="etiquette" style="margin-top:22px">Évolution sur '+
@@ -3732,15 +3751,17 @@ function vueDetailSeance(){
     return '<p class="etiquette" style="margin-top:16px">'+esc(e?e.nom:'Exercice supprimé')+'</p>'+
       '<div class="carte">'+lignes+'</div>';
   }).join('');
-  const totalReps=(a.series||[]).reduce((n,s)=>n+s.repsRealisees,0);
+  const bil=bilanSeance(a);
   return '<button class="retour" data-act="fermer-detail">\u2039 Retour</button>'+
     '<h2 style="font-weight:800;font-size:22px;letter-spacing:-.02em;margin:0 0 2px">'+esc(a.nom)+'</h2>'+
     '<p style="color:var(--texte-2);margin:0 0 14px;font-size:13.5px">'+
     new Date(a.debut).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+
     ' \u00B7 '+new Date(a.debut).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+'</p>'+
     '<div class="carte stat-grille">'+
-    [[mmss(a.dureeSec||0),'durée'],[totalReps,'répétitions'],[(a.series||[]).length,'séries']]
+    [[mmss(a.dureeSec||0),'durée'],[bil.reps,'répétitions'],[bil.series,'séries']]
       .map(s=>'<div><div class="n">'+s[0]+'</div><div class="l">'+s[1]+'</div></div>').join('')+'</div>'+
+    (bil.sec?'<p class="aide" style="margin-top:8px;text-align:center">dont '+dureeLisible(bil.sec)+
+      ' d’efforts tenus (échauffement, gainage, étirements)</p>':'')+
     blocs+
     '<button class="bouton danger" style="margin-top:20px" data-suppr-seance-journal="'+a.id+'">'+
     'Supprimer cette séance de l\u2019historique</button>';
@@ -3768,21 +3789,17 @@ function silhouetteDos(){
 /* Bloc de cartographie, intégré à l'écran Statistiques.
    Plus de sous-menu : la carte est visible d'emblée. */
 function blocCartographie(){
-  if(!UNITES[uniteCarto]) uniteCarto='reps';
+  uniteCarto='reps';   /* la carte ne se lit plus qu'en répétitions */
   const sem=Math.max(1,DB.reglages.semainesCarto||4);
   const vol=volumeParGroupe(sem,uniteCarto);
   const max=Math.max(1,...Object.values(vol));
-  const unite = uniteCarto==='temps' ? 'min' : 'rép.';
+  const unite='rép.';
   const classement=Object.keys(GROUPES).map(g=>({g,v:Math.round(vol[g])})).sort((a,b)=>b.v-a.v);
   const travailles=classement.filter(x=>x.v>0);
   const oublies=classement.filter(x=>x.v===0);
-  const bU=['reps','temps'].map(u=>
-    '<button data-ucarto="'+u+'" aria-selected="'+(uniteCarto===u)+'">'+UNITES[u].lib+'</button>').join('');
   const bS=[2,4,8,12].map(n=>
     '<button data-carto="'+n+'" aria-pressed="'+(sem===n)+'">'+n+' sem.</button>').join('');
-  const note = uniteCarto==='temps'
-    ? 'Gainage et étirements uniquement, en minutes tenues.'
-    : 'Exercices en répétitions uniquement. Gainage et étirements ont leur propre carte, en durée.';
+  const note = 'Seuls les exercices comptés en répétitions alimentent la carte.';
   /* Le détail par groupe était replié derrière un « Détail » : il
      portait pourtant l'essentiel. Il devient un tableau visible,
      enrichi des deux records. */
@@ -3793,7 +3810,6 @@ function blocCartographie(){
       'Un groupe secondaire compte pour moiti\u00E9 : la valeur brute est alors rappel\u00E9e sous le chiffre.</p></div>'
     : '';
   return '<p class="etiquette" style="margin-top:22px">Cartographie musculaire \u00B7 '+sem+' semaines</p>'+
-    '<div class="onglets">'+bU+'</div>'+
     '<div class="filtres">'+bS+'</div>'+
     '<div class="carte"><div class="corps" id="corps">'+silhouetteFace()+silhouetteDos()+'</div>'+
     '<div class="echelle"><span>0</span><span class="bande"></span><span>'+Math.round(max)+' '+unite+'</span></div>'+
@@ -4028,10 +4044,10 @@ document.addEventListener('click',ev=>{
     const un=c('[data-unite]');
     if(un && UNITES[un.dataset.unite]){ uniteCharge=un.dataset.unite;
       /* les étirements n'existent qu'en durée : on ne laisse pas un filtre orphelin */
+      /* La durée ne se filtre pas par groupe : on repart de « Tout ». */
+      if(uniteCharge==='temps') filtreCharge='tous';
       if(uniteCharge==='reps'&&filtreCharge==='etirement') filtreCharge='tous';
       rendre(); return; }
-    const uc=c('[data-ucarto]');
-    if(uc && UNITES[uc.dataset.ucarto]){ uniteCarto=uc.dataset.ucarto; rendre(); return; }
     const ca=c('[data-carto]');
     if(ca){ DB.reglages.semainesCarto=+ca.dataset.carto; DB.sauver('reglages'); rendre(); return; }
 
@@ -4203,7 +4219,7 @@ document.addEventListener('click',ev=>{
 /* Le mode « écran d'accueil » n'existe que pour une page servie en
    http(s). Sur un fichier ouvert localement (file://), iOS ne propose
    pas l'option et refuse les service workers : on n'essaie même pas. */
-const VERSION = 'v34 \u00B7 20 août 2026';
+const VERSION = 'v35 \u00B7 20 août 2026';
 const SERVI = location.protocol==='http:' || location.protocol==='https:';
 if(SERVI && 'serviceWorker' in navigator){
   window.addEventListener('load',()=>{
