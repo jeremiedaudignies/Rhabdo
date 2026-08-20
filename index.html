@@ -137,9 +137,11 @@ input[type="checkbox"]:checked{border-color:var(--accent);background-color:var(-
 .vide p{margin:0 0 4px}
 
 /* --- séance en cours --- */
-.fil{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;font-weight:600;
-  color:var(--texte-2);margin-bottom:7px}
-.jauge{height:5px;background:var(--surface-2);border-radius:99px;overflow:hidden;margin-bottom:18px}
+.fil{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;font-weight:700;
+  color:var(--texte-2);margin-bottom:8px}
+.avancement{position:sticky;top:-16px;z-index:5;background:var(--fond);
+  padding:16px 0 12px;margin:-16px 0 10px}
+.jauge{height:9px;background:var(--surface-2);border-radius:99px;overflow:hidden}
 .jauge i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s}
 .cadran{position:relative;width:min(72vw,264px);margin:0 auto 18px;aspect-ratio:1}
 .cadran svg{width:100%;height:100%;transform:rotate(-90deg);display:block}
@@ -156,7 +158,7 @@ input[type="checkbox"]:checked{border-color:var(--accent);background-color:var(-
 .cadran.chauffe .mode{color:var(--chauffe)}
 .cadran .chiffres{font-family:var(--mono);font-weight:700;font-size:clamp(40px,14vw,58px);
   letter-spacing:-.04em;font-variant-numeric:tabular-nums;line-height:1}
-.cadran .sous{font-size:12px;color:var(--texte-3);font-weight:500}
+.cadran .sous{font-size:clamp(16px,5.6vw,23px);color:var(--texte-3);font-weight:500;line-height:1.1}
 @keyframes souffle{0%,100%{opacity:1}50%{opacity:.45}}
 .cadran.alerte .chiffres{animation:souffle .5s ease-in-out infinite}
 .exo-nom{font-weight:800;font-size:24px;letter-spacing:-.025em;margin:0 0 3px}
@@ -265,7 +267,7 @@ details.reglages[open] summary::after{content:"\2013"}
   margin:8px 0 12px;max-height:150px;overflow:auto;color:var(--effort)}
 
 /* --- ajouts lots 5 à 8 --- */
-.cadran .serie{font-family:var(--mono);font-weight:700;font-size:clamp(20px,7vw,29px);
+.cadran .serie{font-family:var(--mono);font-weight:700;font-size:clamp(16px,5.6vw,23px);
   color:var(--texte);letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1;margin-top:2px}
 .saisie-rangee{display:flex;align-items:stretch;justify-content:center;gap:9px;margin:8px 0 4px}
 .objectif-box{flex:0 0 auto;width:86px;border-radius:var(--r-m);background:var(--surface-2);
@@ -418,6 +420,15 @@ button.picto.mini::after{width:11px;height:11px}
 .conseils .cs-chiffres i{display:block;font-style:normal;font-size:9.5px;font-weight:600;
   letter-spacing:.06em;text-transform:uppercase;color:var(--texte-3);margin-bottom:2px}
 .conseils .cs-note{margin:7px 0 0;font-size:12.5px;line-height:1.45;color:var(--texte-2)}
+/* Molette de lestage : un <select> natif, que iOS présente comme le
+   réglage d'une alarme. La flèche est dessinée en fond, l'apparence
+   native étant retirée par la règle globale sur les champs. */
+select.molette{width:auto;min-width:150px;padding:9px 34px 9px 14px;border-radius:99px;
+  background-color:var(--surface-2);border:1px solid var(--filet);font-size:15px;font-weight:700;
+  font-family:var(--mono);color:var(--texte);text-align:center;text-align-last:center;
+  background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%239AA3B2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M4 6.5L8 10.5L12 6.5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;background-size:15px 15px}
+select.molette:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-doux)}
 .bloc-prog{margin-top:12px;padding:12px 14px;border-radius:var(--r-m);background:var(--accent-doux);
   font-size:13px;color:var(--texte-2);line-height:1.45}
 .bloc-prog b{color:var(--accent);font-weight:800}
@@ -2154,6 +2165,12 @@ const Seance = {
     const o=this._bloc().nbReps;
     n.className='val'+(this.repsSaisies<o?' sous-objectif':this.repsSaisies>o?' sur-objectif':'');
   },
+  /* Lestage posé directement, sans passer par les incréments. */
+  fixerLestage(v){
+    const b=this._bloc(); if(!b) return;
+    b.lestageKg = (v===0) ? null : Math.min(300,Math.max(-60,v));
+    this.persister();
+  },
   ajusterReglage(champ,d,noeud){
     const b=this._bloc();
     /* Seul le lestage descend sous zéro : un écartement ou une
@@ -2187,7 +2204,7 @@ const METAS = {
   accueil:{glyphe:'\u{1F4C8}', eyebrow:'Rhabdo', titre:'Statistiques'},
   biblio:{glyphe:'\u{1F4DA}', eyebrow:'Bibliothèque', titre:'Exercices & séances'},
   planif:{glyphe:'\u{1F4C5}', eyebrow:'Planning', titre:'Calendrier'},
-  seance:{glyphe:'\u25B6', eyebrow:'Entraînement', titre:'Réaliser une séance'}
+  seance:{glyphe:'\u25B6', eyebrow:'Entraînement', titre:'Séance'}
 };
 function aller(o){ ongletCourant=o; edition=null; rendre(); }
 function toast(msg){
@@ -2355,11 +2372,12 @@ function vueListeSeances(){
       '<div class="cmds">'+(n?'<button class="go" data-go="'+m.id+'">Débuter</button>':'')+
       '<button data-planifier="'+m.id+'">Planifier</button>'+
       '<button data-editer-s="'+m.id+'">Modifier</button>'+
+      '<button data-dupliquer-s="'+m.id+'">Dupliquer</button>'+
       (n?'<button class="ellipse" data-repart="'+m.id+'" aria-label="Détail de la répartition">\u2026</button>':'')+
       '</div></div>';
   }).join('');
   return (planif.length?'<p class="etiquette">À faire</p>'+lp:'')+
-    '<p class="etiquette" style="margin-top:'+(planif.length?'24px':'0')+'">Toutes les séances</p>'+lm;
+    (planif.length?'<div style="height:24px"></div>':'')+lm;
 }
 
 /* ---------- lot 3 et 4 : bibliothèque ---------- */
@@ -2633,16 +2651,20 @@ function editeurSeance(){
           '<span class="v">'+(b.hauteurCm==null?'\u2014':b.hauteurCm+' cm')+'</span>'+
           '<button data-inc="blocs.'+i+'.hauteurCm" data-pas="1" data-min="0" data-suffixe="cm">+</button></span></div>')+
         (u.indexOf('lestageKg')<0?'':
-          '<div class="reglage" style="padding:8px 0"><span class="nom">Lestage</span><span class="pas">'+
-          '<button data-inc="blocs.'+i+'.lestageKg" data-pas="-0.5" data-min="-60" data-suffixe="kg">\u2212</button>'+
-          '<span class="v" style="min-width:118px">'+lestageLisible(b.lestageKg)+'</span>'+
-          '<button data-inc="blocs.'+i+'.lestageKg" data-pas="0.5" data-min="-60" data-suffixe="kg">+</button></span></div>');
+          '<div class="reglage" style="padding:8px 0"><span class="nom">Lestage</span>'+
+          '<select class="molette" data-lestage-bloc="'+i+'">'+optionsLestage(b.lestageKg)+'</select></div>');
       })()+
-      '<div class="champ" style="margin:12px 0 0"><label>Point de départ</label>'+
-      '<input data-champ="blocs.'+i+'.repsInitiales" data-num="1" type="number" inputmode="numeric" '+
-      'placeholder="comme l’exercice ('+DB.repsDepart(exo,null).val+')" value="'+
-      (b.repsInitiales==null?'':b.repsInitiales)+'">'+
-      '<p class="aide">Ce qui sera proposé à la première série, avant toute réalisation.</p></div>'+
+      (function(){
+        const v=DB.repsDepart(exo,null).val;
+        const herite = exo.modeEffort==='temps'
+          ? 'Nombre de répétitions ou durée hérité de l’exercice : '+dureeLisible(v)
+          : 'Nombre de répétitions hérité de l’exercice : '+v;
+        return '<div class="champ" style="margin:12px 0 0"><label>Point de départ</label>'+
+        '<input data-champ="blocs.'+i+'.repsInitiales" data-num="1" type="number" inputmode="numeric" '+
+        'placeholder="'+esc(herite)+'" value="'+(b.repsInitiales==null?'':b.repsInitiales)+'">'+
+        '<p class="aide">Ce qui sera proposé à la première série, avant toute réalisation.'+
+        (exo.modeEffort==='temps'?' La valeur se saisit en secondes.':'')+'</p></div>';
+      })()+
       (exo.conseilProgression
         ? '<p class="aide" style="margin-top:10px"><b>Conseil :</b> '+esc(exo.conseilProgression)+'</p>'
         : '')+
@@ -2737,9 +2759,10 @@ function vueSeanceEnCours(){
       '<button class="bouton recup" data-act="passer">Passer à la suite</button></div>';
   }
 
-  return '<div class="fil"><span>Exercice '+(Seance.iBloc+1)+'/'+a.blocs.length+'</span>'+
+  return '<div class="avancement">'+
+    '<div class="fil"><span>Exercice '+(Seance.iBloc+1)+' sur '+a.blocs.length+'</span>'+
     '<span>'+prog.pct+' %</span></div>'+
-    '<div class="jauge"><i style="width:'+prog.pct+'%"></i></div>'+cadranHTML()+
+    '<div class="jauge"><i style="width:'+prog.pct+'%"></i></div></div>'+cadranHTML()+
     '<div class="exo-tete">'+pictoLien(exo,'grand',true)+'<div style="min-width:0">'+
     '<h2 class="exo-nom">'+esc(exo.nom)+'</h2>'+
     '<p class="exo-meta">'+exo.zone1.map(z=>GROUPES[z]).join(' \u00B7 ')+
@@ -2857,6 +2880,27 @@ function reglagesSerie(exo,b){
 }
 
 /* Le lestage a son propre affichage : rien saisi = poids du corps. */
+/* Valeurs proposées à la molette de lestage, de l'assistance la plus
+   forte à la charge la plus lourde. */
+function paliersLestage(){
+  const v=[];
+  for(let k=-60;k<0;k+=0.5) v.push(Math.round(k*10)/10);
+  v.push(0);
+  for(let k=0.5;k<=60;k+=0.5) v.push(Math.round(k*10)/10);
+  for(let k=61;k<=150;k+=1) v.push(k);
+  for(let k=152.5;k<=300;k+=2.5) v.push(Math.round(k*10)/10);
+  return v;
+}
+/* La valeur courante n'est pas forcément un palier : on l'insère
+   plutôt que de la déplacer dans le dos de Jérém. */
+function optionsLestage(val){
+  const v=paliersLestage();
+  const cour=(val==null?0:val);
+  if(v.indexOf(cour)<0){ v.push(cour); v.sort((a,b)=>a-b); }
+  return v.map(x=>'<option value="'+x+'"'+(x===cour?' selected':'')+'>'+
+    lestageLisible(x===0?null:x)+'</option>').join('');
+}
+
 /* Lestage lisible : positif = charge ajoutée, négatif = élastique
    d'assistance, zéro = poids du corps. */
 function lestageLisible(v){
@@ -2864,10 +2908,8 @@ function lestageLisible(v){
   return v>0 ? nbCourt(v)+' kg' : 'Élastique '+nbCourt(-v)+' kg';
 }
 function reglageLestage(val){
-  return '<div class="reglage"><span class="nom">Lestage</span><span class="pas">'+
-    '<button data-reg="lestageKg" data-pas="-0.5">\u2212</button>'+
-    '<span class="v" style="min-width:118px">'+lestageLisible(val)+'</span>'+
-    '<button data-reg="lestageKg" data-pas="0.5">+</button></span></div>';
+  return '<div class="reglage"><span class="nom">Lestage</span>'+
+    '<select class="molette" data-lestage>'+optionsLestage(val)+'</select></div>';
 }
 function reglageHTML(nom,champ,val,unite,pas){
   return '<div class="reglage"><span class="nom">'+nom+'</span><span class="pas">'+
@@ -2975,7 +3017,7 @@ function sauverSeance(){
    LOT 6 — STATISTIQUES : calculs
    ============================================================ */
 let ecranParams=false, detailSeanceId=null, moisAffiche=null, jourSelectionne=null;
-let vueSpecialeHisto=false, filtreHisto='tous', limiteHisto=25;
+let vueSpecialeHisto=false, filtreHisto='tous', limiteHisto=25, periodeHisto='3m';
 let planif=null;   /* écran de planification : {modeleId,date,mode,jours,occurrences} */
 let periodeCharge='3m', filtreCharge='tous', semainesJournal=3, uniteCharge='reps', uniteCarto='reps';
 let ficheModale=null;   /* identifiant d'exercice affiché en surcouche */
@@ -3585,20 +3627,24 @@ function vuePlanificateur(){
 /* ============================================================
    HISTORIQUE DES SÉANCES
    ============================================================ */
+const PERIODES_HISTO={'1m':{lib:'1 mois',j:31},'3m':{lib:'3 mois',j:91},
+  '6m':{lib:'6 mois',j:182},'1a':{lib:'1 an',j:365},'tout':{lib:'Tout',j:0}};
 const TYPES_HISTO=[['tous','Toutes'],['haut','Haut'],['bas','Bas'],
                    ['abdo','Abdo/Gainage'],['etirement','Étirements']];
 
 function vueHistorique(){
   const toutes=DB.journal.slice().sort((a,b)=>new Date(b.debut)-new Date(a.debut));
-  const liste=toutes.filter(a=>filtreHisto==='tous'||DB.categoriesRealisee(a).indexOf(filtreHisto)>=0);
-  const filtres='<div class="filtres">'+TYPES_HISTO.map(t=>
-    '<button data-fhisto="'+t[0]+'" aria-pressed="'+(filtreHisto===t[0])+'">'+t[1]+'</button>').join('')+'</div>';
+  const t0=periodeHisto==='tout' ? 0 : Date.now()-PERIODES_HISTO[periodeHisto].j*86400000;
+  const liste=toutes.filter(a=>new Date(a.debut).getTime()>=t0);
+  const filtres='<div class="filtres">'+Object.keys(PERIODES_HISTO).map(k=>
+    '<button data-phisto="'+k+'" aria-pressed="'+(periodeHisto===k)+'">'+
+    PERIODES_HISTO[k].lib+'</button>').join('')+'</div>';
 
   if(!liste.length){
     return '<button class="retour" data-act="fermer-histo">\u2039 Retour</button>'+
       '<h2 style="font-weight:800;font-size:22px;letter-spacing:-.02em;margin:0 0 12px">Historique</h2>'+
       filtres+'<div class="vide"><div class="gros">\u{1F4CB}</div>'+
-      '<p>'+(toutes.length?'Aucune séance de ce type.':'Aucune séance enregistrée pour l’instant.')+'</p></div>';
+      '<p>'+(toutes.length?'Aucune séance sur cette période.':'Aucune séance enregistrée pour l’instant.')+'</p></div>';
   }
 
   /* regroupement par mois, avec le total du mois en tête */
@@ -3952,6 +3998,15 @@ document.addEventListener('input',ev=>{
   }
 });
 document.addEventListener('change',ev=>{
+  /* Molette de lestage : en séance comme dans l'éditeur. */
+  const ml=ev.target.closest('[data-lestage]');
+  if(ml){ const v=parseFloat(ml.value); Seance.fixerLestage(isNaN(v)?0:v); return; }
+  const mb=ev.target.closest('[data-lestage-bloc]');
+  if(mb&&edition){
+    const v=parseFloat(mb.value);
+    edition.data.blocs[+mb.dataset.lestageBloc].lestageKg=(isNaN(v)||v===0)?null:v;
+    return;
+  }
   const pc=ev.target.closest('[data-planifchamp]');
   if(pc&&planif){
     planif[pc.dataset.planifchamp]=pc.value; rendre(); return;
@@ -3978,6 +4033,20 @@ document.addEventListener('click',ev=>{
     if(fermeRepart){ repartModale=null; rendre(); return; }
     const courbe=c('[data-courbe]');
     if(courbe){ exoCourbe=courbe.dataset.courbe; rendre(); return; }
+    const dupS=c('[data-dupliquer-s]');
+    if(dupS){
+      const src=DB.modele(dupS.dataset.dupliquerS);
+      if(src){
+        const copie=JSON.parse(JSON.stringify(src));
+        copie.nom=src.nom+' (copie)';
+        copie.id=DB.idLibre('seance-',copie.nom,DB.modeles);
+        DB.modeles.push(copie); DB.sauver('modeles');
+        toast('Séance dupliquée.');
+        edition={type:'seance',nouveau:false,data:JSON.parse(JSON.stringify(copie))};
+        ongletCourant='biblio'; sousOnglet='seances';
+      }
+      rendre(); return;
+    }
     const ouvreRepart=c('[data-repart]');
     if(ouvreRepart){ repartModale=ouvreRepart.dataset.repart; rendre(); return; }
     const fermeFiche=c('[data-act="fermer-fiche"]');
@@ -4027,7 +4096,7 @@ document.addEventListener('click',ev=>{
     /* --- statistiques --- */
     const pe=c('[data-periode]'); if(pe){ periodeCharge=pe.dataset.periode; rendre(); return; }
     const fc=c('[data-fcharge]'); if(fc){ filtreCharge=fc.dataset.fcharge; rendre(); return; }
-    const fh=c('[data-fhisto]'); if(fh){ filtreHisto=fh.dataset.fhisto; limiteHisto=25; rendre(); return; }
+    const ph=c('[data-phisto]'); if(ph){ periodeHisto=ph.dataset.phisto; limiteHisto=25; rendre(); return; }
     const sj=c('[data-suppr-seance-journal]');
     if(sj){
       if(!confirm('Supprimer définitivement cette séance de l’historique ?')) return;
@@ -4219,7 +4288,7 @@ document.addEventListener('click',ev=>{
 /* Le mode « écran d'accueil » n'existe que pour une page servie en
    http(s). Sur un fichier ouvert localement (file://), iOS ne propose
    pas l'option et refuse les service workers : on n'essaie même pas. */
-const VERSION = 'v35 \u00B7 20 août 2026';
+const VERSION = 'v36 \u00B7 20 août 2026';
 const SERVI = location.protocol==='http:' || location.protocol==='https:';
 if(SERVI && 'serviceWorker' in navigator){
   window.addEventListener('load',()=>{
