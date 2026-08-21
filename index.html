@@ -184,9 +184,10 @@ input[type="checkbox"]:checked{border-color:var(--accent);background-color:var(-
 .pilote .anneau .piste{fill:none;stroke:var(--surface-2);stroke-width:7}
 .pilote .anneau .arc{fill:none;stroke:var(--accent);stroke-width:7;stroke-linecap:round;
   stroke-dasharray:276.5;transition:stroke-dashoffset .3s linear,stroke .3s}
-.pilote .glyphe{position:absolute;inset:0;margin:auto;width:54px;height:54px;
-  display:flex;align-items:center;justify-content:center;border-radius:16px;
-  background:var(--accent);color:#fff;font-size:24px;line-height:1;padding-left:2px}
+.pilote .glyphe{position:absolute;inset:0;margin:auto;width:56px;height:56px;
+  display:flex;align-items:center;justify-content:center;border-radius:17px;
+  background:var(--accent);color:#fff;font-size:24px;line-height:1}
+.pilote .glyphe.mot{font-size:19px;font-weight:800;letter-spacing:.02em}
 .pilote.effort .arc{stroke:var(--effort)} .pilote.effort .glyphe{background:var(--effort)}
 .pilote.recup .arc{stroke:var(--recup)}   .pilote.recup .glyphe{background:var(--recup)}
 .pilote.alerte .glyphe{animation:souffle .5s ease-in-out infinite}
@@ -468,29 +469,23 @@ select.molette{width:auto;min-width:150px;padding:9px 34px 9px 14px;border-radiu
   background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%239AA3B2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M4 6.5L8 10.5L12 6.5'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 12px center;background-size:15px 15px}
 select.molette:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-doux)}
-/* Note dépliable : un <details> déguisé en pastille « i ». */
-.info{display:inline-block;vertical-align:middle;margin-left:7px}
-.info>summary{list-style:none;width:19px;height:19px;border-radius:99px;background:var(--surface-2);
-  color:var(--texte-3);font-size:11px;font-weight:800;font-style:italic;line-height:19px;
-  text-align:center;cursor:pointer}
-.info>summary::-webkit-details-marker{display:none}
-.info[open]>summary{background:var(--accent);color:#fff}
-.info>p{margin:8px 0 2px;font-size:12.5px;line-height:1.45;color:var(--texte-2);font-weight:400}
+/* Pastille « i » et sa note, qui occupe toute la largeur du bloc. */
+.pastille-i{width:20px;height:20px;margin-left:7px;flex:0 0 auto;border-radius:99px;
+  background:var(--surface-2);color:var(--texte-3);font-size:11px;font-weight:800;
+  font-style:italic;line-height:1;vertical-align:middle}
+.pastille-i[aria-expanded="true"]{background:var(--accent);color:#fff}
+.aide-info{margin:0;padding:0 0 11px;font-size:12.5px;line-height:1.45;color:var(--texte-2)}
+.reglage-bloc .reglage{border-bottom:0}
+.reglage-bloc{border-bottom:1px solid var(--filet)}
+.reglage-bloc:last-child{border-bottom:0}
 .bloc-prog{margin-top:12px;padding:12px 14px;border-radius:var(--r-m);background:var(--accent-doux);
   font-size:13px;color:var(--texte-2);line-height:1.45}
 .bloc-prog b{color:var(--accent);font-weight:800}
 .reglages-vifs{margin-top:12px;background:var(--surface);border:1px solid var(--filet);
   border-radius:var(--r-m);padding:4px 15px}
-.charges-ref{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
-.charges-ref span{background:var(--surface);border:1px solid var(--filet);border-radius:var(--r-m);
-  padding:9px 10px;text-align:center;font-size:15px;font-weight:800;
-  font-variant-numeric:tabular-nums;line-height:1.2}
-.charges-ref span:only-child{grid-column:1 / -1}
-.charges-ref i{display:block;font-style:normal;font-size:9.5px;font-weight:600;letter-spacing:.06em;
-  text-transform:uppercase;color:var(--texte-3);margin-bottom:3px}
-.charges-ref em{display:block;font-style:normal;font-size:10px;font-weight:600;color:var(--texte-3);
-  margin-top:2px}
-.charges-ref .record{border-color:var(--accent);color:var(--accent)}
+.charges-ref{margin:2px 0 11px;font-size:12px;color:var(--texte-3);font-weight:500;
+  font-variant-numeric:tabular-nums}
+.charges-ref b{color:var(--texte-2);font-weight:800}
 .exo-tete{display:flex;align-items:center;gap:12px;margin-bottom:6px}
 .exo-tete .exo-nom{margin:0}
 .mois-tete{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
@@ -2368,7 +2363,7 @@ function etatCadran(){
 /* Ce qu'affiche le pilote : trois lignes, un anneau, une action. */
 function etatPilote(){
   const C=276.5;   /* circonférence du cercle r=44 */
-  const vide={cls:'', l1:'', l2:'', l3:'00:00', arc:C, icone:'\u25B6', act:'', label:''};
+  const vide={cls:'', l1:'', l2:'', l3:'00:00', arc:C, icone:'GO', act:'', label:''};
   if(!Seance.active) return vide;
   const b=Seance._bloc(), exo=Seance._exo();
   if(!b||!exo) return vide;
@@ -2380,14 +2375,14 @@ function etatPilote(){
     if(parTemps){
       const r=Chrono.restantSec()==null?b.nbReps:Chrono.restantSec();
       return {cls:'effort'+(r<=5?' alerte':''), l1:serie, l2:obj, l3:mmss(Math.ceil(r)),
-        arc:C*(r/b.nbReps), icone:'\u2713', act:'finValider', label:'Série terminée'};
+        arc:C*(r/b.nbReps), icone:'OK', act:'finValider', label:'Série terminée'};
     }
     return {cls:'effort', l1:serie, l2:obj, l3:mmss(Chrono.ecouleSec()),
-      arc:0, icone:'\u2713', act:'finValider', label:'Série terminée'};
+      arc:0, icone:'OK', act:'finValider', label:'Série terminée'};
   }
   if(Seance.etat==='saisie')
     return {cls:'', l1:serie, l2:'Combien ?', l3:mmss(Seance.effortEcoule),
-      arc:0, icone:'\u2713', act:'valider', label:'Valider et récupérer'};
+      arc:0, icone:'OK', act:'valider', label:'Valider et récupérer'};
   if(Seance.etat==='recup'){
     const r=Chrono.restantSec()||0, cible=Chrono.cibleSec||1;
     return {cls:'recup'+(r<=5?' alerte':''), l1:'Récupération', l2:serie+' terminée',
@@ -2398,15 +2393,18 @@ function etatPilote(){
     const p=Seance.prochaine();
     return {cls:'recup', l1:'Récupération terminée',
       l2: p ? 'Série '+p.iSerie+' sur '+p.nbSeries : 'Fin de séance', l3:'00:00',
-      arc:0, icone:'\u25B6', act:'enchainer', label:'Lancer la série suivante'};
+      arc:0, icone:'GO', act:'enchainer', label:'Lancer la série suivante'};
   }
-  return {cls:'', l1:serie, l2:obj, l3:'00:00', arc:C, icone:'\u25B6',
+  return {cls:'', l1:serie, l2:obj, l3:'00:00', arc:C, icone:'GO',
     act:'demarrer', label:'Démarrer la série '+Seance.iSerie};
 }
 
 function piloteHTML(){
   const e=etatPilote();
   return '<div class="pilote '+e.cls+'" id="cadran">'+
+    '<div class="infos"><span class="l1">'+esc(e.l1)+'</span>'+
+      '<span class="l2">'+esc(e.l2)+'</span>'+
+      '<span class="l3"><i aria-hidden="true">\u23F1</i>'+e.l3+'</span></div>'+
     '<button class="anneau" data-act="'+e.act+'" aria-label="'+esc(e.label)+'">'+
       /* Couleurs en attributs : elles s'appliquent même là où une
          feuille de style ne descend pas dans le SVG. Les règles CSS
@@ -2415,10 +2413,7 @@ function piloteHTML(){
       '<circle class="piste" cx="50" cy="50" r="44" fill="none" stroke="#EDEFF3" stroke-width="7"></circle>'+
       '<circle class="arc" cx="50" cy="50" r="44" fill="none" stroke="#F94E00" stroke-width="7" '+
       'stroke-linecap="round" stroke-dasharray="276.5" style="stroke-dashoffset:'+e.arc+'"></circle></svg>'+
-      '<span class="glyphe">'+e.icone+'</span></button>'+
-    '<div class="infos"><span class="l1">'+esc(e.l1)+'</span>'+
-      '<span class="l2">'+esc(e.l2)+'</span>'+
-      '<span class="l3"><i aria-hidden="true">\u23F1</i>'+e.l3+'</span></div></div>';
+      '<span class="glyphe'+(e.icone.length>1?' mot':'')+'">'+e.icone+'</span></button></div>';
 }
 
 
@@ -2680,7 +2675,7 @@ function editeurExercice(){
       const noms=[];
       if(u.indexOf('ecartementCm')>=0) noms.push('écartement');
       if(u.indexOf('hauteurCm')>=0) noms.push('hauteur');
-      if(u.indexOf('lestageKg')>=0) noms.push('lestage');
+      if(u.indexOf('lestageKg')>=0) noms.push('charge');
       return '<div class="champ"><label>Réglages de référence</label>'+
         '<div class="trio">'+champs.join('')+'</div>'+
         '<p class="aide">'+noms.join(', ').replace(/^./,c=>c.toUpperCase())+
@@ -2784,7 +2779,7 @@ function editeurSeance(){
           '<span class="v">'+(b.hauteurCm==null?'\u2014':b.hauteurCm+' cm')+'</span>'+
           '<button data-inc="blocs.'+i+'.hauteurCm" data-pas="1" data-min="0" data-suffixe="cm">+</button></span></div>')+
         (u.indexOf('lestageKg')<0?'':
-          '<div class="reglage" style="padding:8px 0"><span class="nom">Lestage</span>'+
+          '<div class="reglage" style="padding:8px 0"><span class="nom">Charge</span>'+
           '<select class="molette" data-lestage-bloc="'+i+'">'+optionsLestage(b.lestageKg)+'</select></div>');
       })()+
       (function(){
@@ -2885,14 +2880,15 @@ function vueSeanceEnCours(){
   return '<div class="avancement">'+
     '<div class="fil"><span>Exercice '+(Seance.iBloc+1)+' sur '+a.blocs.length+'</span>'+
     '<span>'+prog.pct+' %</span></div>'+
-    '<div class="jauge"><i style="width:'+prog.pct+'%"></i></div></div>'+piloteHTML()+
+    '<div class="jauge"><i style="width:'+prog.pct+'%"></i></div></div>'+
     '<div class="exo-tete">'+pictoLien(exo,'grand',true)+'<div style="min-width:0">'+
     '<h2 class="exo-nom">'+esc(exo.nom)+'</h2>'+
     '<p class="exo-meta">'+lignesMuscles(exo)+'</p></div></div>'+
-    (action?'<div class="zone-action">'+action+'</div>':'')+
     blocProgression(exo,b)+
     reglagesSerie(exo,b)+
     (exo.remarque?'<p class="aide" style="margin-top:10px">'+esc(exo.remarque)+'</p>':'')+
+    piloteHTML()+
+    (action?'<div class="zone-action">'+action+'</div>':'')+
     '<div class="suite">'+vignetteSuite+'<span>'+ligneSuite+'</span></div>'+
     '<div class="rangee" style="margin-top:14px">'+
     (bs?'<button class="bouton discret" data-act="passer-exo">Passer l’exercice</button>':'')+
@@ -2952,8 +2948,7 @@ function direQuantite(exo,v){
 function blocProgression(exo,b){
   if(exo.categorie==='echauffement' || exo.categorie==='course') return '';
   const c=(exo.conseilProgression||'').trim();
-  return (c?'<div class="bloc-prog"><b>Progression :</b> '+esc(c)+'</div>':'')+
-    chargesReference(exo);
+  return c?'<div class="bloc-prog"><b>Progression :</b> '+esc(c)+'</div>':'';
 }
 
 /* Les deux charges qui situent la série : celle de la dernière fois,
@@ -2965,11 +2960,10 @@ function chargesReference(exo){
   const der=DB.maxPrecedent(exo.id,'lestageKg');
   const rec=DB.recordDeTousTemps(exo.id,'lestageKg');
   if(der==null && !rec) return '';
-  const cases=[];
-  cases.push('<span><i>Dernière séance</i>'+(der!=null?lestageLisible(der):'\u2014')+'</span>');
-  if(rec) cases.push('<span class="record"><i>Record</i>'+lestageLisible(rec.val)+
-    '<em>'+dateCourte(rec.date)+'</em></span>');
-  return '<div class="charges-ref">'+cases.join('')+'</div>';
+  const bouts=[];
+  if(der!=null) bouts.push('Dernière séance <b>'+lestageLisible(der)+'</b>');
+  if(rec) bouts.push('Record <b>'+lestageLisible(rec.val)+'</b> ('+dateCourte(rec.date)+')');
+  return '<p class="charges-ref">'+bouts.join(' \u00B7 ')+'</p>';
 }
 /* Date compacte, pour tenir dans une pastille. Abréviations écrites
    plutôt que tronquées : « avril » coupé à quatre lettres donne
@@ -2990,6 +2984,7 @@ function reglagesSerie(exo,b){
   const corps =
     (utiles.indexOf('ecartementCm')>=0?reglageHTML('Écartement','ecartementCm',b.ecartementCm,'cm',1):'')+
     (utiles.indexOf('hauteurCm')>=0?reglageHTML('Hauteur','hauteurCm',b.hauteurCm,'cm',1,AIDE_HAUTEUR):'')+
+    chargesReference(exo)+
     (utiles.indexOf('lestageKg')>=0?reglageLestage(b.lestageKg,
       b.reglagesRepris
         ? 'Repris du maximum de ta dernière séance sur cet exercice. Ajuste avant de lancer : la valeur part avec la série.'
@@ -3028,8 +3023,9 @@ function lestageLisible(v){
   return v>0 ? nbCourt(v)+' kg' : 'Élastique '+nbCourt(-v)+' kg';
 }
 function reglageLestage(val,aide){
-  return '<div class="reglage"><span class="nom">Lestage'+(aide?infoBulle(aide):'')+'</span>'+
-    '<select class="molette" data-lestage>'+optionsLestage(val)+'</select></div>';
+  return ligneAvecAide(
+    '<div class="reglage"><span class="nom">Charge</span>'+
+    '<select class="molette" data-lestage>'+optionsLestage(val)+'</select></div>', aide);
 }
 /* Groupes musculaires d'un exercice, rôle nommé plutôt que
    suggéré par une flèche. Rendu sur deux lignes. */
@@ -3043,19 +3039,27 @@ function lignesMuscles(exo){
   return l.join('');
 }
 
-/* Petite note dépliable au bout d'une ligne de réglage. */
-function infoBulle(texte){
-  return '<details class="info"><summary aria-label="Aide">i</summary>'+
-    '<p>'+esc(texte)+'</p></details>';
+/* Note dépliable d'une ligne de réglage. Le texte est un frère de
+   la ligne, pas un enfant du libellé : sinon il s'affiche comprimé
+   dans la largeur du mot « Charge ». */
+let _idAide=0;
+function ligneAvecAide(ligne,texte){
+  if(!texte) return ligne;
+  const id='aide-'+(++_idAide);
+  return '<div class="reglage-bloc">'+
+    ligne.replace('</span><','<button class="pastille-i" data-aide="'+id+'" '+
+      'aria-label="Aide" aria-expanded="false">i</button></span><')+
+    '<p class="aide-info" id="'+id+'" hidden>'+esc(texte)+'</p></div>';
 }
 const AIDE_HAUTEUR='Différence de hauteur entre les pieds et les mains. Une valeur négative '+
   'signifie que les pieds sont plus hauts que les mains — pompes mains sur un tabouret. '+
   'Une valeur positive signifie que les pieds sont surélevés — pieds sur une chaise, mains au sol.';
 function reglageHTML(nom,champ,val,unite,pas,aide){
-  return '<div class="reglage"><span class="nom">'+nom+(aide?infoBulle(aide):'')+'</span><span class="pas">'+
+  return ligneAvecAide(
+    '<div class="reglage"><span class="nom">'+nom+'</span><span class="pas">'+
     '<button data-reg="'+champ+'" data-pas="'+(-pas)+'">\u2212</button>'+
     '<span class="v">'+(val==null?'\u2014':val+' '+unite)+'</span>'+
-    '<button data-reg="'+champ+'" data-pas="'+pas+'">+</button></span></div>';
+    '<button data-reg="'+champ+'" data-pas="'+pas+'">+</button></span></div>', aide);
 }
 
 /* Déroulé d'une séance, exercice par exercice puis série par série. */
@@ -4167,6 +4171,14 @@ document.addEventListener('click',ev=>{
        qu'elle est ouverte, elle capte ses propres commandes. */
     const fermeRepart=c('[data-act="fermer-repart"]');
     if(fermeRepart){ repartModale=null; rendre(); return; }
+    const pi=c('[data-aide]');
+    if(pi){
+      const cible=document.getElementById(pi.dataset.aide);
+      if(cible){ const ouvert=cible.hasAttribute('hidden');
+        if(ouvert) cible.removeAttribute('hidden'); else cible.setAttribute('hidden','');
+        pi.setAttribute('aria-expanded',ouvert?'true':'false'); }
+      return;
+    }
     const courbe=c('[data-courbe]');
     if(courbe){ exoCourbe=courbe.dataset.courbe; rendre(); return; }
     const dupS=c('[data-dupliquer-s]');
@@ -4344,12 +4356,22 @@ document.addEventListener('click',ev=>{
         case 'valider':        Seance.validerSerie(); break;
         case 'pause':          Chrono.basculerPause(); rendre(); break;
         case 'passer':         Seance.passerRecup(); break;
-        case 'passer-exo':     Seance.passerExercice(); break;
+        case 'passer-exo':
+          if(confirm('Passer cet exercice ? Les séries non réalisées ne seront pas enregistrées.'))
+            Seance.passerExercice();
+          break;
         case 'commencer':      Seance.commencerApresAnnonce(); break;
-        case 'terminer':
-          if(!Seance.active.series.length){ Seance.abandonner(); toast('Séance annulée.'); }
+        case 'terminer': {
+          const faites=Seance.active.series.length;
+          const q=faites
+            ? 'Terminer la séance ? Les '+faites+' série'+(faites>1?'s':'')+
+              ' déjà réalisée'+(faites>1?'s':'')+' seront enregistrée'+(faites>1?'s':'')+'.'
+            : 'Terminer la séance ? Aucune série n’a été réalisée : rien ne sera enregistré.';
+          if(!confirm(q)) break;
+          if(!faites){ Seance.abandonner(); toast('Séance annulée.'); }
           else Seance._terminer();
           break;
+        }
         case 'retour':         Seance.active=null; rendre(); break;
         case 'annuler-edition':edition=null; rendre(); break;
         case 'sauver-exo':     sauverExo(); break;
@@ -4424,7 +4446,7 @@ document.addEventListener('click',ev=>{
 /* Le mode « écran d'accueil » n'existe que pour une page servie en
    http(s). Sur un fichier ouvert localement (file://), iOS ne propose
    pas l'option et refuse les service workers : on n'essaie même pas. */
-const VERSION = 'v39 \u00B7 21 août 2026';
+const VERSION = 'v40 \u00B7 21 août 2026';
 const SERVI = location.protocol==='http:' || location.protocol==='https:';
 if(SERVI && 'serviceWorker' in navigator){
   window.addEventListener('load',()=>{
