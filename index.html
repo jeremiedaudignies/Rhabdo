@@ -106,16 +106,43 @@ input[type="checkbox"]:checked{border-color:var(--accent);background-color:var(-
   border-radius:99px;padding:4px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .repart .p b{color:var(--accent);font-weight:800;font-variant-numeric:tabular-nums}
 .repart .p.muet{background:none;color:var(--texte-3);padding-left:2px}
+.ligne .mini-btn{flex:0 0 auto;width:34px;height:34px;border-radius:var(--r-s);
+  background:var(--surface-2);color:var(--texte-2);font-size:15px}
 .item .cmds .ellipse{margin-left:auto;min-width:46px;padding:9px 12px;font-size:17px;line-height:1;
   letter-spacing:.06em;font-weight:800;color:var(--texte-3)}
-.detail-tab .l{display:grid;grid-template-columns:1fr 52px;align-items:center;gap:10px;
-  padding:9px 0;border-bottom:1px solid var(--filet)}
+.detail-tab .l{display:grid;grid-template-columns:1fr 132px;align-items:end;gap:10px;
+  padding:10px 0;border-bottom:1px solid var(--filet)}
 .detail-tab .l:last-child{border-bottom:0}
+.detail-tab .l.entete{padding:0 0 6px;border-bottom:1px solid var(--filet);align-items:end}
 .detail-tab .nm{font-size:13.5px;font-weight:700;min-width:0}
-.detail-tab .barre{height:6px;border-radius:99px;background:var(--surface-2);margin-top:5px;overflow:hidden}
-.detail-tab .barre i{display:block;height:100%;border-radius:99px;background:var(--accent)}
-.detail-tab .pc{text-align:right;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
-.detail-tab .src{font-size:11px;color:var(--texte-3);font-weight:500}
+.detail-tab .src{display:block;font-size:11px;color:var(--texte-3);font-weight:500;margin-top:2px}
+.detail-tab .trio-h{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;align-items:end}
+.detail-tab .c{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.detail-tab .c span{font-size:10px;font-weight:700;font-variant-numeric:tabular-nums;
+  color:var(--texte-2);white-space:nowrap}
+.detail-tab .c span.muet{color:var(--texte-3);font-weight:500}
+.detail-tab .l.entete .c span{font-size:8.5px;letter-spacing:.03em;text-transform:uppercase;
+  color:var(--texte-3);font-weight:700}
+.detail-tab .b{width:100%;height:34px;display:flex;align-items:flex-end;
+  background:var(--surface-2);border-radius:4px;overflow:hidden}
+.detail-tab .b i{display:block;width:100%;min-height:2px;border-radius:4px}
+.detail-tab .b i.tot{background:#F94E00}
+.detail-tab .b i.pri{background:#FF8F1F}
+.detail-tab .b i.sec{background:#F2C400}
+.series-detail{padding:6px 15px}
+.series-detail .exo-bloc{padding:11px 0;border-bottom:1px solid var(--filet)}
+.series-detail .exo-bloc:last-child{border-bottom:0}
+.series-detail .tt{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.series-detail .tt b{font-size:14.5px;font-weight:800;letter-spacing:-.01em;min-width:0}
+.series-detail .sl{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:baseline;
+  padding:4px 0;font-size:12.5px;font-variant-numeric:tabular-nums}
+.series-detail .no{color:var(--texte-3);font-weight:600}
+.series-detail .rp{font-weight:700}
+.series-detail .rp.sous{color:var(--effort)} .series-detail .rp.sur{color:var(--recup)}
+.series-detail .kg{font-weight:700;color:var(--texte-2)}
+.series-detail .tp{color:var(--texte-3);font-family:var(--mono);font-size:11.5px}
+.series-detail .sl.total{display:block;margin-top:6px;padding-top:8px;
+  border-top:1px solid var(--filet);font-size:12.5px;font-weight:800;color:var(--accent)}
 .detail-exos .l{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:baseline;
   padding:8px 0;border-bottom:1px solid var(--filet);font-size:13px}
 .detail-exos .l:last-child{border-bottom:0}
@@ -139,30 +166,44 @@ input[type="checkbox"]:checked{border-color:var(--accent);background-color:var(-
 /* --- séance en cours --- */
 .fil{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;font-weight:700;
   color:var(--texte-2);margin-bottom:8px}
-.avancement{position:sticky;top:-16px;z-index:5;background:var(--fond);
-  padding:16px 0 12px;margin:-16px 0 10px}
+.avancement{position:sticky;top:-16px;z-index:5;margin:-16px -16px 10px;
+  padding:16px 16px 10px;background:var(--fond)}
+.avancement::after{content:'';position:absolute;left:0;right:0;bottom:-10px;height:10px;
+  background:linear-gradient(var(--fond),transparent);pointer-events:none}
 .jauge{height:9px;background:var(--surface-2);border-radius:99px;overflow:hidden}
 .jauge i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s}
-.cadran{position:relative;width:min(72vw,264px);margin:0 auto 18px;aspect-ratio:1}
-.cadran svg{width:100%;height:100%;transform:rotate(-90deg);display:block}
-.cadran .piste{fill:none;stroke:var(--surface-2);stroke-width:9}
-.cadran .arc{fill:none;stroke:var(--texte-3);stroke-width:9;stroke-linecap:round;
-  stroke-dasharray:552.9;transition:stroke .3s}
-.cadran.effort .arc{stroke:var(--effort)}
-.cadran.recup .arc{stroke:var(--recup)}
-.cadran.chauffe .arc{stroke:var(--chauffe)}
-.cadran .noyau{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:3px}
-.cadran .mode{font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--texte-3)}
-.cadran.effort .mode{color:var(--effort)} .cadran.recup .mode{color:var(--recup)}
-.cadran.chauffe .mode{color:var(--chauffe)}
-.cadran .chiffres{font-family:var(--mono);font-weight:700;font-size:clamp(40px,14vw,58px);
-  letter-spacing:-.04em;font-variant-numeric:tabular-nums;line-height:1}
-.cadran .sous{font-size:clamp(16px,5.6vw,23px);color:var(--texte-3);font-weight:500;line-height:1.1}
+/* Pilote : l'anneau de progression sert de bouton, les trois
+   informations se lisent à droite, à la même taille. */
+.pilote{display:flex;align-items:center;gap:16px;padding:12px 16px;margin-bottom:14px;
+  background:var(--surface);border:1px solid var(--filet);border-radius:22px;
+  box-shadow:var(--ombre)}
+.pilote .anneau{position:relative;flex:0 0 auto;width:96px;height:96px;padding:0;
+  background:none;border:0;cursor:pointer}
+.pilote .anneau:active{transform:scale(.96)}
+.pilote .anneau svg{width:100%;height:100%;transform:rotate(-90deg);display:block}
+.pilote .anneau .piste{fill:none;stroke:var(--surface-2);stroke-width:7}
+.pilote .anneau .arc{fill:none;stroke:var(--accent);stroke-width:7;stroke-linecap:round;
+  stroke-dasharray:276.5;transition:stroke-dashoffset .3s linear,stroke .3s}
+.pilote .glyphe{position:absolute;inset:0;margin:auto;width:54px;height:54px;
+  display:flex;align-items:center;justify-content:center;border-radius:16px;
+  background:var(--accent);color:#fff;font-size:24px;line-height:1;padding-left:2px}
+.pilote.effort .arc{stroke:var(--effort)} .pilote.effort .glyphe{background:var(--effort)}
+.pilote.recup .arc{stroke:var(--recup)}   .pilote.recup .glyphe{background:var(--recup)}
+.pilote.alerte .glyphe{animation:souffle .5s ease-in-out infinite}
+.pilote .infos{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;
+  font-size:clamp(17px,5.2vw,21px);font-weight:700;letter-spacing:-.015em;line-height:1.2}
+.pilote .l1{color:var(--texte)}
+.pilote .l2{color:var(--texte-2);font-weight:600}
+.pilote .l3{display:flex;align-items:center;gap:7px;color:var(--texte);
+  font-family:var(--mono);font-variant-numeric:tabular-nums}
+.pilote .l3 i{font-style:normal;font-size:.85em;opacity:.55;font-family:inherit}
+.pilote.effort .l3,.pilote.recup .l3{color:var(--texte)}
+
 @keyframes souffle{0%,100%{opacity:1}50%{opacity:.45}}
-.cadran.alerte .chiffres{animation:souffle .5s ease-in-out infinite}
 .exo-nom{font-weight:800;font-size:24px;letter-spacing:-.025em;margin:0 0 3px}
-.exo-meta{font-size:13px;color:var(--texte-2);margin:0}
+.exo-meta{font-size:13px;color:var(--texte-2);margin:0;display:flex;flex-direction:column;gap:1px}
+.exo-meta i{font-style:normal;color:var(--texte-3)}
+.ligne .txt span i{font-style:normal;color:var(--texte-3)}
 .compteur{display:flex;align-items:center;justify-content:center;gap:18px;margin:8px 0 4px}
 .compteur button{width:58px;height:58px;border-radius:50%;background:var(--surface-2);font-size:26px;
   font-weight:600;display:grid;place-items:center}
@@ -216,7 +257,7 @@ details.reglages[open] summary::after{content:"\2013"}
   border:1px solid var(--filet);border-radius:var(--r-m);margin-bottom:8px;box-shadow:var(--ombre)}
 .ligne .txt{flex:1;min-width:0}
 .ligne .txt b{display:block;font-weight:600;font-size:15px;letter-spacing:-.01em}
-.ligne .txt span{font-size:12px;color:var(--texte-2)}
+.ligne .txt span{font-size:12px;color:var(--texte-2);display:block}
 .ligne .fleche{color:var(--texte-3);font-size:18px}
 .ajout{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;
   border-radius:var(--r-m);border:1.5px dashed var(--filet);color:var(--accent);font-weight:700;
@@ -267,8 +308,6 @@ details.reglages[open] summary::after{content:"\2013"}
   margin:8px 0 12px;max-height:150px;overflow:auto;color:var(--effort)}
 
 /* --- ajouts lots 5 à 8 --- */
-.cadran .serie{font-family:var(--mono);font-weight:700;font-size:clamp(16px,5.6vw,23px);
-  color:var(--texte);letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1;margin-top:2px}
 .saisie-rangee{display:flex;align-items:stretch;justify-content:center;gap:9px;margin:8px 0 4px}
 .objectif-box{flex:0 0 auto;width:86px;border-radius:var(--r-m);background:var(--surface-2);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:6px 4px}
@@ -429,6 +468,14 @@ select.molette{width:auto;min-width:150px;padding:9px 34px 9px 14px;border-radiu
   background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%239AA3B2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M4 6.5L8 10.5L12 6.5'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 12px center;background-size:15px 15px}
 select.molette:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-doux)}
+/* Note dépliable : un <details> déguisé en pastille « i ». */
+.info{display:inline-block;vertical-align:middle;margin-left:7px}
+.info>summary{list-style:none;width:19px;height:19px;border-radius:99px;background:var(--surface-2);
+  color:var(--texte-3);font-size:11px;font-weight:800;font-style:italic;line-height:19px;
+  text-align:center;cursor:pointer}
+.info>summary::-webkit-details-marker{display:none}
+.info[open]>summary{background:var(--accent);color:#fff}
+.info>p{margin:8px 0 2px;font-size:12.5px;line-height:1.45;color:var(--texte-2);font-weight:400}
 .bloc-prog{margin-top:12px;padding:12px 14px;border-radius:var(--r-m);background:var(--accent-doux);
   font-size:13px;color:var(--texte-2);line-height:1.45}
 .bloc-prog b{color:var(--accent);font-weight:800}
@@ -657,14 +704,20 @@ const Store = (() => {
 /* ============================================================
    2. MODÈLE DE DONNÉES
    ============================================================ */
+/* Les groupes musculaires, indépendants de la catégorie : un
+   gainage latéral et un crunch travaillent la même sangle. */
 const GROUPES = {
   pectoraux:'Pectoraux', dos:'Dos', epaules:'Épaules', biceps:'Biceps', triceps:'Triceps',
-  abdo:'Abdo/Gainage', fessiers:'Fessiers', quadriceps:'Quadriceps',
+  abdo:'Abdominaux', fessiers:'Fessiers', quadriceps:'Quadriceps',
   ischios:'Ischio-jambiers', mollets:'Mollets', hanche:'Hanche'
 };
 /* Une séance n'a plus de type choisi : ses catégories se déduisent
    des exercices qu'elle contient. « Mixte » n'existe donc plus. */
-const CATEGORIES = { echauffement:'Échauffement', course:'Course à pied', haut:'Haut', bas:'Bas', abdo:'Abdo/Gainage', etirement:'Étirement' };
+const CATEGORIES = { echauffement:'Échauffement', course:'Course à pied', haut:'Haut', bas:'Bas',
+  abdo:'Abdominaux', gainage:'Gainage', etirement:'Étirements' };
+/* Ces trois catégories se comptent en secondes tenues, pas en
+   répétitions : c'est ce qui décide de l'unité par défaut. */
+const CATEGORIES_DUREE = ['echauffement','course','gainage','etirement'];
 const CAT_EXO = CATEGORIES;
 
 const slug = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'')
@@ -792,8 +845,8 @@ function exercicesLafay(){
     e('Pont','bas',['fessiers'],['ischios']),
     e('Crunch','abdo',['abdo'],[]),
     e('Abdominaux chaise romaine','abdo',['abdo'],['dos']),
-    e('Gainage horizontal','abdo',['abdo'],[],'temps',{objSeries:3,objReps:45,evolPlus:5}),
-    e('Gainage latéral','abdo',['abdo'],[],'temps',{objSeries:4,objReps:30,evolPlus:5}),
+    e('Gainage horizontal','gainage',['abdo'],[],'temps',{objSeries:3,objReps:45,evolPlus:5}),
+    e('Gainage latéral','gainage',['abdo'],[],'temps',{objSeries:4,objReps:30,evolPlus:5}),
     e('Étirement dos','etirement',['dos'],[],'temps',{objSeries:2,objReps:30,evolPlus:0}),
     e('Étirement épaule','etirement',['epaules'],[],'temps',{objSeries:2,objReps:30,evolPlus:0}),
     e('Étirement bras','etirement',['biceps'],[],'temps',{objSeries:2,objReps:30,evolPlus:0}),
@@ -1096,6 +1149,21 @@ const DB = {
     this.refondreSeances();
     this.majSeancesRenfo();
     this.ajouterSeancesManquantes();
+    this.separerGainage();
+  },
+  /* Le gainage quitte la catégorie « Abdo/Gainage ». Une seule fois,
+     et seulement sur les exercices restés à leur catégorie d'origine :
+     un exercice reclassé à la main n'est pas repris. */
+  separerGainage(){
+    if(this.reglages.gainageSepare>=1) return;
+    let touche=false;
+    ['exo-gainage-horizontal','exo-gainage-lateral'].forEach(id=>{
+      const e=this.exercice(id);
+      if(e && e.categorie==='abdo'){ e.categorie='gainage'; touche=true; }
+    });
+    if(touche) Store.ecrire('exercices',this.exercices);
+    this.reglages.gainageSepare=1;
+    Store.ecrire('reglages',this.reglages);
   },
   /* Les séances livrées après coup s'ajoutent sans rien réécrire :
      contrairement à majSeancesRenfo, on n'insère que ce qui manque,
@@ -1727,7 +1795,6 @@ function guideVisuelVectoriel(exo){
       '<div class="guide-panel"><div class="guide-step"><span class="guide-badge">2</span><span>'+esc(titres[1])+'</span></div>'+
       '<div class="guide-stage actif">'+picto(exo,'guide')+'<span class="guide-arrow">↗</span></div></div>'+
     '</div>'+legende+
-    '<p class="guide-note">Illustration animée intégrée dans la fiche exercice : le panneau de droite met en avant la phase active du mouvement.</p>'+
   '</div>';
 }
 function guideVisuelImage(exo,ref){
@@ -1765,26 +1832,40 @@ function modaleRepartition(){
   const m=DB.modele(repartModale);
   if(!m) return '';
   const f=partsFamilles(m);
-  const compte={}; let travail=0, total=0;
+  /* compte = pondéré (100/50 %), princ et sec = séries brutes */
+  const compte={}, princ={}, sec={}; let travail=0, total=0;
   (m.blocs||[]).forEach(b=>{
     const e=DB.exercice(b.exerciceId); if(!e) return;
     total+=b.nbSeries;
     if(e.categorie==='echauffement'||e.categorie==='etirement'||e.categorie==='course') return;
     travail+=b.nbSeries;
-    (e.zone1||[]).forEach(g=>{ compte[g]=(compte[g]||0)+b.nbSeries; });
-    (e.zone2||[]).forEach(g=>{ compte[g]=(compte[g]||0)+b.nbSeries*0.5; });
+    (e.zone1||[]).forEach(g=>{ compte[g]=(compte[g]||0)+b.nbSeries;
+      princ[g]=(princ[g]||0)+b.nbSeries; });
+    (e.zone2||[]).forEach(g=>{ compte[g]=(compte[g]||0)+b.nbSeries*0.5;
+      sec[g]=(sec[g]||0)+b.nbSeries; });
   });
   const lignes=Object.keys(GROUPES)
-    .map(g=>({g, v:compte[g]||0, pct:travail?Math.round((compte[g]||0)/travail*100):0}))
-    .sort((a,b)=>b.v-a.v);
-  const maxi=Math.max(1,...lignes.map(x=>x.v));
+    .map(g=>{
+      const t=(compte[g]||0), p=(princ[g]||0), s2=(sec[g]||0);
+      const pc=v=>travail?Math.round(v/travail*100):0;
+      return {g, tot:p+s2, pctT:pc(p+s2), pctP:pc(p), pctS:pc(s2), p:p, s:s2};
+    })
+    .sort((a,b)=>b.tot-a.tot || b.pctP-a.pctP);
+  const maxi=Math.max(1,...lignes.map(x=>x.pctT));
+  const colonne=(pct,cls)=>
+    '<div class="c"><div class="b"><i class="'+cls+'" style="height:'+
+      Math.round(pct/maxi*100)+'%"></i></div>'+
+    '<span'+(pct?'':' class="muet"')+'>'+pct+'\u2009%</span></div>';
   const tableau=lignes.map(x=>
     '<div class="l"><div class="nm">'+GROUPES[x.g]+
-      '<div class="barre"><i style="width:'+Math.round(x.v/maxi*100)+'%"></i></div>'+
-      '<span class="src">'+nbCourt(x.v)+' série'+(x.v>=2?'s':'')+' pondérée'+(x.v>=2?'s':'')+
+      '<span class="src">travaillé dans '+nbCourt(x.tot)+' série'+(x.tot>=2?'s':'')+
       ' sur '+travail+'</span></div>'+
-    '<span class="pc"'+(x.pct?'':' style="color:var(--texte-3);font-weight:600"')+'>'+
-      x.pct+'\u2009%</span></div>').join('');
+      '<div class="trio-h">'+colonne(x.pctT,'tot')+colonne(x.pctP,'pri')+colonne(x.pctS,'sec')+
+      '</div></div>').join('');
+  const enTetes='<div class="l entete"><div class="nm"></div><div class="trio-h">'+
+    '<div class="c"><span>Total</span></div>'+
+    '<div class="c"><span>Principal</span></div>'+
+    '<div class="c"><span>Secondaire</span></div></div></div>';
   const exos=(m.blocs||[]).map(b=>{
     const e=DB.exercice(b.exerciceId); if(!e) return '';
     const z=[].concat((e.zone1||[]).map(g=>GROUPES[g]),
@@ -1807,8 +1888,8 @@ function modaleRepartition(){
       '</div>'+
       '<div class="modale-corps">'+
         '<p class="etiquette">Tous les groupes musculaires</p>'+
-        '<div class="carte detail-tab">'+tableau+'</div>'+
-        '<p class="aide" style="margin-top:10px">Part des séries de travail : un groupe prioritaire '+
+        '<div class="carte detail-tab">'+enTetes+tableau+'</div>'+
+        '<p class="aide" style="margin-top:10px"><b>Remarque :</b> part des séries de travail — un groupe prioritaire '+
         'compte pour une série entière, un groupe secondaire pour une demie. Échauffement et '+
         'étirements sont hors du calcul. La somme dépasse 100\u2009% — une série sollicite '+
         'plusieurs muscles.</p>'+
@@ -1822,8 +1903,7 @@ function modaleFiche(){
   const exo=DB.exercice(ficheModale);
   if(!exo) return '';
   const enSeance = ongletCourant==='seance' && Seance.active && Seance.etat!=='termine';
-  const muscles=(exo.zone1||[]).map(z=>GROUPES[z]).join(' \u00B7 ')+
-    ((exo.zone2||[]).length?' \u2192 '+exo.zone2.map(z=>GROUPES[z]).join(' \u00B7 '):'');
+  const muscles=lignesMuscles(exo);
   const e=enSeance?etatCadran():null;
   return '<div class="modale" role="dialog" aria-modal="true" aria-label="Fiche : '+esc(exo.nom)+'">'+
     '<div class="modale-fond" data-act="fermer-fiche"></div>'+
@@ -2230,15 +2310,21 @@ function rafraichirCadran(){
     chip.className='chrono-chip'+(etat.cls.indexOf('recup')>=0?' recup':'');
   }
   if(!cadran) return;
-  cadran.className='cadran '+etat.cls;
-  const c=cadran.querySelector('.chiffres'), s=cadran.querySelector('.sous'),
-        m=cadran.querySelector('.mode'), a=cadran.querySelector('.arc');
-  const se=cadran.querySelector('.serie');
-  if(c && c.textContent!==String(etat.gros)) c.textContent=etat.gros;
-  if(s && s.textContent!==etat.sous) s.textContent=etat.sous;
-  if(m && m.textContent!==etat.mode) m.textContent=etat.mode;
-  if(se && se.textContent!==etat.serie) se.textContent=etat.serie;
-  if(a) a.style.strokeDashoffset=etat.arc;
+  const e=etatPilote();
+  cadran.className='pilote '+e.cls;
+  const maj=(sel,txt)=>{ const el=cadran.querySelector(sel);
+    if(el && el.textContent!==txt) el.textContent=txt; };
+  maj('.l1',e.l1); maj('.l2',e.l2);
+  const l3=cadran.querySelector('.l3');
+  if(l3){ const n=l3.lastChild;
+    if(n && n.nodeType===3){ if(n.nodeValue!==e.l3) n.nodeValue=e.l3; }
+    else l3.textContent=e.l3; }
+  const a=cadran.querySelector('.arc');
+  if(a) a.style.strokeDashoffset=e.arc;
+  const g=cadran.querySelector('.glyphe');
+  if(g && g.textContent!==e.icone) g.textContent=e.icone;
+  const bt=cadran.querySelector('.anneau');
+  if(bt && bt.dataset.act!==e.act){ bt.dataset.act=e.act; bt.setAttribute('aria-label',e.label); }
 }
 
 /* source unique de vérité pour ce qu'affiche le cadran */
@@ -2279,16 +2365,62 @@ function etatCadran(){
     sous:parTemps?'objectif à tenir':'répétitions à réaliser', serie:'', arc:0};
 }
 
-function cadranHTML(){
-  const e=etatCadran();
-  return '<div class="cadran '+e.cls+'" id="cadran"><svg viewBox="0 0 200 200" aria-hidden="true">'+
-    '<circle class="piste" cx="100" cy="100" r="88"></circle>'+
-    '<circle class="arc" cx="100" cy="100" r="88" style="stroke-dashoffset:'+e.arc+'"></circle></svg>'+
-    '<div class="noyau"><span class="mode">'+e.mode+'</span>'+
-    '<span class="chiffres">'+e.gros+'</span>'+
-    (e.serie?'<span class="serie">'+e.serie+'</span>':'')+
-    '<span class="sous">'+e.sous+'</span></div></div>';
+/* Ce qu'affiche le pilote : trois lignes, un anneau, une action. */
+function etatPilote(){
+  const C=276.5;   /* circonférence du cercle r=44 */
+  const vide={cls:'', l1:'', l2:'', l3:'00:00', arc:C, icone:'\u25B6', act:'', label:''};
+  if(!Seance.active) return vide;
+  const b=Seance._bloc(), exo=Seance._exo();
+  if(!b||!exo) return vide;
+  const parTemps=exo.modeEffort==='temps';
+  const serie='Série '+Seance.iSerie+' sur '+b.nbSeries;
+  const obj = parTemps ? dureeLisible(b.nbReps) : b.nbReps+' répétitions';
+
+  if(Seance.etat==='effort'){
+    if(parTemps){
+      const r=Chrono.restantSec()==null?b.nbReps:Chrono.restantSec();
+      return {cls:'effort'+(r<=5?' alerte':''), l1:serie, l2:obj, l3:mmss(Math.ceil(r)),
+        arc:C*(r/b.nbReps), icone:'\u2713', act:'finValider', label:'Série terminée'};
+    }
+    return {cls:'effort', l1:serie, l2:obj, l3:mmss(Chrono.ecouleSec()),
+      arc:0, icone:'\u2713', act:'finValider', label:'Série terminée'};
+  }
+  if(Seance.etat==='saisie')
+    return {cls:'', l1:serie, l2:'Combien ?', l3:mmss(Seance.effortEcoule),
+      arc:0, icone:'\u2713', act:'valider', label:'Valider et récupérer'};
+  if(Seance.etat==='recup'){
+    const r=Chrono.restantSec()||0, cible=Chrono.cibleSec||1;
+    return {cls:'recup'+(r<=5?' alerte':''), l1:'Récupération', l2:serie+' terminée',
+      l3:mmss(Math.ceil(r)), arc:C*(r/cible), icone:'\u23ED', act:'passer',
+      label:'Passer à la suite'};
+  }
+  if(Seance.etat==='recup-termine'){
+    const p=Seance.prochaine();
+    return {cls:'recup', l1:'Récupération terminée',
+      l2: p ? 'Série '+p.iSerie+' sur '+p.nbSeries : 'Fin de séance', l3:'00:00',
+      arc:0, icone:'\u25B6', act:'enchainer', label:'Lancer la série suivante'};
+  }
+  return {cls:'', l1:serie, l2:obj, l3:'00:00', arc:C, icone:'\u25B6',
+    act:'demarrer', label:'Démarrer la série '+Seance.iSerie};
 }
+
+function piloteHTML(){
+  const e=etatPilote();
+  return '<div class="pilote '+e.cls+'" id="cadran">'+
+    '<button class="anneau" data-act="'+e.act+'" aria-label="'+esc(e.label)+'">'+
+      /* Couleurs en attributs : elles s'appliquent même là où une
+         feuille de style ne descend pas dans le SVG. Les règles CSS
+         d'état (effort, récupération) les emportent ensuite. */
+      '<svg viewBox="0 0 100 100" aria-hidden="true">'+
+      '<circle class="piste" cx="50" cy="50" r="44" fill="none" stroke="#EDEFF3" stroke-width="7"></circle>'+
+      '<circle class="arc" cx="50" cy="50" r="44" fill="none" stroke="#F94E00" stroke-width="7" '+
+      'stroke-linecap="round" stroke-dasharray="276.5" style="stroke-dashoffset:'+e.arc+'"></circle></svg>'+
+      '<span class="glyphe">'+e.icone+'</span></button>'+
+    '<div class="infos"><span class="l1">'+esc(e.l1)+'</span>'+
+      '<span class="l2">'+esc(e.l2)+'</span>'+
+      '<span class="l3"><i aria-hidden="true">\u23F1</i>'+e.l3+'</span></div></div>';
+}
+
 
 /* ============================================================
    7. VUES
@@ -2371,8 +2503,6 @@ function vueListeSeances(){
       pastillesSeance(m)+
       '<div class="cmds">'+(n?'<button class="go" data-go="'+m.id+'">Débuter</button>':'')+
       '<button data-planifier="'+m.id+'">Planifier</button>'+
-      '<button data-editer-s="'+m.id+'">Modifier</button>'+
-      '<button data-dupliquer-s="'+m.id+'">Dupliquer</button>'+
       (n?'<button class="ellipse" data-repart="'+m.id+'" aria-label="Détail de la répartition">\u2026</button>':'')+
       '</div></div>';
   }).join('');
@@ -2398,9 +2528,8 @@ function listeExercices(){
     '<button class="ajout" data-nouvel-exo="1">+ Créer un exercice</button>'+
     (liste.length ? liste.map(e=>
       '<div class="ligne" data-editer-e="'+e.id+'">'+picto(e)+'<div class="txt"><b>'+esc(e.nom)+'</b><span>'+
-      e.zone1.map(z=>GROUPES[z]).join(', ')+
-      (e.zone2.length?' \u2192 '+e.zone2.map(z=>GROUPES[z]).join(', '):'')+
-      ' \u00B7 '+e.objSeries+'\u00D7'+e.objReps+(e.modeEffort==='temps'?' s':'')+
+      lignesMuscles(e)+
+      '<span>'+e.objSeries+' \u00D7 '+(e.modeEffort==='temps'?dureeLisible(e.objReps):e.objReps)+'</span>'+
       '</span></div><span class="fleche">\u203A</span></div>').join('')
       : '<div class="vide"><p>Aucun exercice dans ce filtre.</p></div>');
 }
@@ -2411,10 +2540,12 @@ function listeSeances(){
     (liste.length ? liste.map(m=>{
       const n=(m.blocs||[]).length;
       const series=(m.blocs||[]).reduce((s,b)=>s+b.nbSeries,0);
-      return '<div class="ligne" data-editer-s="'+m.id+'"><div class="txt"><b>'+esc(m.nom)+'</b><span>'+
+      return '<div class="ligne"><div class="txt" data-editer-s="'+m.id+'"><b>'+esc(m.nom)+'</b><span>'+
         (n? n+' exercice'+(n>1?'s':'')+' \u00B7 '+series+' séries<br>'+resumeSeance(m)
           : 'vide')+
-        '</span></div><span class="fleche">\u203A</span></div>';
+        '</span></div>'+
+        '<button class="mini-btn" data-dupliquer-s="'+m.id+'" aria-label="Dupliquer">\u29C9</button>'+
+        '<span class="fleche" data-editer-s="'+m.id+'">\u203A</span></div>';
     }).join('') : '<div class="vide"><p>Aucune séance dans ce filtre.</p></div>');
 }
 
@@ -2440,7 +2571,7 @@ const COL_HAUT = ['pectoraux','dos','epaules','triceps','biceps'];
 const COL_BAS  = ['fessiers','quadriceps','ischios','mollets','hanche','abdo'];
 /* Noms raccourcis : trois colonnes sur un écran de téléphone ne
    laissent pas la place à « Ischio-jambiers ». */
-const GROUPES_COURTS = {abdo:'Gainage', ischios:'Ischios', quadriceps:'Quadriceps'};
+const GROUPES_COURTS = {abdo:'Abdos', ischios:'Ischios', quadriceps:'Quadriceps'};
 const nomCourt = g => GROUPES_COURTS[g] || GROUPES[g];
 
 /* Part de chaque grande famille dans le total des séries. Les trois
@@ -2530,9 +2661,9 @@ function editeurExercice(){
     (CATEGORIES[d.categorie]||'')+'</span></div></div>'+
     '<div class="champ"><label>Nom</label><input data-champ="nom" value="'+esc(d.nom)+'" placeholder="Pompes serrées"></div>'+
     '<div class="champ"><label>Catégorie</label><select data-champ="categorie">'+optCat+'</select></div>'+
-    '<div class="champ"><label>Type d’effort</label><select data-champ="modeEffort">'+
-    '<option value="reps"'+(d.modeEffort==='reps'?' selected':'')+'>Répétitions</option>'+
-    '<option value="temps"'+(d.modeEffort==='temps'?' selected':'')+'>Temps (gainage, étirement)</option></select>'+
+    '<div class="champ"><label>Unité de mesure</label><select data-champ="modeEffort">'+
+    '<option value="reps"'+(d.modeEffort==='reps'?' selected':'')+'>Nombre de répétitions</option>'+
+    '<option value="temps"'+(d.modeEffort==='temps'?' selected':'')+'>Durée</option></select>'+
     '<p class="aide">En mode temps, le chrono décompte au lieu de monter.</p></div>'+
     (function(){
       /* Mêmes réglages qu'ailleurs : ce qui n'a pas de sens pour cet
@@ -2580,7 +2711,9 @@ function editeurExercice(){
     '<input data-champ="objSeries" data-num="1" type="number" inputmode="numeric" value="'+d.objSeries+'">'+
     '<span style="text-align:center;color:var(--texte-2);font-size:13px">séries de</span>'+
     '<input data-champ="objReps" data-num="1" type="number" inputmode="numeric" value="'+d.objReps+'"></div>'+
-    '<p class="aide">'+(d.modeEffort==='temps'?'Secondes à tenir.':'Répétitions.')+'</p></div>'+
+    '<p class="aide">'+(d.modeEffort==='temps'
+      ? 'Durée à tenir, en secondes : '+dureeLisible(Math.max(0,parseInt(d.objReps,10)||0))+'.'
+      : 'Répétitions par série.')+'</p></div>'+
     '<div class="champ"><label>Répétitions au départ</label>'+
     '<input data-champ="repsInitiales" data-num="1" type="number" inputmode="numeric" '+
     'placeholder="par défaut : l’objectif ('+d.objReps+')" value="'+(d.repsInitiales==null?'':d.repsInitiales)+'">'+
@@ -2657,7 +2790,7 @@ function editeurSeance(){
       (function(){
         const v=DB.repsDepart(exo,null).val;
         const herite = exo.modeEffort==='temps'
-          ? 'Nombre de répétitions ou durée hérité de l’exercice : '+dureeLisible(v)
+          ? 'Durée héritée de l’exercice : '+dureeLisible(v)
           : 'Nombre de répétitions hérité de l’exercice : '+v;
         return '<div class="champ" style="margin:12px 0 0"><label>Point de départ</label>'+
         '<input data-champ="blocs.'+i+'.repsInitiales" data-num="1" type="number" inputmode="numeric" '+
@@ -2720,22 +2853,14 @@ function vueSeanceEnCours(){
   const restantes = b.nbSeries - Seance.iSerie;
   const vignetteSuite = exoSuivant ? pictoLien(exoSuivant,'mini',true) : '';
   const ligneSuite = exoSuivant
-    ? 'Exercice suivant : <b>'+esc(exoSuivant.nom)+'</b>'+
-      (restantes>0 ? ' <span style="color:var(--texte-3)">— encore '+restantes+' série'+(restantes>1?'s':'')+' ici</span>' : '')
-    : 'Dernier exercice de la séance'+
-      (restantes>0 ? ' <span style="color:var(--texte-3)">— encore '+restantes+' série'+(restantes>1?'s':'')+'</span>' : ' <b>— dernière série</b>');
+    ? 'Exercice suivant : <b>'+esc(exoSuivant.nom)+'</b>'
+    : 'Dernier exercice de la séance';
 
+  /* Le geste principal est passé dans l'anneau : il ne reste ici que
+     les échappatoires — mettre en pause, corriger un compte. */
   let action='';
-  if(Seance.etat==='pret'){
-    action='<button class="bouton principal" data-act="demarrer">Démarrer la série '+Seance.iSerie+'</button>';
-  } else if(Seance.etat==='recup-termine'){
-    action='<button class="bouton principal" data-act="enchainer">Lancer la série suivante</button>';
-  } else if(Seance.etat==='effort'){
-    const prevu = parTemps
-      ? dureeLisible(b.nbReps)
-      : ((b.derniereSaisie!=null?b.derniereSaisie:b.nbReps)+' rép.');
-    action='<button class="bouton effort" data-act="finValider">Série terminée \u00B7 '+prevu+'</button>'+
-      '<div class="rangee" style="margin-top:8px">'+
+  if(Seance.etat==='effort'){
+    action='<div class="rangee">'+
       (parTemps?'<button class="bouton discret" data-act="pause">'+(Chrono.enPause()?'Reprendre':'Pause')+'</button>':'')+
       '<button class="bouton discret" data-act="finSerie">Autre nombre</button></div>';
   } else if(Seance.etat==='saisie'){
@@ -2751,23 +2876,20 @@ function vueSeanceEnCours(){
       '<button class="rond" data-act="reps-" aria-label="Retirer">\u2212</button>'+
       '<span class="val '+c+'">'+valeurSaisieAffichee(exo,Seance.repsSaisies)+'</span>'+
       '<button class="rond" data-act="reps+" aria-label="Ajouter">+</button></div>'+
-      '<p class="rappel-obj">'+(parTemps?(enMin?'minutes':'secondes'):'répétitions')+'</p></div>'+
-      '<button class="bouton principal" data-act="valider">Valider et récupérer</button>';
+      '<p class="rappel-obj">'+(parTemps?(enMin?'minutes':'secondes'):'répétitions')+'</p></div>';
   } else if(Seance.etat==='recup'){
-    action='<div class="rangee">'+
-      '<button class="bouton discret" data-act="pause">'+(Chrono.enPause()?'Reprendre':'Pause')+'</button>'+
-      '<button class="bouton recup" data-act="passer">Passer à la suite</button></div>';
+    action='<button class="bouton discret" data-act="pause">'+
+      (Chrono.enPause()?'Reprendre':'Pause')+'</button>';
   }
 
   return '<div class="avancement">'+
     '<div class="fil"><span>Exercice '+(Seance.iBloc+1)+' sur '+a.blocs.length+'</span>'+
     '<span>'+prog.pct+' %</span></div>'+
-    '<div class="jauge"><i style="width:'+prog.pct+'%"></i></div></div>'+cadranHTML()+
+    '<div class="jauge"><i style="width:'+prog.pct+'%"></i></div></div>'+piloteHTML()+
     '<div class="exo-tete">'+pictoLien(exo,'grand',true)+'<div style="min-width:0">'+
     '<h2 class="exo-nom">'+esc(exo.nom)+'</h2>'+
-    '<p class="exo-meta">'+exo.zone1.map(z=>GROUPES[z]).join(' \u00B7 ')+
-    (exo.zone2.length?' \u2192 '+exo.zone2.map(z=>GROUPES[z]).join(' \u00B7 '):'')+'</p></div></div>'+
-    '<div class="zone-action">'+action+'</div>'+
+    '<p class="exo-meta">'+lignesMuscles(exo)+'</p></div></div>'+
+    (action?'<div class="zone-action">'+action+'</div>':'')+
     blocProgression(exo,b)+
     reglagesSerie(exo,b)+
     (exo.remarque?'<p class="aide" style="margin-top:10px">'+esc(exo.remarque)+'</p>':'')+
@@ -2867,13 +2989,11 @@ function reglagesSerie(exo,b){
   if(!utiles.length) return '';
   const corps =
     (utiles.indexOf('ecartementCm')>=0?reglageHTML('Écartement','ecartementCm',b.ecartementCm,'cm',1):'')+
-    (utiles.indexOf('hauteurCm')>=0?reglageHTML('Hauteur','hauteurCm',b.hauteurCm,'cm',1):'')+
-    (utiles.indexOf('lestageKg')>=0?reglageLestage(b.lestageKg):'')+
-    '<p class="aide" style="padding-bottom:11px">'+
-    (b.reglagesRepris
-      ? 'Repris du maximum de ta dernière séance sur cet exercice. Ajuste avant de lancer : la valeur part avec la série.'
-      : 'Premier passage : valeurs du modèle. Ce que tu régleras ici servira de point de départ la prochaine fois.')+
-    '</p>';
+    (utiles.indexOf('hauteurCm')>=0?reglageHTML('Hauteur','hauteurCm',b.hauteurCm,'cm',1,AIDE_HAUTEUR):'')+
+    (utiles.indexOf('lestageKg')>=0?reglageLestage(b.lestageKg,
+      b.reglagesRepris
+        ? 'Repris du maximum de ta dernière séance sur cet exercice. Ajuste avant de lancer : la valeur part avec la série.'
+        : 'Premier passage : valeurs du modèle. Ce que tu régleras ici servira de point de départ la prochaine fois.'):'');
   if(Seance.etat==='pret')
     return '<div class="reglages reglages-vifs">'+corps+'</div>';
   return '<details class="reglages"><summary>Réglages de l’exercice</summary>'+corps+'</details>';
@@ -2907,15 +3027,81 @@ function lestageLisible(v){
   if(v==null || v===0) return 'Poids du corps';
   return v>0 ? nbCourt(v)+' kg' : 'Élastique '+nbCourt(-v)+' kg';
 }
-function reglageLestage(val){
-  return '<div class="reglage"><span class="nom">Lestage</span>'+
+function reglageLestage(val,aide){
+  return '<div class="reglage"><span class="nom">Lestage'+(aide?infoBulle(aide):'')+'</span>'+
     '<select class="molette" data-lestage>'+optionsLestage(val)+'</select></div>';
 }
-function reglageHTML(nom,champ,val,unite,pas){
-  return '<div class="reglage"><span class="nom">'+nom+'</span><span class="pas">'+
+/* Groupes musculaires d'un exercice, rôle nommé plutôt que
+   suggéré par une flèche. Rendu sur deux lignes. */
+function lignesMuscles(exo){
+  if(!exo) return '';
+  const l=[];
+  if((exo.zone1||[]).length)
+    l.push('<span>'+exo.zone1.map(z=>GROUPES[z]).join(', ')+' <i>(principal)</i></span>');
+  if((exo.zone2||[]).length)
+    l.push('<span>'+exo.zone2.map(z=>GROUPES[z]).join(', ')+' <i>(secondaire)</i></span>');
+  return l.join('');
+}
+
+/* Petite note dépliable au bout d'une ligne de réglage. */
+function infoBulle(texte){
+  return '<details class="info"><summary aria-label="Aide">i</summary>'+
+    '<p>'+esc(texte)+'</p></details>';
+}
+const AIDE_HAUTEUR='Différence de hauteur entre les pieds et les mains. Une valeur négative '+
+  'signifie que les pieds sont plus hauts que les mains — pompes mains sur un tabouret. '+
+  'Une valeur positive signifie que les pieds sont surélevés — pieds sur une chaise, mains au sol.';
+function reglageHTML(nom,champ,val,unite,pas,aide){
+  return '<div class="reglage"><span class="nom">'+nom+(aide?infoBulle(aide):'')+'</span><span class="pas">'+
     '<button data-reg="'+champ+'" data-pas="'+(-pas)+'">\u2212</button>'+
     '<span class="v">'+(val==null?'\u2014':val+' '+unite)+'</span>'+
     '<button data-reg="'+champ+'" data-pas="'+pas+'">+</button></span></div>';
+}
+
+/* Déroulé d'une séance, exercice par exercice puis série par série. */
+function detailSeries(a){
+  const parExo=[];
+  (a.series||[]).forEach(s=>{
+    let g=parExo.find(x=>x.id===s.exerciceId);
+    if(!g){ g={id:s.exerciceId, series:[]}; parExo.push(g); }
+    g.series.push(s);
+  });
+  if(!parExo.length) return '';
+  const blocs=parExo.map(g=>{
+    const e=DB.exercice(g.id);
+    if(!e) return '';
+    const parTemps=e.modeEffort==='temps';
+    const lignes=g.series.map((s,i)=>{
+      const fait = parTemps ? dureeLisible(s.repsRealisees||0) : (s.repsRealisees||0);
+      const vise = parTemps ? dureeLisible(s.repsObjectif||0) : (s.repsObjectif||0);
+      const cls = (s.repsRealisees||0)<(s.repsObjectif||0) ? ' sous'
+                : (s.repsRealisees||0)>(s.repsObjectif||0) ? ' sur' : '';
+      return '<div class="sl"><span class="no">Série '+(i+1)+' / '+g.series.length+'</span>'+
+        '<span class="rp'+cls+'">'+fait+(parTemps?'':' rép.')+' sur '+vise+'</span>'+
+        '<span class="kg">'+(s.lestageKg?lestageLisible(s.lestageKg):'\u2014')+'</span>'+
+        '<span class="tp">'+mmss(Math.round(s.effortSec||0))+'</span></div>';
+    }).join('');
+    /* Totaux : le tonnage ne vaut que pour les charges positives —
+       un élastique d'assistance retire du travail, il n'en ajoute pas. */
+    let reps=0, sec=0, maxi=null, tonnage=0;
+    g.series.forEach(s=>{
+      const r=s.repsRealisees||0;
+      if(parTemps) sec+=r; else reps+=r;
+      sec += parTemps ? 0 : (s.effortSec||0);
+      if(s.lestageKg!=null && (maxi==null || s.lestageKg>maxi)) maxi=s.lestageKg;
+      if(!parTemps && s.lestageKg>0) tonnage += r*s.lestageKg;
+    });
+    const tot=[g.series.length+' série'+(g.series.length>1?'s':'')];
+    if(reps) tot.push(reps+' rép.');
+    if(maxi!=null) tot.push(lestageLisible(maxi)+' max');
+    if(tonnage) tot.push(nbCourt(Math.round(tonnage))+' kg soulevés');
+    tot.push(mmss(Math.round(sec)));
+    return '<div class="exo-bloc"><div class="tt">'+pictoLien(e,'mini')+
+      '<b>'+esc(e.nom)+'</b></div>'+lignes+
+      '<div class="sl total"><span>'+tot.join(' \u00B7 ')+'</span></div></div>';
+  }).filter(Boolean).join('');
+  return '<p class="etiquette" style="margin-top:20px">Déroulé de la séance</p>'+
+    '<div class="carte series-detail">'+blocs+'</div>';
 }
 
 function vueBilan(){
@@ -2926,8 +3112,8 @@ function vueBilan(){
   /* Les efforts chronométrés — échauffement, gainage, étirements —
      se comptent à part : les mêler aux répétitions n'a pas de sens. */
   const tenue = bil.sec
-    ? '<p class="aide" style="margin-top:8px;text-align:center">dont '+dureeLisible(bil.sec)+
-      ' d’efforts tenus (échauffement, gainage, étirements)</p>'
+    ? '<p class="aide" style="margin-top:8px;text-align:center">Échauffement, étirements '+
+      'et gainage non comptabilisés</p>'
     : '';
 
   /* Rappel des conseils de progression des exercices chargés :
@@ -2953,7 +3139,7 @@ function vueBilan(){
     '<p style="color:var(--texte-2);margin:0">'+esc(a.nom)+'</p></div>'+
     '<div class="carte stat-grille">'+
     stats.map(s=>'<div><div class="n">'+s[0]+'</div><div class="l">'+s[1]+'</div></div>').join('')+'</div>'+
-    tenue+objSeance+prog+
+    tenue+objSeance+detailSeries(a)+prog+
     '<button class="bouton principal" style="margin-top:16px" data-act="retour">Retour aux séances</button>'+
     '<button class="bouton discret" style="margin-top:8px" data-detail="'+a.id+'">Voir le détail série par série</button>';
 }
@@ -3057,10 +3243,10 @@ function valeurSerie(s){ return s.repsRealisees; }
 function serieDansUnite(s,unite){ return uniteSerie(s)===unite; }
 
 /* catégories proposées aux filtres, étirements compris */
-const CATS_STAT=[['tous','Tout'],['haut','Haut du corps'],['abdo','Abdo/Gainage'],
-                 ['bas','Bas du corps'],['etirement','Étirements']];
+const CATS_STAT=[['tous','Tout'],['haut','Haut du corps'],['bas','Bas du corps'],
+                 ['abdo','Abdominaux'],['gainage','Gainage'],['etirement','Étirements']];
 /* unité naturelle d'une catégorie : les étirements se lisent en durée */
-function uniteNaturelle(cat){ return cat==='etirement'?'temps':'reps'; }
+function uniteNaturelle(cat){ return CATEGORIES_DUREE.indexOf(cat)>=0?'temps':'reps'; }
 
 /* bilan d'une séance archivée, chaque unité de son côté */
 function bilanSeance(a){
@@ -3124,34 +3310,6 @@ function seancesPeriode(cle,filtre,unite){
     })
     .filter(x=>x.nb>0)
     .sort((a,b)=>a.date-b.date);
-}
-
-function deltaPeriode(cle,unite){
-  const n=PERIODES[cle]||91;
-  const fin=Date.now(), deb=cle==='annee'?debutPeriode('annee'):fin-n*86400000;
-  const duree=fin-deb, debPrec=deb-duree;
-  const cats = unite==='temps' ? ['seance'] : ['haut','bas','abdo'];
-  const somme=(t0,t1)=>{
-    const r={}; cats.forEach(c=>r[c]=0);
-    DB.journal.forEach(a=>{
-      const t=new Date(a.debut).getTime();
-      if(t<t0||t>=t1) return;
-      if(unite==='temps'){ r.seance+=dureeUtile(a); return; }
-      (a.series||[]).forEach(s=>{
-        if(!serieDansUnite(s,unite)) return;
-        const c=categorieSerie(s);
-        if(r[c]!=null) r[c]+=valeurSerie(s);
-      });
-    });
-    return r;
-  };
-  const act=somme(deb,fin), prec=somme(debPrec,deb);
-  const conv=v=>unite==='temps'?Math.round(v/60):Math.round(v);
-  return cats.map(c=>{
-    const a=conv(act[c]), p=conv(prec[c]);
-    const pct = p>0 ? Math.round((a-p)/p*100) : (a>0?null:0);
-    return {cat:c, actuel:a, precedent:p, delta:a-p, pct};
-  });
 }
 
 function recordsParGroupe(semaines,unite){
@@ -3269,7 +3427,6 @@ function vueAccueil(){
   /* les étirements ne se lisent qu'en durée : on force l'unité */
   if(filtreCharge==='etirement') uniteCharge='reps';
   const pts=seancesPeriode(periodeCharge,filtreCharge,uniteCharge);
-  const deltas=deltaPeriode(periodeCharge,uniteCharge);
   const U=UNITES[uniteCharge];
 
   const auj=new Date();
@@ -3311,20 +3468,7 @@ function vueAccueil(){
 
   const blocJournal=journalBulles();
 
-  /* --- évolution, dans l'unité choisie --- */
-  const lignesD=deltas.map(d=>{
-    const cls=d.delta>0?'up':d.delta<0?'down':'flat';
-    const fl=d.delta>0?'\u25B2':d.delta<0?'\u25BC':'=';
-    const pct=d.pct==null?'nouveau':(d.pct>0?'+':'')+d.pct+' %';
-    return '<div class="delta"><span>'+(CATEGORIES[d.cat]||'Durée des séances')+'</span>'+
-      '<span class="n '+cls+'">'+fl+' '+(d.delta>0?'+':'')+d.delta+' '+U.court+' \u00B7 '+pct+'</span></div>';
-  }).join('');
-  const blocD='<p class="etiquette" style="margin-top:22px">Évolution sur '+
-    LIB_PERIODES[periodeCharge].toLowerCase()+' \u00B7 '+U.axe+'</p>'+
-    '<div class="carte">'+lignesD+
-    '<p class="aide" style="margin-top:8px">Comparaison avec la période précédente de même durée.</p></div>';
-
-  return blocSerie+blocCharge+blocCharges()+blocFrequence()+blocJournal+blocD+blocCartographie()+
+  return blocSerie+blocCharge+blocCharges()+blocFrequence()+blocJournal+blocCartographie()+
     '<button class="bouton discret" style="margin-top:20px" data-act="histo">'+
     'Historique complet des séances \u203A</button>';
 }
@@ -3787,16 +3931,8 @@ function vueDetailSeance(){
   const a=DB.journal.find(x=>x.id===detailSeanceId);
   if(!a) return '<div class="vide"><p>Séance introuvable.</p>'+
     '<button class="bouton discret" data-act="fermer-detail">Retour</button></div>';
-  const parBloc={};
-  (a.series||[]).forEach(s=>(parBloc[s.indexBloc]=parBloc[s.indexBloc]||[]).push(s));
-  const blocs=Object.keys(parBloc).sort((x,y)=>x-y).map(k=>{
-    const ss=parBloc[k], e=DB.exercice(ss[0].exerciceId);
-    const lignes=ss.map(s=>'<div class="delta"><span>Série '+s.numeroSerie+'</span>'+
-      '<span class="n '+(s.repsRealisees>=s.repsObjectif?'up':'down')+'">'+s.repsRealisees+' / '+s.repsObjectif+
-      ' <span style="color:var(--texte-3);font-weight:400">\u00B7 '+mmss(s.effortSec||0)+'</span></span></div>').join('');
-    return '<p class="etiquette" style="margin-top:16px">'+esc(e?e.nom:'Exercice supprimé')+'</p>'+
-      '<div class="carte">'+lignes+'</div>';
-  }).join('');
+  /* Le déroulé est rendu par detailSeries(), partagé avec le bilan
+     de fin de séance : une seule mise en forme à maintenir. */
   const bil=bilanSeance(a);
   return '<button class="retour" data-act="fermer-detail">\u2039 Retour</button>'+
     '<h2 style="font-weight:800;font-size:22px;letter-spacing:-.02em;margin:0 0 2px">'+esc(a.nom)+'</h2>'+
@@ -3806,9 +3942,9 @@ function vueDetailSeance(){
     '<div class="carte stat-grille">'+
     [[mmss(a.dureeSec||0),'durée'],[bil.reps,'répétitions'],[bil.series,'séries']]
       .map(s=>'<div><div class="n">'+s[0]+'</div><div class="l">'+s[1]+'</div></div>').join('')+'</div>'+
-    (bil.sec?'<p class="aide" style="margin-top:8px;text-align:center">dont '+dureeLisible(bil.sec)+
-      ' d’efforts tenus (échauffement, gainage, étirements)</p>':'')+
-    blocs+
+    (bil.sec?'<p class="aide" style="margin-top:8px;text-align:center">Échauffement, étirements '+
+      'et gainage non comptabilisés</p>':'')+
+    detailSeries(a)+
     '<button class="bouton danger" style="margin-top:20px" data-suppr-seance-journal="'+a.id+'">'+
     'Supprimer cette séance de l\u2019historique</button>';
 }
@@ -4288,7 +4424,7 @@ document.addEventListener('click',ev=>{
 /* Le mode « écran d'accueil » n'existe que pour une page servie en
    http(s). Sur un fichier ouvert localement (file://), iOS ne propose
    pas l'option et refuse les service workers : on n'essaie même pas. */
-const VERSION = 'v36 \u00B7 20 août 2026';
+const VERSION = 'v39 \u00B7 21 août 2026';
 const SERVI = location.protocol==='http:' || location.protocol==='https:';
 if(SERVI && 'serviceWorker' in navigator){
   window.addEventListener('load',()=>{
