@@ -475,6 +475,12 @@ select.molette:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accen
   font-style:italic;line-height:1;vertical-align:middle}
 .pastille-i[aria-expanded="true"]{background:var(--accent);color:#fff}
 .aide-info{margin:0;padding:0 0 11px;font-size:12.5px;line-height:1.45;color:var(--texte-2)}
+.notes{margin-top:12px}
+.notes textarea{min-height:58px;resize:vertical;line-height:1.4}
+.notes .aide{margin-top:5px}
+.note-lue{margin:0 0 8px;padding:8px 11px;border-left:3px solid var(--accent);
+  background:var(--accent-doux);border-radius:0 var(--r-s) var(--r-s) 0;
+  font-size:12.5px;line-height:1.45;color:var(--texte-2);white-space:pre-wrap}
 .reglage-bloc .reglage{border-bottom:0}
 .reglage-bloc{border-bottom:1px solid var(--filet)}
 .reglage-bloc:last-child{border-bottom:0}
@@ -772,6 +778,7 @@ const _fabriqueExoBrut=(nom,cat,z1,z2,mode,extra)=>Object.assign({
     objSeries:6, objReps:mode==='temps'?30:10,
     repsInitiales:null,          /* point de départ ; null = on part de l'objectif */
     conseilProgression:'',       /* comment charger la fois suivante — texte libre */
+    commentaire:'',              /* notes libres, suivent l'exercice partout */
     remarque:'',
     description:'', execution:'', erreurs:'', sourceLabel:'', sourceUrl:'', picto:''
   }, FICHES_EXERCICES[slug(nom)]||{}, extra||{},
@@ -1285,6 +1292,7 @@ const DB = {
         e.conseilProgression = ref ? ref.conseilProgression : '';
         touche=true;
       }
+      if(e.commentaire===undefined){ e.commentaire=''; touche=true; }
       ['description','execution','erreurs','sourceLabel','sourceUrl','picto'].forEach(k=>{
         if(e[k]===undefined){ e[k]=ref&&ref[k]!=null?ref[k]:''; touche=true; }
       });
@@ -1984,11 +1992,12 @@ function ficheExerciceHTML(exo,ouverte){
   /* Le dépliant n'a plus d'appelant : la fiche s'ouvre par la
      vignette, en surcouche. On garde la forme ouverte, seule
      utilisée par la modale et par l'éditeur. */
+  const notes=champNotes(exo);
   const cp=(exo.conseilProgression||'').trim();
   const bloc = cp
     ? '<div class="bloc-prog" style="margin-top:12px"><b>Progression :</b> '+esc(cp)+'</div>'
     : '';
-  return '<section class="fiche-exercice guide-rich guide-ouverte">'+corps+bloc+
+  return '<section class="fiche-exercice guide-rich guide-ouverte">'+corps+notes+bloc+
     blocConseils(exo)+'</section>';
 }
 
@@ -2529,9 +2538,8 @@ function listeExercices(){
       : '<div class="vide"><p>Aucun exercice dans ce filtre.</p></div>');
 }
 function listeSeances(){
-  const liste=DB.modeles.filter(m=>filtreBiblio==='tous'||DB.categoriesModele(m).indexOf(filtreBiblio)>=0);
-  return boutonsFiltre(Object.keys(CATEGORIES),CATEGORIES)+
-    '<button class="ajout" data-nouvelle-seance="1">+ Créer une séance</button>'+
+  const liste=DB.modeles;
+  return '<button class="ajout" data-nouvelle-seance="1">+ Créer une séance</button>'+
     (liste.length ? liste.map(m=>{
       const n=(m.blocs||[]).length;
       const series=(m.blocs||[]).reduce((s,b)=>s+b.nbSeries,0);
@@ -2541,7 +2549,7 @@ function listeSeances(){
         '</span></div>'+
         '<button class="mini-btn" data-dupliquer-s="'+m.id+'" aria-label="Dupliquer">\u29C9</button>'+
         '<span class="fleche" data-editer-s="'+m.id+'">\u203A</span></div>';
-    }).join('') : '<div class="vide"><p>Aucune séance dans ce filtre.</p></div>');
+    }).join('') : '<div class="vide"><p>Aucune séance. Crée la première.</p></div>');
 }
 
 /* Part de chaque groupe musculaire dans les séries d'une séance.
@@ -2889,6 +2897,7 @@ function vueSeanceEnCours(){
     (exo.remarque?'<p class="aide" style="margin-top:10px">'+esc(exo.remarque)+'</p>':'')+
     piloteHTML()+
     (action?'<div class="zone-action">'+action+'</div>':'')+
+    champNotes(exo)+
     '<div class="suite">'+vignetteSuite+'<span>'+ligneSuite+'</span></div>'+
     '<div class="rangee" style="margin-top:14px">'+
     (bs?'<button class="bouton discret" data-act="passer-exo">Passer l’exercice</button>':'')+
@@ -3039,6 +3048,21 @@ function lignesMuscles(exo){
   return l.join('');
 }
 
+/* Champ de notes libres, rattaché à l'exercice. */
+function champNotes(exo,titre){
+  if(!exo) return '';
+  return '<div class="notes">'+
+    '<p class="etiquette" style="margin:0 0 6px">'+(titre||'Mes notes')+'</p>'+
+    '<textarea data-note="'+esc(exo.id)+'" rows="2" '+
+    'placeholder="Sensations, réglages, points d’attention\u2026">'+esc(exo.commentaire||'')+'</textarea>'+
+    '<p class="aide">Conservé pour cet exercice, dans toutes les séances où il revient.</p></div>';
+}
+/* Affichage seul, pour les écrans de consultation. */
+function notesLues(exo){
+  const c=(exo&&exo.commentaire||'').trim();
+  return c ? '<p class="note-lue">'+esc(c)+'</p>' : '';
+}
+
 /* Note dépliable d'une ligne de réglage. Le texte est un frère de
    la ligne, pas un enfant du libellé : sinon il s'affiche comprimé
    dans la largeur du mot « Charge ». */
@@ -3101,7 +3125,7 @@ function detailSeries(a){
     if(tonnage) tot.push(nbCourt(Math.round(tonnage))+' kg soulevés');
     tot.push(mmss(Math.round(sec)));
     return '<div class="exo-bloc"><div class="tt">'+pictoLien(e,'mini')+
-      '<b>'+esc(e.nom)+'</b></div>'+lignes+
+      '<b>'+esc(e.nom)+'</b></div>'+notesLues(e)+lignes+
       '<div class="sl total"><span>'+tot.join(' \u00B7 ')+'</span></div></div>';
   }).filter(Boolean).join('');
   return '<p class="etiquette" style="margin-top:20px">Déroulé de la séance</p>'+
@@ -4114,7 +4138,20 @@ function importerSauvegarde(fichier){
 /* ============================================================
    ÉVÉNEMENTS
    ============================================================ */
+let _minuteurNote=null;
 document.addEventListener('input',ev=>{
+  const nt=ev.target.closest('[data-note]');
+  if(nt){
+    const exo=DB.exercice(nt.dataset.note);
+    if(exo){
+      exo.commentaire=nt.value;
+      /* Écriture différée : on ne réécrit pas les 67 exercices à
+         chaque lettre tapée. */
+      clearTimeout(_minuteurNote);
+      _minuteurNote=setTimeout(()=>DB.sauver('exercices'),500);
+    }
+    return;
+  }
   const el=ev.target.closest('[data-champ]');
   if(el&&edition){
     let v=el.value;
@@ -4446,7 +4483,7 @@ document.addEventListener('click',ev=>{
 /* Le mode « écran d'accueil » n'existe que pour une page servie en
    http(s). Sur un fichier ouvert localement (file://), iOS ne propose
    pas l'option et refuse les service workers : on n'essaie même pas. */
-const VERSION = 'v40 \u00B7 21 août 2026';
+const VERSION = 'v41 \u00B7 22 août 2026';
 const SERVI = location.protocol==='http:' || location.protocol==='https:';
 if(SERVI && 'serviceWorker' in navigator){
   window.addEventListener('load',()=>{
