@@ -1698,7 +1698,11 @@ Object.assign(GUIDE_IMAGES, {
  "exo-monster-walk-elastique":{"phase1":"monster-walk-elastique-phase-1.webp","phase2":"monster-walk-elastique-phase-2.webp","alt":"monster walk elastique"},
  "exo-etirement-jambes":{"phase1":"etirement-jambes-phase-1.webp","phase2":"etirement-jambes-phase-2.webp","alt":"etirement jambes"},
  "exo-etirement-chevilles":{"phase1":"etirement-chevilles-phase-1.webp","phase2":"etirement-chevilles-phase-2.webp","alt":"etirement chevilles"},
- "exo-etirement-cou":{"phase1":"etirement-cou-phase-1.webp","phase2":"etirement-cou-phase-2.webp","alt":"etirement cou"}
+ "exo-etirement-cou":{"phase1":"etirement-cou-phase-1.webp","phase2":"etirement-cou-phase-2.webp","alt":"etirement cou"},
+ /* --- ajoutés avec le lot du 22 août --- */
+ "exo-developpe-couche":{"phase1":"developpe-couche-phase-1.webp","phase2":"developpe-couche-phase-2.webp","alt":"developpe couche"},
+ "exo-rowing-landmine":{"phase1":"rowing-landmine-phase-1.webp","phase2":"rowing-landmine-phase-2.webp","alt":"rowing landmine"},
+ "exo-face-pull":{"phase1":"face-pull-phase-1.webp","phase2":"face-pull-phase-2.webp","alt":"face pull"}
 });
 
 function phrasesTexte(txt,max){
@@ -4483,7 +4487,7 @@ document.addEventListener('click',ev=>{
 /* Le mode « écran d'accueil » n'existe que pour une page servie en
    http(s). Sur un fichier ouvert localement (file://), iOS ne propose
    pas l'option et refuse les service workers : on n'essaie même pas. */
-const VERSION = 'v41 \u00B7 22 août 2026';
+const VERSION = 'v42 \u00B7 22 août 2026';
 const SERVI = location.protocol==='http:' || location.protocol==='https:';
 if(SERVI && 'serviceWorker' in navigator){
   window.addEventListener('load',()=>{
