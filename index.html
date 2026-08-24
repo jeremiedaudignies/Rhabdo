@@ -1660,7 +1660,10 @@ function vignetteRepli(img){
    régénérées sans légende incrustée, passer à false : la légende
    de l'application reprend le relais, sans autre modification.
    ------------------------------------------------------------ */
-const LEGENDE_DANS_IMAGE = true;
+/* Les illustrations ne portent plus ni badge ni légende : l'app
+   affiche les siens, tirés du catalogue — corrigeables, nets, et
+   toujours d'accord avec la fiche. */
+const LEGENDE_DANS_IMAGE = false;
 
 const GUIDE_IMAGES={"exo-pompes-serrees":{"phase1":"pompes-serrees-phase-1.webp","phase2":"pompes-serrees-phase-2.webp","alt":"pompes serrees"},"exo-pompes-larges":{"phase1":"pompes-larges-phase-1.webp","phase2":"pompes-larges-phase-2.webp","alt":"pompes larges"},"exo-dips":{"phase1":"dips-phase-1.webp","phase2":"dips-phase-2.webp","alt":"dips"},"exo-traction-pronation-serree":{"phase1":"traction-pronation-serree-phase-1.webp","phase2":"traction-pronation-serree-phase-2.webp","alt":"traction pronation serree"},"exo-traction-pronation-large":{"phase1":"traction-pronation-large-phase-1.webp","phase2":"traction-pronation-large-phase-2.webp","alt":"traction pronation large"},"exo-traction-supination-serree":{"phase1":"traction-supination-serree-phase-1.webp","phase2":"traction-supination-serree-phase-2.webp","alt":"traction supination serree"},"exo-traction-supination-large":{"phase1":"traction-supination-large-phase-1.webp","phase2":"traction-supination-large-phase-2.webp","alt":"traction supination large"},"exo-squat":{"phase1":"squat-phase-1.webp","phase2":"squat-phase-2.webp","alt":"squat"},"exo-crunch":{"phase1":"crunch-phase-1.webp","phase2":"crunch-phase-2.webp","alt":"crunch"},"exo-gainage-horizontal":{"phase1":"gainage-horizontal-phase-1.webp","phase2":"gainage-horizontal-phase-2.webp","alt":"gainage horizontal"},"exo-biceps":{"phase1":"biceps-phase-1.webp","phase2":"biceps-phase-2.webp","alt":"biceps"},"exo-triceps":{"phase1":"triceps-phase-1.webp","phase2":"triceps-phase-2.webp","alt":"triceps"},"exo-superman":{"phase1":"superman-phase-1.webp","phase2":"superman-phase-2.webp","alt":"superman"},"exo-flexion-laterale":{"phase1":"flexion-laterale-phase-1.webp","phase2":"flexion-laterale-phase-2.webp","alt":"flexion laterale"},"exo-mollets":{"phase1":"mollets-phase-1.webp","phase2":"mollets-phase-2.webp","alt":"mollets"},"exo-abduction-hanche":{"phase1":"abduction-hanche-phase-1.webp","phase2":"abduction-hanche-phase-2.webp","alt":"abduction hanche"},"exo-adduction-hanche":{"phase1":"adduction-hanche-phase-1.webp","phase2":"adduction-hanche-phase-2.webp","alt":"adduction hanche"},"exo-pont":{"phase1":"pont-phase-1.webp","phase2":"pont-phase-2.webp","alt":"pont"},"exo-abdominaux-chaise-romaine":{"phase1":"abdominaux-chaise-romaine-phase-1.webp","phase2":"abdominaux-chaise-romaine-phase-2.webp","alt":"abdominaux chaise romaine"},"exo-gainage-lateral":{"phase1":"gainage-lateral-phase-1.webp","phase2":"gainage-lateral-phase-2.webp","alt":"gainage lateral"},"exo-echauffement-tapis-de-course":{"phase1":"echauffement-tapis-phase-1.webp","phase2":"echauffement-tapis-phase-2.webp","alt":"echauffement tapis"},"exo-course-a-pied-en-endurance":{"phase1":"course-endurance-phase-1.webp","phase2":"course-endurance-phase-2.webp","alt":"course endurance"},"exo-course-a-pied-allure-marathon":{"phase1":"course-marathon-phase-1.webp","phase2":"course-marathon-phase-2.webp","alt":"course marathon"},"exo-course-a-pied-allure-semi-marathon":{"phase1":"course-semi-marathon-phase-1.webp","phase2":"course-semi-marathon-phase-2.webp","alt":"course semi marathon"},"exo-course-a-pied-allure-10-km":{"phase1":"course-10-km-phase-1.webp","phase2":"course-10-km-phase-2.webp","alt":"course 10 km"},"exo-course-a-pied-allure-vma":{"phase1":"course-vma-phase-1.webp","phase2":"course-vma-phase-2.webp","alt":"course vma"},"exo-course-a-pied-sprint":{"phase1":"course-sprint-phase-1.webp","phase2":"course-sprint-phase-2.webp","alt":"course sprint"},"exo-etirement-dos":{"phase1":"etirement-dos-phase-1.webp","phase2":"etirement-dos-phase-2.webp","alt":"etirement dos"},"exo-etirement-epaule":{"phase1":"etirement-epaule-phase-1.webp","phase2":"etirement-epaule-phase-2.webp","alt":"etirement epaule"},"exo-etirement-bras":{"phase1":"etirement-bras-phase-1.webp","phase2":"etirement-bras-phase-2.webp","alt":"etirement bras"}};
 /* Les trente-trois paires produites pour le programme course à pied.
@@ -1814,7 +1817,11 @@ function guideVisuelImage(exo,ref){
       '<img class="phase-1" loading="lazy" decoding="async" onerror="guideRepli(this)" src="'+esc(ref.phase1)+'" alt="Position initiale : '+esc(exo.nom)+'">'+
       '<img class="phase-2" loading="lazy" decoding="async" onerror="guideRepli(this)" src="'+esc(ref.phase2)+'" alt="Phase active : '+esc(exo.nom)+'">'+
     '</div>'+
-    (LEGENDE_DANS_IMAGE ? '' : '<div class="guide-motion-state"><i></i><b>Position initiale</b><span>\u2192</span><b>Phase active</b><i></i></div>')+
+    (LEGENDE_DANS_IMAGE ? '' : (function(){
+      const t=guideTitres(exo);
+      return '<div class="guide-motion-state"><i></i><b>'+esc(t[0])+'</b>'+
+        '<span>\u2192</span><b>'+esc(t[1])+'</b><i></i></div>';
+    })())+
     legende+
     '<p class="guide-note">Les deux phases alternent automatiquement pour visualiser le mouvement. L’animation est désactivée lorsque le réglage système « réduire les animations » est actif.</p>'+
   '</div>';
@@ -4487,7 +4494,7 @@ document.addEventListener('click',ev=>{
 /* Le mode « écran d'accueil » n'existe que pour une page servie en
    http(s). Sur un fichier ouvert localement (file://), iOS ne propose
    pas l'option et refuse les service workers : on n'essaie même pas. */
-const VERSION = 'v42 \u00B7 22 août 2026';
+const VERSION = 'v43 \u00B7 24 août 2026';
 const SERVI = location.protocol==='http:' || location.protocol==='https:';
 if(SERVI && 'serviceWorker' in navigator){
   window.addEventListener('load',()=>{
