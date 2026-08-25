@@ -909,7 +909,39 @@ function exercicesRenfo(){
     e('Rowing landmine','haut',['dos'],['biceps'],'reps',
       {objSeries:4,objReps:8,lestageKg:10,evolPlus:0,evolLestageKg:2.5}),
     e('Face pull','haut',['epaules'],['dos'],'reps',
-      {objSeries:3,objReps:15,evolPlus:1})
+      {objSeries:3,objReps:15,evolPlus:1}),
+
+    /* --- préparation et retour au calme (lot du 25 août) --------- */
+    e('Mobilisation épaules','echauffement',['epaules'],['dos'],'reps',
+      {objSeries:2,objReps:10}),
+    e('Étirement latéral du tronc','etirement',['abdo'],['dos'],'temps',
+      {objSeries:2,objReps:25}),
+    e('Étirement pectoraux mains dans le dos','etirement',['pectoraux'],['epaules'],'temps',
+      {objSeries:2,objReps:20}),
+    e('Étirement mollet jambe tendue','etirement',['mollets'],[],'temps',
+      {objSeries:4,objReps:25}),
+    e('Étirement quadriceps debout','etirement',['quadriceps'],['hanche'],'temps',
+      {objSeries:4,objReps:25}),
+    e('Étirement soléaire genoux fléchis','etirement',['mollets'],[],'temps',
+      {objSeries:2,objReps:20}),
+    e('Étirement chaîne postérieure debout','etirement',['ischios'],['dos'],'temps',
+      {objSeries:2,objReps:25}),
+    e('Étirement fléchisseurs de hanche','etirement',['hanche'],['quadriceps'],'temps',
+      {objSeries:4,objReps:25}),
+    e('Étirement adducteurs papillon','etirement',['hanche'],[],'temps',
+      {objSeries:2,objReps:25}),
+    e('Rotation thoracique assise','etirement',['dos'],['abdo'],'temps',
+      {objSeries:4,objReps:20}),
+    e('Étirement quadriceps allongé','etirement',['quadriceps'],['hanche'],'temps',
+      {objSeries:4,objReps:25}),
+    e('Étirement fessier genou poitrine','etirement',['fessiers'],['dos'],'temps',
+      {objSeries:4,objReps:25}),
+    e('Activation abdominale enroulement','gainage',['abdo'],[],'reps',
+      {objSeries:2,objReps:8}),
+    e('Étirement ischio-jambiers allongé','etirement',['ischios'],['mollets'],'temps',
+      {objSeries:4,objReps:25}),
+    e('Étirement global allongé','etirement',['dos'],['abdo'],'temps',
+      {objSeries:3,objReps:8})
   ];
 }
 function exercicesParDefaut(){ return exercicesLafay().concat(exercicesRenfo()); }
@@ -1077,6 +1109,30 @@ function modelesRenfo(){
       b('Pompes larges',2,10,45,55)
     ]),
 
+    /* ===== PRÉPARATION ET RETOUR AU CALME =======================
+       Deux séances courtes, à encadrer la course. Avant : dynamique
+       et maintiens brefs. Après : maintiens longs. */
+    m('Avant la course',5,[
+      b('Mobilisation épaules',2,10,20,30,H),
+      b('Étirement latéral du tronc',2,15,15,25),
+      b('Étirement pectoraux mains dans le dos',2,15,15,25),
+      b('Étirement mollet jambe tendue',2,12,15,25),
+      b('Étirement quadriceps debout',2,12,15,25),
+      b('Étirement soléaire genoux fléchis',2,15,15,25),
+      b('Étirement chaîne postérieure debout',2,10,15,25),
+      b('Étirement fléchisseurs de hanche',2,20,20,30)
+    ]),
+    m('Après la course',0,[
+      b('Étirement mollet jambe tendue',4,25,20,30),
+      b('Étirement adducteurs papillon',2,25,20,30),
+      b('Rotation thoracique assise',4,20,15,25),
+      b('Étirement quadriceps allongé',4,25,20,30),
+      b('Étirement fessier genou poitrine',4,25,20,30),
+      b('Activation abdominale enroulement',2,8,30,40),
+      b('Étirement ischio-jambiers allongé',4,25,20,30),
+      b('Étirement global allongé',3,8,20,25)
+    ]),
+
     /* ===== SEANCE DECOUVERTE — ENFANTS ==========================
        9 et 11 ans, une demi-heure, deux a trois fois par semaine sur
        des jours non consecutifs. Charges minuscules ou poids du
@@ -1127,6 +1183,16 @@ const DB = {
     this.majSeancesRenfo();
     this.ajouterSeancesManquantes();
     this.separerGainage();
+    this.ajouterExercicesManquants();
+  },
+  /* Les exercices livrés après coup s'ajoutent sans toucher au reste :
+     un exercice retouché à la main garde ses réglages. */
+  ajouterExercicesManquants(){
+    let touche=false;
+    exercicesParDefaut().forEach(ref=>{
+      if(!this.exercices.some(e=>e.id===ref.id)){ this.exercices.push(ref); touche=true; }
+    });
+    if(touche) Store.ecrire('exercices',this.exercices);
   },
   /* Le gainage quitte la catégorie « Abdo/Gainage ». Une seule fois,
      et seulement sur les exercices restés à leur catégorie d'origine :
@@ -1680,7 +1746,23 @@ Object.assign(GUIDE_IMAGES, {
  /* --- ajoutés avec le lot du 22 août --- */
  "exo-developpe-couche":{"phase1":"developpe-couche-phase-1.webp","phase2":"developpe-couche-phase-2.webp","alt":"developpe couche"},
  "exo-rowing-landmine":{"phase1":"rowing-landmine-phase-1.webp","phase2":"rowing-landmine-phase-2.webp","alt":"rowing landmine"},
- "exo-face-pull":{"phase1":"face-pull-phase-1.webp","phase2":"face-pull-phase-2.webp","alt":"face pull"}
+ "exo-face-pull":{"phase1":"face-pull-phase-1.webp","phase2":"face-pull-phase-2.webp","alt":"face pull"},
+ /* --- préparation et retour au calme --- */
+ "exo-mobilisation-epaules":{"phase1":"mobilisation-elevation-abaissement-epaules-phase-1.webp","phase2":"mobilisation-elevation-abaissement-epaules-phase-2.webp","alt":"mobilisation epaules"},
+ "exo-etirement-lateral-du-tronc":{"phase1":"etirement-lateral-tronc-debout-phase-1.webp","phase2":"etirement-lateral-tronc-debout-phase-2.webp","alt":"etirement lateral du tronc"},
+ "exo-etirement-pectoraux-mains-dans-le-dos":{"phase1":"etirement-pectoraux-epaules-mains-dos-phase-1.webp","phase2":"etirement-pectoraux-epaules-mains-dos-phase-2.webp","alt":"etirement pectoraux"},
+ "exo-etirement-mollet-jambe-tendue":{"phase1":"etirement-mollet-debout-jambe-tendue-phase-1.webp","phase2":"etirement-mollet-debout-jambe-tendue-phase-2.webp","alt":"etirement mollet"},
+ "exo-etirement-quadriceps-debout":{"phase1":"etirement-quadriceps-debout-phase-1.webp","phase2":"etirement-quadriceps-debout-phase-2.webp","alt":"etirement quadriceps debout"},
+ "exo-etirement-soleaire-genoux-flechis":{"phase1":"etirement-soleaire-genoux-flechis-phase-1.webp","phase2":"etirement-soleaire-genoux-flechis-phase-2.webp","alt":"etirement soleaire"},
+ "exo-etirement-chaine-posterieure-debout":{"phase1":"etirement-chaine-posterieure-debout-phase-1.webp","phase2":"etirement-chaine-posterieure-debout-phase-2.webp","alt":"etirement chaine posterieure"},
+ "exo-etirement-flechisseurs-de-hanche":{"phase1":"etirement-flechisseurs-hanche-fente-basse-phase-1.webp","phase2":"etirement-flechisseurs-hanche-fente-basse-phase-2.webp","alt":"etirement flechisseurs de hanche"},
+ "exo-etirement-adducteurs-papillon":{"phase1":"etirement-adducteurs-papillon-phase-1.webp","phase2":"etirement-adducteurs-papillon-phase-2.webp","alt":"etirement adducteurs"},
+ "exo-rotation-thoracique-assise":{"phase1":"rotation-thoracique-assise-jambe-croisee-phase-1.webp","phase2":"rotation-thoracique-assise-jambe-croisee-phase-2.webp","alt":"rotation thoracique assise"},
+ "exo-etirement-quadriceps-allonge":{"phase1":"etirement-quadriceps-allonge-lateral-phase-1.webp","phase2":"etirement-quadriceps-allonge-lateral-phase-2.webp","alt":"etirement quadriceps allonge"},
+ "exo-etirement-fessier-genou-poitrine":{"phase1":"etirement-fessier-genou-poitrine-phase-1.webp","phase2":"etirement-fessier-genou-poitrine-phase-2.webp","alt":"etirement fessier"},
+ "exo-activation-abdominale-enroulement":{"phase1":"activation-abdominale-enroulement-court-phase-1.webp","phase2":"activation-abdominale-enroulement-court-phase-2.webp","alt":"activation abdominale"},
+ "exo-etirement-ischio-jambiers-allonge":{"phase1":"etirement-ischio-jambiers-allonge-phase-1.webp","phase2":"etirement-ischio-jambiers-allonge-phase-2.webp","alt":"etirement ischio-jambiers"},
+ "exo-etirement-global-allonge":{"phase1":"etirement-global-allonge-phase-1.webp","phase2":"etirement-global-allonge-phase-2.webp","alt":"etirement global"}
 });
 
 function phrasesTexte(txt,max){
@@ -1727,7 +1809,22 @@ const GUIDE_TITRES_EXO={
  'exo-monster-walk-elastique':['Position basse','Pas latéral'],
  'exo-developpe-couche':['Barre en haut','Barre à la poitrine'],
  'exo-rowing-landmine':['Bras tendu','Tirage'],
- 'exo-face-pull':['Bras tendus','Tirage au visage']
+ 'exo-face-pull':['Bras tendus','Tirage au visage'],
+ 'exo-mobilisation-epaules':['Épaules basses','Épaules hautes'],
+ 'exo-etirement-lateral-du-tronc':['Debout, bras levés','Inclinaison latérale'],
+ 'exo-etirement-pectoraux-mains-dans-le-dos':['Mains jointes','Poitrine ouverte'],
+ 'exo-etirement-mollet-jambe-tendue':['Appui au mur','Talon au sol'],
+ 'exo-etirement-quadriceps-debout':['Debout','Talon vers la fesse'],
+ 'exo-etirement-soleaire-genoux-flechis':['Debout','Genoux fléchis'],
+ 'exo-etirement-chaine-posterieure-debout':['Debout','Buste penché'],
+ 'exo-etirement-flechisseurs-de-hanche':['Fente haute','Fente basse'],
+ 'exo-etirement-adducteurs-papillon':['Assis, plantes jointes','Buste penché'],
+ 'exo-rotation-thoracique-assise':['Assis, jambe croisée','Rotation'],
+ 'exo-etirement-quadriceps-allonge':['Sur le côté','Talon vers la fesse'],
+ 'exo-etirement-fessier-genou-poitrine':['Allongé','Genou vers la poitrine'],
+ 'exo-activation-abdominale-enroulement':['Dos au sol','Enroulement court'],
+ 'exo-etirement-ischio-jambiers-allonge':['Jambe posée','Jambe levée'],
+ 'exo-etirement-global-allonge':['Allongé','Grand étirement']
 };
 function guideTitres(exo){
   if(GUIDE_TITRES_EXO[exo.id]) return GUIDE_TITRES_EXO[exo.id];
@@ -4410,7 +4507,7 @@ document.addEventListener('click',ev=>{
 /* Le mode « écran d'accueil » n'existe que pour une page servie en
    http(s). Sur un fichier ouvert localement (file://), iOS ne propose
    pas l'option et refuse les service workers : on n'essaie même pas. */
-const VERSION = 'v44 \u00B7 24 août 2026';
+const VERSION = 'v45 \u00B7 25 août 2026';
 const SERVI = location.protocol==='http:' || location.protocol==='https:';
 if(SERVI && 'serviceWorker' in navigator){
   window.addEventListener('load',()=>{
