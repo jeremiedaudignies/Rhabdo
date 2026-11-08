@@ -3278,9 +3278,12 @@ function resumePartage(a){
       const e=DB.exercice(id)||{};
       groupes.set(id,{id,nom:s.exerciceNom||e.nom||'Exercice supprimé',
         picto:s.exercicePicto||clePicto(e),categorie:s.exerciceCategorie||e.categorie,
-        parTemps:e.modeEffort==='temps',series:0,reps:0,secondes:0,tonnage:0,charges:[]});
+        parTemps:e.modeEffort==='temps',ordre:groupes.size,
+        series:0,reps:0,secondes:0,tonnage:0,charges:[]});
     }
     const g=groupes.get(id); g.series++;
+    const ib=Number(s.indexBloc);
+    if(Number.isFinite(ib)) g.ordre=Math.min(g.ordre,ib);
     const v=Number(s.repsRealisees);
     if(Number.isFinite(v)&&v>0){ if(g.parTemps) g.secondes+=v; else g.reps+=v; }
     g.tonnage+=tonnageSerie(s);
@@ -3298,11 +3301,21 @@ function resumePartage(a){
     const detail=g.parTemps
       ? (g.secondes?dureeLisible(g.secondes)+' tenues':g.series+' série'+(g.series>1?'s':''))
       : (g.reps?g.reps+' répétition'+(g.reps>1?'s':''):g.series+' série'+(g.series>1?'s':''));
-    return Object.assign(g,{max,record,detail,
-      valeur:max===null?'—':nombre(Math.abs(max))+' kg',
-      legende:max===null?(g.parTemps?'au poids du corps':'charge non renseignée'):max<0?'assistance':'charge max',
-      chargeTexte:max===null?'au poids du corps':max<0?'assistance : '+nombre(-max)+' kg':nombre(max)+' kg'});
-  }).sort((x,y)=>(y.tonnage-x.tonnage)||(y.series-x.series));
+    /* Un exercice compté en temps et sans charge n'a pas de « charge
+       max » à montrer : c'est la durée tenue qui fait foi. */
+    const parDuree=g.parTemps&&(max===null||max===0)&&g.secondes>0;
+    /* La durée part à droite de la ligne : la répéter dans le détail
+       donnerait « 3 séries · 3 séries ». */
+    const detailCourt=parDuree?'':detail;
+    return Object.assign(g,{max,record,detail:detailCourt,
+      valeur:parDuree?dureeLisible(g.secondes):(max===null?'—':nombre(Math.abs(max))+' kg'),
+      legende:parDuree?'durée totale'
+        :max===null?(g.parTemps?'au poids du corps':'charge non renseignée')
+        :max<0?'assistance':'charge max',
+      chargeTexte:parDuree?dureeLisible(g.secondes)
+        :max===null?'au poids du corps'
+        :max<0?'assistance : '+nombre(-max)+' kg':nombre(max)+' kg'});
+  }).sort((x,y)=>x.ordre-y.ordre);
 
   const date=new Date(a.debut), sec=Number(a.dureeSec);
   const duree=Number.isFinite(sec)&&sec>=0&&a.dureeSec!=null&&a.dureeSec!==''?sec:
@@ -3315,12 +3328,14 @@ function resumePartage(a){
   /* Le chiffre dominant s'adapte à la séance : le tonnage quand il y a
      de la charge, sinon le volume de répétitions, sinon le temps tenu. */
   let heros;
-  if(tonnage>0) heros={valeur:nombre(tonnage),unite:'KG',legende:'DÉPLACÉS AUJOURD’HUI'};
+  if(tonnage>0) heros={valeur:nombre(tonnage),unite:'KG',legende:'SOULEVÉS AUJOURD’HUI'};
   else if(reps>0) heros={valeur:nombre(reps),unite:'',legende:'RÉPÉTITIONS ENCAISSÉES'};
   else if(secondes>0) heros={valeur:Math.round(secondes/60),unite:'MIN',legende:'SOUS TENSION'};
   else heros={valeur:exercices.length,unite:'',legende:'EXERCICES AU COMPTEUR'};
 
-  return {nom:a.nom||'Ma séance',
+  const phare=exercices.slice().sort((x,y)=>(y.tonnage-x.tonnage)||(y.series-x.series))[0]||null;
+
+  return {nom:a.nom||'Ma séance',phare,
     date:Number.isFinite(+date)?date.toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}):'Date non renseignée',
     jour:Number.isFinite(+date)?isoJour(date):'seance',
     duree,exercices,tonnage,reps,secondes,heros,
@@ -3335,7 +3350,7 @@ function textePartage(r){
   if(r.records) lignes.push('\u{1F3C6} '+r.records+' record'+(r.records>1?'s':'')+' personnel'+(r.records>1?'s':'')+' battu'+(r.records>1?'s':'')+' !');
   lignes.push('');
   r.exercices.forEach(g=>lignes.push((g.record?'\u{1F3C6}':'\u{1F4AA}')+' '+g.nom+' — '+
-    g.series+' série'+(g.series>1?'s':'')+' • '+g.detail+' • '+g.chargeTexte));
+    [g.series+' série'+(g.series>1?'s':''),g.detail,g.chargeTexte].filter(Boolean).join(' • ')));
   lignes.push('','CHAQUE SÉRIE COMPTE. #RHABDO');
   return lignes.join('\n');
 }
@@ -3434,11 +3449,15 @@ async function affichePartage(r,exercices,page,total){
   ajuste(r.nom.toUpperCase(),52,226,620,34,blanc,800);
 
   /* ---------- chiffre dominant + exercice phare ---------- */
-  const minia=await miniaturesUtilisables(exercices);
-  const phare=exercices[0];
+  /* Le phare est celui de la séance entière, pas de la page : il reste
+     le même d'une affiche à l'autre, comme le chiffre dominant. */
+  const phare=r.phare||exercices[0]||null;
+  const minia=await miniaturesUtilisables(phare?[phare].concat(exercices):exercices);
+  const miniaPhare=minia?minia[0]:null;
+  const miniaLignes=minia?minia.slice(phare?1:0):null;
   const carteX=716,carteY=246,carteW=312,carteH=236;
   if(phare){
-    const ref=minia?minia[0]:null;
+    const ref=miniaPhare;
     /* Les pictogrammes sont tracés en clair : sur une carte claire ils
        disparaîtraient. Le fond suit donc ce qu'on y dessine. */
     bloc(carteX,carteY,carteW,carteH,26,ref?'#f7f5f2':'#1b1d24');
@@ -3481,27 +3500,24 @@ async function affichePartage(r,exercices,page,total){
   [[duree,'DURÉE',84],[r.series,'SÉRIES',404],[r.exercices.length,'EXERCICES',716]].forEach(v=>{
     ajuste(v[0],v[2],583,270,44,blanc,800);texte(v[1],v[2],613,14,gris,600);});
 
-  texte('LE TRAVAIL EST FAIT.',52,674,18,orange);
-  if(total>1){ctx.textAlign='right';texte(String(page).padStart(2,'0')+' / '+String(total).padStart(2,'0'),1028,674,18,gris,600);ctx.textAlign='left';}
-
   /* ---------- lignes d'exercices ---------- */
-  const yDepart=700,hauteur=100;
+  const yDepart=666,hauteur=110;
   for(let i=0;i<exercices.length;i++){
     const g=exercices[i],y=yDepart+i*hauteur;
-    bloc(52,y,976,88,18,i%2===0?'#16171c':'#111216');
-    const ref=minia?minia[i]:null;
-    bloc(64,y+8,72,72,13,ref?'#f7f5f2':'#24262e');
+    bloc(52,y,976,98,18,i%2===0?'#16171c':'#111216');
+    const ref=miniaLignes?miniaLignes[i]:null;
+    bloc(64,y+9,80,80,14,ref?'#f7f5f2':'#24262e');
     if(ref){
-      ctx.save();arrondi(64,y+8,72,72,13);ctx.clip();
-      const k=Math.min(63/ref.w,63/ref.h),dw=ref.w*k,dh=ref.h*k;
-      ctx.drawImage(ref.img,ref.x,ref.y,ref.w,ref.h,64+(72-dw)/2,y+8+(72-dh)/2,dw,dh);
+      ctx.save();arrondi(64,y+9,80,80,14);ctx.clip();
+      const k=Math.min(70/ref.w,70/ref.h),dw=ref.w*k,dh=ref.h*k;
+      ctx.drawImage(ref.img,ref.x,ref.y,ref.w,ref.h,64+(80-dw)/2,y+9+(80-dh)/2,dw,dh);
       ctx.restore();
     }else{
       const p=await imagePictoPartage(g);
-      ctx.drawImage(p,69,y+13,62,62);
+      ctx.drawImage(p,70,y+15,68,68);
     }
     /* nom, sur deux lignes au besoin */
-    const largeurNom=g.record?440:520;
+    const largeurNom=g.record?430:510;
     let taille=24,lignes=[];
     do{ ctx.font='800 '+taille+'px Inter, sans-serif';lignes=[''];
       for(const mot of String(g.nom).split(/\s+/)){
@@ -3512,28 +3528,27 @@ async function affichePartage(r,exercices,page,total){
     if(lignes.length>2){lignes=[lignes[0],lignes.slice(1).join(' ')];
       while(ctx.measureText(lignes[1]+'…').width>largeurNom&&lignes[1].length)lignes[1]=lignes[1].slice(0,-1);
       lignes[1]+='…';}
-    lignes.forEach((l,j)=>ajuste(l,160,y+(lignes.length>1?29:40)+j*24,largeurNom,Math.max(16,taille)));
-    texte(g.series+' SÉRIE'+(g.series>1?'S':'')+' · '+g.detail.toUpperCase(),160,y+72,14,gris,600);
+    lignes.forEach((l,j)=>ajuste(l,170,y+(lignes.length>1?33:45)+j*26,largeurNom,Math.max(17,taille)));
+    texte(g.series+' SÉRIE'+(g.series>1?'S':'')+(g.detail?' · '+g.detail.toUpperCase():''),170,y+79,15,gris,600);
     /* badge record */
     if(g.record){
       const lb='RECORD',l=mesure(lb,12,800)+20;
-      bloc(160+largeurNom+12,y+14,l,24,12,ambre);
-      texte(lb,160+largeurNom+22,y+31,12,'#241401',800);
+      bloc(170+largeurNom+12,y+17,l,25,12,ambre);
+      texte(lb,170+largeurNom+22,y+35,12,'#241401',800);
     }
-    /* charge */
+    /* charge, ou durée pour les exercices comptés en temps */
     ctx.textAlign='right';
-    ajuste(g.valeur,1010,y+45,250,32,g.record?ambre:orange,800);
-    ajuste(g.legende.toUpperCase(),1010,y+72,250,12,gris,600);
+    ajuste(g.valeur,1010,y+50,248,33,g.record?ambre:orange,800);
+    ajuste(g.legende.toUpperCase(),1010,y+79,248,12,gris,600);
     ctx.textAlign='left';
   }
-  if(!exercices.length)texte('Aucune série enregistrée.',54,760,25,gris,600);
+  if(!exercices.length)texte('Aucune série enregistrée.',54,726,25,gris,600);
 
   /* ---------- pied ---------- */
-  ctx.fillStyle=orange;ctx.fillRect(52,1320,976,3);
-  texte('CHAQUE SÉRIE COMPTE.',52,1376,31);
-  texte('RHABDO / '+r.jour,54,1410,13,gris,500);
+  ctx.fillStyle=orange;ctx.fillRect(52,1352,976,3);
+  if(total>1) texte(String(page).padStart(2,'0')+' / '+String(total).padStart(2,'0'),52,1400,19,gris,700);
   if(r.records){ctx.textAlign='right';
-    texte('\u{1F3C6} '+r.records+' RECORD'+(r.records>1?'S':'')+' BATTU'+(r.records>1?'S':''),1028,1376,20,ambre,800);
+    texte('\u{1F3C6} '+r.records+' RECORD'+(r.records>1?'S':'')+' BATTU'+(r.records>1?'S':''),1028,1400,21,ambre,800);
     ctx.textAlign='left';}
 
   return new Promise((resolve,reject)=>canvas.toBlob(
