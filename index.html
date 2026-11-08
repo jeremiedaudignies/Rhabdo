@@ -610,6 +610,22 @@ select.molette:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accen
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.partage-ouvrir{background:linear-gradient(115deg,#141519 50%,#552512);color:#fff3e4;border:1px solid #fa6027;box-shadow:0 5px 18px #f94e0025}
+.partage-dialog{padding:0;border:1px solid #444049;border-radius:22px;background:#101115;color:#fff3e4;width:min(580px,calc(100vw - 20px));max-width:580px;max-height:92dvh;overflow-y:auto;overscroll-behavior:contain;box-shadow:0 32px 100px #0009;color-scheme:dark}
+.partage-dialog::backdrop{background:#050609d9;backdrop-filter:blur(7px)}
+.partage-entete{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 22px 16px;border-bottom:1px solid #303138}
+.partage-kicker{font-size:10px;font-weight:800;letter-spacing:.12em;color:#ff7844}
+.partage-entete h2{font-size:26px;letter-spacing:-.04em;line-height:1.15;margin:8px 0 0}
+.partage-entete button{border:1px solid #48484e;border-radius:50%;font-size:26px;flex:0 0 42px;height:42px;line-height:1}
+.partage-corps{padding:16px 22px}.partage-corps p{font-size:13px;color:#ccc5c0;margin:0 0 14px}
+#partage-apercus{display:grid;gap:16px}#partage-apercus img{display:block;width:100%;height:auto;border:1px solid #383235;border-radius:5px;box-shadow:0 12px 35px #0007}
+.partage-texte{margin-top:18px;font-size:13px;color:#ccc5c0}.partage-texte summary{cursor:pointer;padding:6px 0}.partage-texte pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;line-height:1.7}
+.partage-actions{padding:0 22px 22px}.partage-whatsapp{background:#25d366;color:#071b0d;font-size:15px;font-weight:800}.partage-whatsapp:disabled{opacity:.5;cursor:wait}.partage-whatsapp[hidden]{display:none}
+.partage-telecharger{display:block;padding:13px 16px;border:1px solid #565057;border-radius:99px;text-align:center;color:#fff3e4;text-decoration:none;font-size:14px;font-weight:700;margin-top:9px}
+.partage-lien{display:block;text-align:center;color:#cfc6be;font-size:12px;margin-top:16px;text-underline-offset:4px}.partage-aide{font-size:12px;line-height:1.5;text-align:center;color:#a8a2a1;margin:14px 0 0}
+.partage-dialog :focus-visible{outline:3px solid #ff8a50;outline-offset:3px}
+@media(max-width:380px){.partage-entete,.partage-corps{padding:16px}.partage-actions{padding:0 16px 20px}.partage-entete h2{font-size:23px}}
+
 </style>
 </head>
 <body>
@@ -1186,7 +1202,12 @@ const DB = {
     this.journal = Store.lire('journal',[])||[];
     this.reglages = Object.assign({ voix:true, bips:true, ecranAllume:true,
       enchainementAuto:true, seancesParSemaine:2, semainesCarto:4, objectifDefaut:'Force maximale',
-      seuils:[600,300,180,120,60,30,15,10,5,4,3,2,1], dernierBip:3 }, Store.lire('reglages',{})||{});
+      }, Store.lire('reglages',{})||{});
+    /* Décompte volontairement sobre : un rappel à une minute, puis le
+       dernier compte à rebours. Imposé par le code et non lu depuis le
+       stockage, pour que d'anciens seuils enregistrés ne reviennent pas. */
+    this.reglages.seuils = [60,5,4,3,2,1];
+    this.reglages.dernierBip = 5;          /* bip sur les cinq derniers */
     this.majCatalogueRenfo();
     this.retirerRoutines();
     this.refondreSeances();
@@ -1577,6 +1598,10 @@ const Chrono = {
   _annoncer(sec){
     if(sec<=0||this.annonces.has(sec)) return;
     if((DB.reglages.seuils||[]).indexOf(sec)===-1) return;
+    /* La durée vient d'être annoncée au lancement : inutile de la répéter
+       dans la première seconde. Sans ce garde-fou, une récupération de
+       60 s donnait « Récupération, une minute » puis « une minute ». */
+    if(this.cibleSec!=null && sec>=this.cibleSec) return;
     this.annonces.add(sec);
     if(sec<=(DB.reglages.dernierBip||3)){ Voix.bip(sec===1?1320:880,0.1); Voix.dire(String(sec),true); }
     else Voix.dire(direDuree(sec),true);
@@ -2218,6 +2243,7 @@ const Seance = {
     const b=this._bloc();
     this.active.series.push({
       exerciceId:b.exerciceId, indexBloc:this.iBloc, numeroSerie:this.iSerie,
+      exerciceNom:this._exo().nom, exercicePicto:clePicto(this._exo()), exerciceCategorie:this._exo().categorie,
       repsObjectif:b.nbReps, repsRealisees:this.repsSaisies,
       ecartementCm:b.ecartementCm, hauteurCm:b.hauteurCm, lestageKg:b.lestageKg,
       effortSec:Math.round(this.effortEcoule), recupSec:0, ts:new Date().toISOString()
@@ -2255,8 +2281,7 @@ const Seance = {
     Chrono.arreter();
     const p=this.prochaine();
     if(!p){ this._terminer(); return; }
-    Voix.dire('Récupération terminée. '+p.exo.nom+', série '+p.iSerie+' sur '+p.nbSeries+
-      '. Objectif '+direQuantite(p.exo,p.nbReps)+'.');
+    Voix.dire('GO', true);
     if(DB.reglages.enchainementAuto === false){
       this.etat='recup-termine'; this.persister(); Voix.gong(); rendre(); return;
     }
@@ -3204,6 +3229,162 @@ function detailSeries(a){
     '<div class="carte series-detail">'+blocs+'</div>';
 }
 
+/* Partage : rendu local, sans service distant ni bibliothèque externe. */
+function boutonPartage(a){
+  return '<button class="bouton partage-ouvrir" style="margin-top:16px" data-partage-seance="'+esc(a.id)+'">↗ Partager mon résumé</button>';
+}
+function resumePartage(a){
+  const groupes=new Map();
+  (a.series||[]).forEach(s=>{
+    const id=s.exerciceId||'inconnu';
+    if(!groupes.has(id)){
+      const e=DB.exercice(id)||{};
+      groupes.set(id,{id,nom:s.exerciceNom||e.nom||'Exercice supprimé',
+        picto:s.exercicePicto||clePicto(e),categorie:s.exerciceCategorie||e.categorie,
+        series:0,charges:[]});
+    }
+    const g=groupes.get(id); g.series++;
+    if(s.lestageKg!==null && s.lestageKg!==undefined && s.lestageKg!=='' && Number.isFinite(Number(s.lestageKg))) g.charges.push(Number(s.lestageKg));
+  });
+  const nombre=n=>new Intl.NumberFormat('fr-FR',{maximumFractionDigits:2}).format(n);
+  const exercices=Array.from(groupes.values()).map(g=>{
+    const max=g.charges.length?Math.max(...g.charges):null;
+    return Object.assign(g,{valeur:max===null?'—':nombre(Math.abs(max))+' kg',
+      legende:max===null?'charge non renseignée':max<0?'assistance minimale':'charge max',
+      chargeTexte:max===null?'charge non renseignée':max<0?'assistance minimale : '+nombre(-max)+' kg':'charge max : '+nombre(max)+' kg'});
+  });
+  const date=new Date(a.debut), sec=Number(a.dureeSec);
+  const duree=Number.isFinite(sec)&&sec>=0&&a.dureeSec!=null&&a.dureeSec!==''?sec:
+    (a.fin&&Number.isFinite(+date)&&Number.isFinite(+new Date(a.fin))?Math.max(0,(new Date(a.fin)-date)/1000):null);
+  return {nom:a.nom||'Ma séance',date:Number.isFinite(+date)?date.toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}):'Date non renseignée',
+    jour:Number.isFinite(+date)?isoJour(date):'seance',duree,exercices,series:exercices.reduce((n,g)=>n+g.series,0)};
+}
+function textePartage(r){
+  return '🔥 RHABDO — SÉANCE VALIDÉE\n'+r.nom+'\n'+r.date+'\n⏱ '+(r.duree===null?'Durée non renseignée':dureeLisible(r.duree))+
+    ' • '+r.series+' séries • '+r.exercices.length+' exercices\n\n'+
+    r.exercices.map(g=>'💪 '+g.nom+' — '+g.series+' série'+(g.series>1?'s':'')+' • '+g.chargeTexte).join('\n')+
+    '\n\nCHAQUE SÉRIE COMPTE. #RHABDO';
+}
+function imagePictoPartage(g){
+  const dessin=(PICTOS[g.picto]||PICTOS.squat).replace(/<(path|line|circle)\b([^>]*?)\/>/g,(_,tag,attrs)=>{
+    const classe=(attrs.match(/class="([^"]+)"/)||[])[1]||'';
+    const couleur=classe==='equip'||classe==='mvt'?'#ff681f':classe==='sol'?'#4a4b50':'#fff3e4';
+    return '<'+tag+attrs+' fill="'+(classe==='t'?'#fff3e4':'none')+'" stroke="'+(classe==='t'?'none':couleur)+'" stroke-width="'+(classe==='sol'||classe==='mvt'?2:4)+'" stroke-linecap="round" stroke-linejoin="round"/>';
+  });
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">'+dessin+'</svg>';
+  return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('Pictogramme indisponible'));img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);});
+}
+async function affichePartage(r,exercices,page,total){
+  const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1470;
+  const ctx=canvas.getContext('2d');if(!ctx) throw new Error('Export image indisponible');
+  const W=1080,H=1470,orange='#ff591f',blanc='#fff3e4';
+  const texte=(t,x,y,size,color=blanc,weight=800)=>{ctx.fillStyle=color;ctx.font=weight+' '+size+'px Inter, sans-serif';ctx.fillText(String(t),x,y);};
+  const ajuste=(t,x,y,width,size,color=blanc,weight=800)=>{while(size>12){ctx.font=weight+' '+size+'px Inter, sans-serif';if(ctx.measureText(String(t)).width<=width)break;size--;}texte(t,x,y,size,color,weight);};
+  const poly=(points,color)=>{ctx.fillStyle=color;ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));ctx.closePath();ctx.fill();};
+  ctx.fillStyle='#0b0c0f';ctx.fillRect(0,0,W,H);
+  const glow=ctx.createRadialGradient(1040,160,0,1040,160,800);glow.addColorStop(0,'#793018');glow.addColorStop(1,'#0b0c0f');ctx.fillStyle=glow;ctx.fillRect(0,0,W,620);
+  ctx.strokeStyle='#ffffff09';ctx.lineWidth=1;
+  for(let x=-H;x<W;x+=58){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+H,H);ctx.stroke();}
+  poly([[910,0],[995,0],[690,570],[605,570]],'#ff591f');
+  poly([[1020,0],[1050,0],[745,570],[715,570]],'#ffb22e');
+  poly([[1070,0],[1080,0],[1080,95],[825,570],[790,570]],'#ff591f');
+  ctx.fillStyle=orange;ctx.fillRect(52,49,11,31);
+  texte('RHABDO',80,77,32);texte('TRAINING REPORT',52,119,15,'#b5aba6',600);
+  ajuste(r.date.toUpperCase(),610,76,415,19,blanc,600);
+  texte('SÉANCE',46,244,113);texte('VALIDÉE.',46,353,113,orange);
+  ajuste(r.nom.toUpperCase(),54,413,960,31,blanc,700);
+  ctx.fillStyle='#191a1f';ctx.fillRect(52,457,976,131);ctx.fillStyle=orange;ctx.fillRect(52,457,5,131);
+  const duration=r.duree===null?'—':r.duree>=3600?Math.floor(r.duree/3600)+'h '+String(Math.floor(r.duree/60)%60).padStart(2,'0'):mmss(r.duree);
+  [[duration,'DURÉE',80],[r.series,'SÉRIES',420],[r.exercices.length,'EXERCICES',740]].forEach(v=>{
+    ajuste(v[0],v[2],526,285,52);texte(v[1],v[2],563,15,'#aaa6a5',600);
+  });
+  texte('LE TRAVAIL EST FAIT.',52,636,18,orange);
+  texte(String(page).padStart(2,'0')+' / '+String(total).padStart(2,'0'),916,636,18,'#b5aba6',600);
+  const images=await Promise.all(exercices.map(imagePictoPartage));
+  exercices.forEach((g,i)=>{
+    const y=665+i*109;
+    ctx.fillStyle=i%2===0?'#18191e':'#121317';ctx.fillRect(52,y,976,101);
+    ctx.fillStyle='#232329';ctx.fillRect(64,y+9,82,82);ctx.drawImage(images[i],67,y+12,76,76);
+    // Deux lignes gardent les noms longs lisibles sur un téléphone.
+    let taille=27,lignes=[];
+    do{
+      ctx.font='800 '+taille+'px Inter, sans-serif';lignes=[''];
+      for(const mot of g.nom.split(/\s+/)){
+        const n=lignes.length-1,essai=lignes[n]?(lignes[n]+' '+mot):mot;
+        if(lignes[n]&&ctx.measureText(essai).width>542)lignes.push(mot);else lignes[n]=essai;
+      }
+      if(lignes.length<=2)break;taille--;
+    }while(taille>=18);
+    if(lignes.length>2){lignes=[lignes[0],lignes.slice(1).join(' ')];while(ctx.measureText(lignes[1]+'…').width>542&&lignes[1].length)lignes[1]=lignes[1].slice(0,-1);lignes[1]+='…';}
+    lignes.forEach((l,j)=>ajuste(l,169,y+(lignes.length>1?29:39)+j*27,542,Math.max(18,taille)));
+    texte(g.series+' SÉRIE'+(g.series>1?'S':''),169,y+83,17,'#bab4af',600);
+    ctx.textAlign='right';ajuste(g.valeur,1003,y+42,265,34,orange);ajuste(g.legende.toUpperCase(),1003,y+75,265,12,'#bab4af',600);ctx.textAlign='left';
+  });
+  if(!exercices.length)texte('Aucune série enregistrée.',54,731,25,'#bab4af',600);
+  ctx.fillStyle=orange;ctx.fillRect(52,1345,976,3);
+  texte('CHAQUE SÉRIE COMPTE.',52,1401,31);
+  texte('RHABDO / '+r.jour,54,1435,13,'#aaa6a5',500);
+  return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('Création du PNG impossible')),'image/png'));
+}
+let partageEtat=null;
+function fermerPartage(){
+  const etat=partageEtat;if(!etat)return;
+  etat.urls.forEach(u=>URL.revokeObjectURL(u));etat.dialog.remove();partageEtat=null;
+  if(etat.focus&&etat.focus.isConnected)etat.focus.focus();
+}
+async function ouvrirPartage(id){
+  const a=DB.journal.find(s=>s.id===id);if(!a){toast('Séance introuvable.');return;}
+  fermerPartage();
+  const r=resumePartage(a),dialog=document.createElement('dialog');dialog.className='partage-dialog';
+  dialog.setAttribute('aria-labelledby','partage-titre');
+  const etat={dialog,resume:r,files:[],urls:[],focus:document.activeElement,busy:false};partageEtat=etat;
+  dialog.innerHTML='<div class="partage-entete"><div><span class="partage-kicker">RHABDO / RÉSUMÉ DE SÉANCE</span><h2 id="partage-titre">Fais parler l’effort.</h2></div><button type="button" data-partage-fermer aria-label="Fermer le partage">×</button></div>'+
+    '<div class="partage-corps"><p id="partage-statut" role="status" aria-live="polite">Création de ton affiche…</p><div id="partage-apercus"></div>'+ 
+    '<details class="partage-texte"><summary>Lire le résumé</summary><pre></pre></details></div>'+
+    '<div class="partage-actions"><button class="bouton partage-whatsapp" id="partage-envoyer" disabled>↗ Partager l’image · WhatsApp</button>'+
+    '<div id="partage-telechargements"></div><a class="partage-lien" id="partage-texte-wa" target="_blank" rel="noopener noreferrer">Ouvrir WhatsApp · texte seul ↗</a><p class="partage-aide" id="partage-aide">Choisis WhatsApp dans le menu de partage, puis ton destinataire.</p></div>';
+  dialog.querySelector('pre').textContent=textePartage(r);
+  dialog.querySelector('#partage-texte-wa').href='https://wa.me/?text='+encodeURIComponent(textePartage(r));
+  dialog.querySelector('[data-partage-fermer]').onclick=fermerPartage;
+  dialog.addEventListener('cancel',e=>{e.preventDefault();fermerPartage();});
+  dialog.addEventListener('click',e=>{if(e.target===dialog){const b=dialog.getBoundingClientRect();if(e.clientX<b.left||e.clientX>b.right||e.clientY<b.top||e.clientY>b.bottom)fermerPartage();}});
+  document.body.appendChild(dialog);dialog.showModal();
+  try{
+    if(document.fonts)await document.fonts.ready;
+    const total=Math.max(1,Math.ceil(r.exercices.length/6));
+    for(let i=0;i<total;i++){
+      if(partageEtat!==etat)return;
+      const blob=await affichePartage(r,r.exercices.slice(i*6,(i+1)*6),i+1,total);
+      if(partageEtat!==etat)return;
+      const url=URL.createObjectURL(blob);etat.urls.push(url);
+      etat.files.push(new File([blob],'RHABDO-'+r.jour+(total>1?'-'+(i+1):'')+'.png',{type:'image/png'}));
+      const img=document.createElement('img');img.src=url;img.alt='Résumé de '+r.nom+' — affiche '+(i+1)+' sur '+total;img.width=1080;img.height=1470;
+      dialog.querySelector('#partage-apercus').appendChild(img);
+      const lien=document.createElement('a');lien.href=url;lien.download=etat.files[i].name;lien.className='partage-telecharger';lien.textContent='↓ Télécharger '+(total>1?'l’image '+(i+1)+' / '+total:'l’image PNG');
+      dialog.querySelector('#partage-telechargements').appendChild(lien);
+    }
+    const compatible=typeof navigator.share==='function'&&typeof navigator.canShare==='function'&&navigator.canShare({files:etat.files});
+    const bouton=dialog.querySelector('#partage-envoyer');bouton.disabled=!compatible;
+    dialog.querySelector('#partage-statut').textContent=total>1?total+' affiches prêtes : tous les exercices sont inclus.':'Ton affiche est prête.';
+    if(!compatible){bouton.hidden=true;dialog.querySelector('#partage-aide').textContent='Télécharge l’image, puis joins-la dans WhatsApp. Le lien « texte seul » ne joint pas l’image.';}
+    bouton.onclick=()=>{
+      if(etat.busy)return;etat.busy=true;bouton.disabled=true;
+      /* Fichiers prêts avant le clic : conserver l’activation utilisateur sur mobile. */
+      let promesse;
+      try{promesse=navigator.share({files:etat.files});}catch(err){promesse=Promise.reject(err);}
+      Promise.resolve(promesse).then(()=>{
+        dialog.querySelector('#partage-statut').textContent='Image transmise au menu de partage.';
+      }).catch(err=>{
+        dialog.querySelector('#partage-statut').textContent=err.name==='AbortError'?'Partage annulé. Ton affiche reste disponible.':'Le partage n’a pas abouti. Télécharge l’image pour la joindre dans WhatsApp.';
+      }).finally(()=>{etat.busy=false;bouton.disabled=false;});
+    };
+  }catch(err){
+    if(partageEtat!==etat)return;
+    dialog.querySelector('#partage-statut').textContent='Impossible de créer l’image. Le résumé texte reste disponible.';
+    dialog.querySelector('#partage-envoyer').hidden=true;
+  }
+}
+
 function vueBilan(){
   const a=DB.journal[DB.journal.length-1];
   if(!a) return '<div class="vide"><p>Aucune séance enregistrée.</p></div>';
@@ -3239,7 +3420,7 @@ function vueBilan(){
     '<p style="color:var(--texte-2);margin:0">'+esc(a.nom)+'</p></div>'+
     '<div class="carte stat-grille">'+
     stats.map(s=>'<div><div class="n">'+s[0]+'</div><div class="l">'+s[1]+'</div></div>').join('')+'</div>'+
-    tenue+objSeance+detailSeries(a)+prog+
+    tenue+objSeance+boutonPartage(a)+detailSeries(a)+prog+
     '<button class="bouton principal" style="margin-top:16px" data-act="retour">Retour aux séances</button>'+
     '<button class="bouton discret" style="margin-top:8px" data-detail="'+a.id+'">Voir le détail série par série</button>';
 }
@@ -4041,7 +4222,7 @@ function vueDetailSeance(){
       .map(s=>'<div><div class="n">'+s[0]+'</div><div class="l">'+s[1]+'</div></div>').join('')+'</div>'+
     (bil.sec?'<p class="aide" style="margin-top:8px;text-align:center">Échauffement, étirements '+
       'et gainage non comptabilisés</p>':'')+
-    detailSeries(a)+
+    boutonPartage(a)+detailSeries(a)+
     '<button class="bouton danger" style="margin-top:20px" data-suppr-seance-journal="'+a.id+'">'+
     'Supprimer cette séance de l\u2019historique</button>';
 }
@@ -4257,6 +4438,9 @@ document.addEventListener('change',ev=>{
 document.addEventListener('click',ev=>{
   const c=s=>ev.target.closest(s);
   try{
+    const partage=c('[data-partage-seance]');
+    if(partage){ ouvrirPartage(partage.dataset.partageSeance); return; }
+    if(c('.partage-dialog')) return;
     Voix.debloquer();
 
     /* La fiche en surcouche se ferme avant tout le reste : tant
@@ -4533,7 +4717,7 @@ document.addEventListener('click',ev=>{
 /* Le mode « écran d'accueil » n'existe que pour une page servie en
    http(s). Sur un fichier ouvert localement (file://), iOS ne propose
    pas l'option et refuse les service workers : on n'essaie même pas. */
-const VERSION = 'v46 \u00B7 25 août 2026';
+const VERSION = 'v47 \u00B7 8 novembre 2026';
 const SERVI = location.protocol==='http:' || location.protocol==='https:';
 if(SERVI && 'serviceWorker' in navigator){
   window.addEventListener('load',()=>{
