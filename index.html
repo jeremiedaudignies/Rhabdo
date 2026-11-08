@@ -3233,6 +3233,43 @@ function detailSeries(a){
 function boutonPartage(a){
   return '<button class="bouton partage-ouvrir" style="margin-top:16px" data-partage-seance="'+esc(a.id)+'">↗ Partager mon résumé</button>';
 }
+/* ------------------------------------------------------------
+   PARTAGE — données de l'affiche
+
+   MINIA : pour chaque exercice, la miniature la mieux cadrée et la
+   boîte du sujet dans l'image source [fichier, x, y, largeur, hauteur].
+   Le recadrage est pré-calculé : le titre et la légende incrustés sont
+   écartés, il ne reste que le personnage.
+   ------------------------------------------------------------ */
+const MINIA={"exo-pompes-serrees":["pompes-serrees-phase-1.webp",61,142,309,277],"exo-pompes-larges":["pompes-larges-phase-1.webp",51,167,348,252],"exo-dips":["dips-phase-2.webp",138,139,210,331],"exo-traction-pronation-serree":["traction-pronation-serree-phase-2.webp",90,86,293,384],"exo-traction-pronation-large":["traction-pronation-large-phase-2.webp",69,86,302,384],"exo-traction-supination-serree":["traction-supination-serree-phase-2.webp",81,93,280,377],"exo-traction-supination-large":["traction-supination-large-phase-1.webp",80,88,312,382],"exo-squat":["squat-phase-1.webp",183,86,133,384],"exo-crunch":["crunch-phase-2.webp",74,202,335,182],"exo-gainage-horizontal":["gainage-horizontal-phase-1.webp",49,229,342,142],"exo-biceps":["biceps-phase-2.webp",194,86,183,384],"exo-triceps":["triceps-phase-1.webp",190,119,121,351],"exo-superman":["superman-phase-2.webp",23,249,401,90],"exo-flexion-laterale":["flexion-laterale-phase-2.webp",120,196,288,274],"exo-mollets":["mollets-phase-1.webp",144,86,154,384],"exo-abduction-hanche":["abduction-hanche-phase-1.webp",107,86,224,384],"exo-adduction-hanche":["adduction-hanche-phase-1.webp",39,86,329,384],"exo-pont":["pont-phase-1.webp",29,216,369,157],"exo-abdominaux-chaise-romaine":["abdominaux-chaise-romaine-phase-1.webp",144,86,234,384],"exo-gainage-lateral":["gainage-lateral-phase-2.webp",45,211,339,190],"exo-echauffement-tapis-de-course":["echauffement-tapis-phase-2.webp",61,86,348,384],"exo-course-a-pied-en-endurance":["course-endurance-phase-1.webp",92,86,243,384],"exo-course-a-pied-allure-marathon":["course-marathon-phase-2.webp",94,86,217,367],"exo-course-a-pied-allure-semi-marathon":["course-semi-marathon-phase-2.webp",122,86,279,384],"exo-course-a-pied-allure-10-km":["course-10-km-phase-2.webp",104,86,267,384],"exo-course-a-pied-allure-vma":["course-vma-phase-1.webp",49,96,366,374],"exo-course-a-pied-sprint":["course-sprint-phase-2.webp",94,93,284,377],"exo-etirement-dos":["etirement-dos-phase-1.webp",104,105,240,365],"exo-etirement-epaule":["etirement-epaule-phase-2.webp",151,86,216,384],"exo-etirement-bras":["etirement-bras-phase-1.webp",176,86,144,384],"exo-demi-squat-barre":["demi-squat-barre-phase-2.webp",122,141,198,329],"exo-goblet-squat":["goblet-squat-phase-2.webp",137,202,208,268],"exo-souleve-de-terre-roumain":["souleve-de-terre-roumain-phase-2.webp",133,178,238,292],"exo-souleve-de-terre-barre-hexagonale":["souleve-de-terre-barre-hexagonale-phase-1.webp",115,180,283,290],"exo-hip-thrust":["hip-thrust-phase-2.webp",22,169,373,251],"exo-fente-arriere-chargee":["fente-arriere-chargee-phase-2.webp",40,177,286,293],"exo-fente-bulgare":["fente-bulgare-phase-2.webp",52,167,329,303],"exo-squat-overhead":["squat-overhead-phase-2.webp",23,191,357,279],"exo-mollets-debout-jambe-tendue":["mollets-debout-jambe-tendue-phase-1.webp",216,86,72,384],"exo-mollets-assis-genou-flechi":["mollets-assis-genou-flechi-phase-1.webp",72,86,325,384],"exo-isometrie-mollet-unilateral":["isometrie-mollet-unilateral-phase-2.webp",166,86,153,384],"exo-nordic-curl":["nordic-curl-phase-2.webp",30,154,376,316],"exo-pogo-hops":["pogo-hops-phase-1.webp",236,105,69,365],"exo-sauts-verticaux":["sauts-verticaux-phase-1.webp",129,274,185,196],"exo-bondissements":["bondissements-phase-1.webp",135,86,206,384],"exo-rowing-haltere-un-bras":["rowing-haltere-un-bras-phase-1.webp",52,134,360,321],"exo-developpe-militaire-halteres":["developpe-militaire-halteres-phase-1.webp",149,142,206,328],"exo-elevations-laterales":["elevations-laterales-phase-1.webp",141,86,183,384],"exo-rotateurs-externes-elastique":["rotateurs-externes-elastique-phase-1.webp",40,86,286,384],"exo-curl-up-mcgill":["curl-up-mcgill-phase-2.webp",25,233,391,125],"exo-bird-dog":["bird-dog-phase-1.webp",52,191,282,207],"exo-pallof-press":["pallof-press-phase-1.webp",91,86,286,384],"exo-copenhagen-adduction":["copenhagen-adduction-phase-1.webp",26,220,391,188],"exo-releve-de-genoux-suspendu":["releve-de-genoux-suspendu-phase-2.webp",131,94,207,353],"exo-corde-a-sauter":["corde-a-sauter-phase-2.webp",116,86,229,384],"exo-charniere-de-hanche-au-baton":["charniere-de-hanche-au-baton-phase-2.webp",190,93,183,377],"exo-mobilite-cheville-au-mur":["mobilite-cheville-au-mur-phase-2.webp",101,86,251,384],"exo-mobilite-hanche-fente-haute":["mobilite-hanche-fente-haute-phase-1.webp",31,100,379,370],"exo-rotations-thoraciques":["rotations-thoraciques-phase-2.webp",67,120,348,348],"exo-monster-walk-elastique":["monster-walk-elastique-phase-2.webp",93,86,299,384],"exo-etirement-jambes":["etirement-jambes-phase-2.webp",66,98,313,372],"exo-etirement-chevilles":["etirement-chevilles-phase-2.webp",95,123,260,347],"exo-etirement-cou":["etirement-cou-phase-2.webp",156,86,207,384],"exo-developpe-couche":["developpe-couche-phase-2.webp",28,94,395,376],"exo-rowing-landmine":["rowing-landmine-phase-1.webp",38,122,379,344],"exo-face-pull":["face-pull-phase-2.webp",22,86,361,384],"exo-mobilisation-epaules":["mobilisation-elevation-abaissement-epaules-phase-1.webp",155,86,162,384],"exo-etirement-lateral-du-tronc":["etirement-lateral-tronc-debout-phase-2.webp",182,86,184,384],"exo-etirement-pectoraux-mains-dans-le-dos":["etirement-pectoraux-epaules-mains-dos-phase-2.webp",119,86,188,384],"exo-etirement-mollet-jambe-tendue":["etirement-mollet-debout-jambe-tendue-phase-2.webp",39,86,348,384],"exo-etirement-quadriceps-debout":["etirement-quadriceps-debout-phase-2.webp",159,86,133,384],"exo-etirement-soleaire-genoux-flechis":["etirement-soleaire-genoux-flechis-phase-2.webp",180,107,148,363],"exo-etirement-chaine-posterieure-debout":["etirement-chaine-posterieure-debout-phase-2.webp",129,223,246,247],"exo-etirement-flechisseurs-de-hanche":["etirement-flechisseurs-hanche-fente-basse-phase-1.webp",60,97,338,373],"exo-etirement-adducteurs-papillon":["etirement-adducteurs-papillon-phase-1.webp",36,114,370,356],"exo-rotation-thoracique-assise":["rotation-thoracique-assise-jambe-croisee-phase-1.webp",38,155,386,279],"exo-etirement-quadriceps-allonge":["etirement-quadriceps-allonge-lateral-phase-2.webp",21,249,399,100],"exo-etirement-fessier-genou-poitrine":["etirement-fessier-genou-poitrine-phase-2.webp",23,226,394,144],"exo-activation-abdominale-enroulement":["activation-abdominale-enroulement-court-phase-2.webp",19,204,375,180],"exo-etirement-ischio-jambiers-allonge":["etirement-ischio-jambiers-allonge-phase-2.webp",24,177,304,235],"exo-etirement-global-allonge":["etirement-global-allonge-phase-1.webp",23,264,402,61]};
+
+/* Le tonnage ne vaut que pour les exercices comptés en répétitions :
+   additionner des secondes de gainage n'aurait aucun sens. */
+function tonnageSerie(s){
+  const e=DB.exercice(s.exerciceId);
+  if(e && e.modeEffort==='temps') return 0;
+  const kg=Number(s.lestageKg), reps=Number(s.repsRealisees);
+  if(!Number.isFinite(kg)||kg<=0||!Number.isFinite(reps)||reps<=0) return 0;
+  return kg*reps;
+}
+
+/* Charge maximale atteinte sur cet exercice AVANT la séance donnée.
+   Sert à repérer un record personnel. */
+function maxAnterieur(exerciceId,avantISO){
+  const t=new Date(avantISO).getTime();
+  let max=null;
+  DB.journal.forEach(a=>{
+    const d=new Date(a.debut).getTime();
+    if(!Number.isFinite(d)||!Number.isFinite(t)||d>=t) return;
+    (a.series||[]).forEach(s=>{
+      if(s.exerciceId!==exerciceId) return;
+      const kg=Number(s.lestageKg);
+      if(Number.isFinite(kg)&&kg>0&&(max===null||kg>max)) max=kg;
+    });
+  });
+  return max;
+}
+
 function resumePartage(a){
   const groupes=new Map();
   (a.series||[]).forEach(s=>{
@@ -3241,30 +3278,106 @@ function resumePartage(a){
       const e=DB.exercice(id)||{};
       groupes.set(id,{id,nom:s.exerciceNom||e.nom||'Exercice supprimé',
         picto:s.exercicePicto||clePicto(e),categorie:s.exerciceCategorie||e.categorie,
-        series:0,charges:[]});
+        parTemps:e.modeEffort==='temps',series:0,reps:0,secondes:0,tonnage:0,charges:[]});
     }
     const g=groupes.get(id); g.series++;
-    if(s.lestageKg!==null && s.lestageKg!==undefined && s.lestageKg!=='' && Number.isFinite(Number(s.lestageKg))) g.charges.push(Number(s.lestageKg));
+    const v=Number(s.repsRealisees);
+    if(Number.isFinite(v)&&v>0){ if(g.parTemps) g.secondes+=v; else g.reps+=v; }
+    g.tonnage+=tonnageSerie(s);
+    const kg=Number(s.lestageKg);
+    if(s.lestageKg!==null&&s.lestageKg!==undefined&&s.lestageKg!==''&&Number.isFinite(kg)) g.charges.push(kg);
   });
+
   const nombre=n=>new Intl.NumberFormat('fr-FR',{maximumFractionDigits:2}).format(n);
   const exercices=Array.from(groupes.values()).map(g=>{
     const max=g.charges.length?Math.max(...g.charges):null;
-    return Object.assign(g,{valeur:max===null?'—':nombre(Math.abs(max))+' kg',
-      legende:max===null?'charge non renseignée':max<0?'assistance minimale':'charge max',
-      chargeTexte:max===null?'charge non renseignée':max<0?'assistance minimale : '+nombre(-max)+' kg':'charge max : '+nombre(max)+' kg'});
-  });
+    const avant=max!==null&&max>0?maxAnterieur(g.id,a.debut):null;
+    /* record : une charge strictement supérieure à tout l'historique,
+       et seulement si l'exercice a déjà été chargé auparavant */
+    const record=max!==null&&max>0&&avant!==null&&max>avant;
+    const detail=g.parTemps
+      ? (g.secondes?dureeLisible(g.secondes)+' tenues':g.series+' série'+(g.series>1?'s':''))
+      : (g.reps?g.reps+' répétition'+(g.reps>1?'s':''):g.series+' série'+(g.series>1?'s':''));
+    return Object.assign(g,{max,record,detail,
+      valeur:max===null?'—':nombre(Math.abs(max))+' kg',
+      legende:max===null?(g.parTemps?'au poids du corps':'charge non renseignée'):max<0?'assistance':'charge max',
+      chargeTexte:max===null?'au poids du corps':max<0?'assistance : '+nombre(-max)+' kg':nombre(max)+' kg'});
+  }).sort((x,y)=>(y.tonnage-x.tonnage)||(y.series-x.series));
+
   const date=new Date(a.debut), sec=Number(a.dureeSec);
   const duree=Number.isFinite(sec)&&sec>=0&&a.dureeSec!=null&&a.dureeSec!==''?sec:
     (a.fin&&Number.isFinite(+date)&&Number.isFinite(+new Date(a.fin))?Math.max(0,(new Date(a.fin)-date)/1000):null);
-  return {nom:a.nom||'Ma séance',date:Number.isFinite(+date)?date.toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}):'Date non renseignée',
-    jour:Number.isFinite(+date)?isoJour(date):'seance',duree,exercices,series:exercices.reduce((n,g)=>n+g.series,0)};
+
+  const tonnage=Math.round(exercices.reduce((n,g)=>n+g.tonnage,0));
+  const reps=exercices.reduce((n,g)=>n+g.reps,0);
+  const secondes=exercices.reduce((n,g)=>n+g.secondes,0);
+
+  /* Le chiffre dominant s'adapte à la séance : le tonnage quand il y a
+     de la charge, sinon le volume de répétitions, sinon le temps tenu. */
+  let heros;
+  if(tonnage>0) heros={valeur:nombre(tonnage),unite:'KG',legende:'DÉPLACÉS AUJOURD’HUI'};
+  else if(reps>0) heros={valeur:nombre(reps),unite:'',legende:'RÉPÉTITIONS ENCAISSÉES'};
+  else if(secondes>0) heros={valeur:Math.round(secondes/60),unite:'MIN',legende:'SOUS TENSION'};
+  else heros={valeur:exercices.length,unite:'',legende:'EXERCICES AU COMPTEUR'};
+
+  return {nom:a.nom||'Ma séance',
+    date:Number.isFinite(+date)?date.toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}):'Date non renseignée',
+    jour:Number.isFinite(+date)?isoJour(date):'seance',
+    duree,exercices,tonnage,reps,secondes,heros,
+    records:exercices.filter(g=>g.record).length,
+    series:exercices.reduce((n,g)=>n+g.series,0)};
 }
 function textePartage(r){
-  return '🔥 RHABDO — SÉANCE VALIDÉE\n'+r.nom+'\n'+r.date+'\n⏱ '+(r.duree===null?'Durée non renseignée':dureeLisible(r.duree))+
-    ' • '+r.series+' séries • '+r.exercices.length+' exercices\n\n'+
-    r.exercices.map(g=>'💪 '+g.nom+' — '+g.series+' série'+(g.series>1?'s':'')+' • '+g.chargeTexte).join('\n')+
-    '\n\nCHAQUE SÉRIE COMPTE. #RHABDO';
+  const lignes=['\u{1F525} RHABDO — SÉANCE VALIDÉE',r.nom,r.date,
+    '\u23F1 '+(r.duree===null?'Durée non renseignée':dureeLisible(r.duree))+
+    ' • '+r.series+' séries • '+r.exercices.length+' exercices'];
+  if(r.tonnage>0) lignes.push('\u{1F3CB} '+new Intl.NumberFormat('fr-FR').format(r.tonnage)+' kg déplacés');
+  if(r.records) lignes.push('\u{1F3C6} '+r.records+' record'+(r.records>1?'s':'')+' personnel'+(r.records>1?'s':'')+' battu'+(r.records>1?'s':'')+' !');
+  lignes.push('');
+  r.exercices.forEach(g=>lignes.push((g.record?'\u{1F3C6}':'\u{1F4AA}')+' '+g.nom+' — '+
+    g.series+' série'+(g.series>1?'s':'')+' • '+g.detail+' • '+g.chargeTexte));
+  lignes.push('','CHAQUE SÉRIE COMPTE. #RHABDO');
+  return lignes.join('\n');
 }
+/* ------------------------------------------------------------
+   Miniatures réelles.
+
+   Un canvas qui a reçu une image devient « contaminé » lorsque celle-ci
+   vient d'une autre origine : toBlob lève alors une SecurityError. C'est
+   le cas quand la page est ouverte en file://, où chaque fichier compte
+   pour une origine distincte. On le vérifie une fois, sur un canvas
+   jetable, puis on bascule sur les pictogrammes si besoin.
+   ------------------------------------------------------------ */
+const cacheMinia=new Map();
+let exportPossible=null;
+
+function chargerMinia(exoId){
+  const ref=MINIA[exoId];
+  if(!ref) return Promise.resolve(null);
+  if(cacheMinia.has(exoId)) return cacheMinia.get(exoId);
+  const p=new Promise(resolve=>{
+    const img=new Image();
+    img.onload=()=>resolve({img,x:ref[1],y:ref[2],w:ref[3],h:ref[4]});
+    img.onerror=()=>resolve(null);
+    img.src=ref[0];
+  });
+  cacheMinia.set(exoId,p);
+  return p;
+}
+
+async function miniaturesUtilisables(exercices){
+  if(exportPossible===false) return null;
+  const refs=await Promise.all(exercices.map(g=>chargerMinia(g.id)));
+  if(refs.some(r=>!r)) return null;             /* une seule manquante : on renonce */
+  if(exportPossible===null){
+    const c=document.createElement('canvas');c.width=c.height=8;
+    const x=c.getContext('2d');
+    try{ x.drawImage(refs[0].img,0,0,8,8); x.getImageData(0,0,1,1); exportPossible=true; }
+    catch(e){ exportPossible=false; }
+  }
+  return exportPossible?refs:null;
+}
+
 function imagePictoPartage(g){
   const dessin=(PICTOS[g.picto]||PICTOS.squat).replace(/<(path|line|circle)\b([^>]*?)\/>/g,(_,tag,attrs)=>{
     const classe=(attrs.match(/class="([^"]+)"/)||[])[1]||'';
@@ -3275,56 +3388,156 @@ function imagePictoPartage(g){
   return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('Pictogramme indisponible'));img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);});
 }
 async function affichePartage(r,exercices,page,total){
-  const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1470;
+  const W=1080,H=1440;
+  const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
   const ctx=canvas.getContext('2d');if(!ctx) throw new Error('Export image indisponible');
-  const W=1080,H=1470,orange='#ff591f',blanc='#fff3e4';
-  const texte=(t,x,y,size,color=blanc,weight=800)=>{ctx.fillStyle=color;ctx.font=weight+' '+size+'px Inter, sans-serif';ctx.fillText(String(t),x,y);};
-  const ajuste=(t,x,y,width,size,color=blanc,weight=800)=>{while(size>12){ctx.font=weight+' '+size+'px Inter, sans-serif';if(ctx.measureText(String(t)).width<=width)break;size--;}texte(t,x,y,size,color,weight);};
-  const poly=(points,color)=>{ctx.fillStyle=color;ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));ctx.closePath();ctx.fill();};
+  const orange='#ff591f',ambre='#ffb22e',blanc='#fff3e4',gris='#9c958f';
+
+  const texte=(t,x,y,size,color=blanc,weight=800)=>{
+    ctx.fillStyle=color;ctx.font=weight+' '+size+'px Inter, sans-serif';ctx.fillText(String(t),x,y);};
+  const ajuste=(t,x,y,largeur,size,color=blanc,weight=800)=>{
+    while(size>11){ctx.font=weight+' '+size+'px Inter, sans-serif';
+      if(ctx.measureText(String(t)).width<=largeur)break;size--;}
+    texte(t,x,y,size,color,weight);return size;};
+  const mesure=(t,size,weight=800)=>{
+    ctx.font=weight+' '+size+'px Inter, sans-serif';return ctx.measureText(String(t)).width;};
+  const poly=(points,color)=>{ctx.fillStyle=color;ctx.beginPath();
+    points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fill();};
+  /* roundRect n'existe pas partout : repli manuel */
+  const arrondi=(x,y,w,h,rad)=>{
+    ctx.beginPath();
+    if(ctx.roundRect){ctx.roundRect(x,y,w,h,rad);return;}
+    const k=Math.min(rad,w/2,h/2);
+    ctx.moveTo(x+k,y);ctx.arcTo(x+w,y,x+w,y+h,k);ctx.arcTo(x+w,y+h,x,y+h,k);
+    ctx.arcTo(x,y+h,x,y,k);ctx.arcTo(x,y,x+w,y,k);ctx.closePath();};
+  const bloc=(x,y,w,h,rad,color)=>{arrondi(x,y,w,h,rad);ctx.fillStyle=color;ctx.fill();};
+
+  /* ---------- fond ---------- */
   ctx.fillStyle='#0b0c0f';ctx.fillRect(0,0,W,H);
-  const glow=ctx.createRadialGradient(1040,160,0,1040,160,800);glow.addColorStop(0,'#793018');glow.addColorStop(1,'#0b0c0f');ctx.fillStyle=glow;ctx.fillRect(0,0,W,620);
-  ctx.strokeStyle='#ffffff09';ctx.lineWidth=1;
+  const halo=ctx.createRadialGradient(1010,120,0,1010,120,860);
+  halo.addColorStop(0,'#7c3117');halo.addColorStop(1,'#0b0c0f');
+  ctx.fillStyle=halo;ctx.fillRect(0,0,W,600);
+  ctx.strokeStyle='#ffffff0a';ctx.lineWidth=1;
   for(let x=-H;x<W;x+=58){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+H,H);ctx.stroke();}
-  poly([[910,0],[995,0],[690,570],[605,570]],'#ff591f');
-  poly([[1020,0],[1050,0],[745,570],[715,570]],'#ffb22e');
-  poly([[1070,0],[1080,0],[1080,95],[825,570],[790,570]],'#ff591f');
-  ctx.fillStyle=orange;ctx.fillRect(52,49,11,31);
-  texte('RHABDO',80,77,32);texte('TRAINING REPORT',52,119,15,'#b5aba6',600);
-  ajuste(r.date.toUpperCase(),610,76,415,19,blanc,600);
-  texte('SÉANCE',46,244,113);texte('VALIDÉE.',46,353,113,orange);
-  ajuste(r.nom.toUpperCase(),54,413,960,31,blanc,700);
-  ctx.fillStyle='#191a1f';ctx.fillRect(52,457,976,131);ctx.fillStyle=orange;ctx.fillRect(52,457,5,131);
-  const duration=r.duree===null?'—':r.duree>=3600?Math.floor(r.duree/3600)+'h '+String(Math.floor(r.duree/60)%60).padStart(2,'0'):mmss(r.duree);
-  [[duration,'DURÉE',80],[r.series,'SÉRIES',420],[r.exercices.length,'EXERCICES',740]].forEach(v=>{
-    ajuste(v[0],v[2],526,285,52);texte(v[1],v[2],563,15,'#aaa6a5',600);
-  });
-  texte('LE TRAVAIL EST FAIT.',52,636,18,orange);
-  texte(String(page).padStart(2,'0')+' / '+String(total).padStart(2,'0'),916,636,18,'#b5aba6',600);
-  const images=await Promise.all(exercices.map(imagePictoPartage));
-  exercices.forEach((g,i)=>{
-    const y=665+i*109;
-    ctx.fillStyle=i%2===0?'#18191e':'#121317';ctx.fillRect(52,y,976,101);
-    ctx.fillStyle='#232329';ctx.fillRect(64,y+9,82,82);ctx.drawImage(images[i],67,y+12,76,76);
-    // Deux lignes gardent les noms longs lisibles sur un téléphone.
-    let taille=27,lignes=[];
-    do{
-      ctx.font='800 '+taille+'px Inter, sans-serif';lignes=[''];
-      for(const mot of g.nom.split(/\s+/)){
+  poly([[948,0],[1012,0],[742,520],[678,520]],orange);
+  poly([[1030,0],[1056,0],[786,520],[760,520]],ambre);
+  poly([[1072,0],[1080,0],[1080,72],[866,520],[834,520]],orange);
+
+  /* ---------- marque ---------- */
+  ctx.fillStyle=orange;ctx.fillRect(52,47,11,31);
+  texte('RHABDO',80,75,32);
+  texte('TRAINING REPORT',52,115,15,gris,600);
+  ctx.textAlign='right';ajuste(r.date.toUpperCase(),1028,74,400,19,blanc,600);ctx.textAlign='left';
+
+  /* ---------- identité de la séance ---------- */
+  texte('SÉANCE VALIDÉE.',52,178,24,orange);
+  ajuste(r.nom.toUpperCase(),52,226,620,34,blanc,800);
+
+  /* ---------- chiffre dominant + exercice phare ---------- */
+  const minia=await miniaturesUtilisables(exercices);
+  const phare=exercices[0];
+  const carteX=716,carteY=246,carteW=312,carteH=236;
+  if(phare){
+    const ref=minia?minia[0]:null;
+    /* Les pictogrammes sont tracés en clair : sur une carte claire ils
+       disparaîtraient. Le fond suit donc ce qu'on y dessine. */
+    bloc(carteX,carteY,carteW,carteH,26,ref?'#f7f5f2':'#1b1d24');
+    if(ref){
+      ctx.save();arrondi(carteX,carteY,carteW,carteH,26);ctx.clip();
+      const m=16,dispoW=carteW-m*2,dispoH=carteH-m*2-46;
+      const k=Math.min(dispoW/ref.w,dispoH/ref.h);
+      const dw=ref.w*k,dh=ref.h*k;
+      ctx.drawImage(ref.img,ref.x,ref.y,ref.w,ref.h,
+        carteX+(carteW-dw)/2,carteY+m+(dispoH-dh)/2,dw,dh);
+      ctx.restore();
+    }else{
+      /* repli : le pictogramme vectoriel, en orange sur la carte claire */
+      const p=await imagePictoPartage(Object.assign({},phare,{picto:phare.picto}));
+      ctx.drawImage(p,carteX+76,carteY+22,160,160);
+    }
+    /* le nom tient dans la carte, sur un bandeau : aucun risque de
+       chevaucher la bande de statistiques en dessous */
+    ctx.save();arrondi(carteX,carteY,carteW,carteH,26);ctx.clip();
+    ctx.fillStyle='#0b0c0fd9';ctx.fillRect(carteX,carteY+carteH-46,carteW,46);
+    ctx.restore();
+    ctx.textAlign='center';
+    ajuste(phare.nom.toUpperCase(),carteX+carteW/2,carteY+carteH-17,carteW-28,17,blanc,700);
+    ctx.textAlign='left';
+  }
+
+  const tailleChiffre=ajuste(r.heros.valeur,52,420,r.heros.unite?500:620,150,blanc,900);
+  if(r.heros.unite){
+    const l=mesure(r.heros.valeur,tailleChiffre,900);
+    texte(r.heros.unite,52+l+16,420,46,orange,800);
+  }
+  texte(r.heros.legende,54,462,21,orange,700);
+
+  /* ---------- bande de statistiques ---------- */
+  const duree=r.duree===null?'—':r.duree>=3600
+    ?Math.floor(r.duree/3600)+'h'+String(Math.floor(r.duree/60)%60).padStart(2,'0')
+    :Math.round(r.duree/60)+' min';
+  bloc(52,518,976,112,20,'#15161b');
+  ctx.fillStyle=orange;ctx.fillRect(52,518,5,112);
+  [[duree,'DURÉE',84],[r.series,'SÉRIES',404],[r.exercices.length,'EXERCICES',716]].forEach(v=>{
+    ajuste(v[0],v[2],583,270,44,blanc,800);texte(v[1],v[2],613,14,gris,600);});
+
+  texte('LE TRAVAIL EST FAIT.',52,674,18,orange);
+  if(total>1){ctx.textAlign='right';texte(String(page).padStart(2,'0')+' / '+String(total).padStart(2,'0'),1028,674,18,gris,600);ctx.textAlign='left';}
+
+  /* ---------- lignes d'exercices ---------- */
+  const yDepart=700,hauteur=100;
+  for(let i=0;i<exercices.length;i++){
+    const g=exercices[i],y=yDepart+i*hauteur;
+    bloc(52,y,976,88,18,i%2===0?'#16171c':'#111216');
+    const ref=minia?minia[i]:null;
+    bloc(64,y+8,72,72,13,ref?'#f7f5f2':'#24262e');
+    if(ref){
+      ctx.save();arrondi(64,y+8,72,72,13);ctx.clip();
+      const k=Math.min(63/ref.w,63/ref.h),dw=ref.w*k,dh=ref.h*k;
+      ctx.drawImage(ref.img,ref.x,ref.y,ref.w,ref.h,64+(72-dw)/2,y+8+(72-dh)/2,dw,dh);
+      ctx.restore();
+    }else{
+      const p=await imagePictoPartage(g);
+      ctx.drawImage(p,69,y+13,62,62);
+    }
+    /* nom, sur deux lignes au besoin */
+    const largeurNom=g.record?440:520;
+    let taille=24,lignes=[];
+    do{ ctx.font='800 '+taille+'px Inter, sans-serif';lignes=[''];
+      for(const mot of String(g.nom).split(/\s+/)){
         const n=lignes.length-1,essai=lignes[n]?(lignes[n]+' '+mot):mot;
-        if(lignes[n]&&ctx.measureText(essai).width>542)lignes.push(mot);else lignes[n]=essai;
-      }
+        if(lignes[n]&&ctx.measureText(essai).width>largeurNom)lignes.push(mot);else lignes[n]=essai;}
       if(lignes.length<=2)break;taille--;
-    }while(taille>=18);
-    if(lignes.length>2){lignes=[lignes[0],lignes.slice(1).join(' ')];while(ctx.measureText(lignes[1]+'…').width>542&&lignes[1].length)lignes[1]=lignes[1].slice(0,-1);lignes[1]+='…';}
-    lignes.forEach((l,j)=>ajuste(l,169,y+(lignes.length>1?29:39)+j*27,542,Math.max(18,taille)));
-    texte(g.series+' SÉRIE'+(g.series>1?'S':''),169,y+83,17,'#bab4af',600);
-    ctx.textAlign='right';ajuste(g.valeur,1003,y+42,265,34,orange);ajuste(g.legende.toUpperCase(),1003,y+75,265,12,'#bab4af',600);ctx.textAlign='left';
-  });
-  if(!exercices.length)texte('Aucune série enregistrée.',54,731,25,'#bab4af',600);
-  ctx.fillStyle=orange;ctx.fillRect(52,1345,976,3);
-  texte('CHAQUE SÉRIE COMPTE.',52,1401,31);
-  texte('RHABDO / '+r.jour,54,1435,13,'#aaa6a5',500);
-  return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('Création du PNG impossible')),'image/png'));
+    }while(taille>=17);
+    if(lignes.length>2){lignes=[lignes[0],lignes.slice(1).join(' ')];
+      while(ctx.measureText(lignes[1]+'…').width>largeurNom&&lignes[1].length)lignes[1]=lignes[1].slice(0,-1);
+      lignes[1]+='…';}
+    lignes.forEach((l,j)=>ajuste(l,160,y+(lignes.length>1?29:40)+j*24,largeurNom,Math.max(16,taille)));
+    texte(g.series+' SÉRIE'+(g.series>1?'S':'')+' · '+g.detail.toUpperCase(),160,y+72,14,gris,600);
+    /* badge record */
+    if(g.record){
+      const lb='RECORD',l=mesure(lb,12,800)+20;
+      bloc(160+largeurNom+12,y+14,l,24,12,ambre);
+      texte(lb,160+largeurNom+22,y+31,12,'#241401',800);
+    }
+    /* charge */
+    ctx.textAlign='right';
+    ajuste(g.valeur,1010,y+45,250,32,g.record?ambre:orange,800);
+    ajuste(g.legende.toUpperCase(),1010,y+72,250,12,gris,600);
+    ctx.textAlign='left';
+  }
+  if(!exercices.length)texte('Aucune série enregistrée.',54,760,25,gris,600);
+
+  /* ---------- pied ---------- */
+  ctx.fillStyle=orange;ctx.fillRect(52,1320,976,3);
+  texte('CHAQUE SÉRIE COMPTE.',52,1376,31);
+  texte('RHABDO / '+r.jour,54,1410,13,gris,500);
+  if(r.records){ctx.textAlign='right';
+    texte('\u{1F3C6} '+r.records+' RECORD'+(r.records>1?'S':'')+' BATTU'+(r.records>1?'S':''),1028,1376,20,ambre,800);
+    ctx.textAlign='left';}
+
+  return new Promise((resolve,reject)=>canvas.toBlob(
+    blob=>blob?resolve(blob):reject(new Error('Création du PNG impossible')),'image/png'));
 }
 let partageEtat=null;
 function fermerPartage(){
