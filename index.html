@@ -36,6 +36,7 @@
   --fond:#F4F5F7; --surface:#FFFFFF; --surface-2:#EDEFF3; --filet:#E1E5EA;
   --texte:#14171C; --texte-2:#5F6A7B; --texte-3:#9AA3B2;
   --accent:#F94E00; --accent-doux:#FFEDE4;
+  --valide:#00A08C; --valide-doux:#E2F4F1;
   --effort:#F94E00; --recup:#00A08C; --chauffe:#F2A104; --planifie:#4C63D6;
   --haut:#4C63D6; --bas:#E07B00; --abdo:#00A08C; --mixte:#8B4FD6; --etirement:#0088A8;
   --ombre:0 1px 2px rgba(20,23,28,.06), 0 4px 14px rgba(20,23,28,.05);
@@ -240,6 +241,76 @@ details.reglages[open] summary::after{content:"\2013"}
 .rangee > *{flex:1}
 
 /* --- listes et bibliothèque --- */
+/* ------------------------------------------------------------
+   LE TABLEAU DE SÉANCE
+   Même charte : fond clair, cartes blanches, accent orange. Les
+   chiffres passent en chasse fixe pour que les colonnes s'alignent
+   à l'œil d'une ligne à l'autre.
+   ------------------------------------------------------------ */
+.bandeau-seance{position:sticky;top:-16px;z-index:6;display:flex;
+  margin:-16px -16px 14px;padding:12px 16px 11px;background:var(--surface);
+  border-bottom:1px solid var(--filet)}
+.bs-stat{flex:1;display:flex;flex-direction:column;gap:1px;min-width:0}
+.bs-lb{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--texte-3)}
+.bs-v{font-family:var(--mono);font-size:19px;font-weight:600;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums}
+.bandeau-seance .bs-stat:first-child .bs-v{color:var(--accent)}
+
+.exo-bloc{background:var(--surface);border:1px solid var(--filet);border-radius:var(--r-m);
+  padding:12px 12px 10px;margin-bottom:12px;box-shadow:var(--ombre)}
+.exo-bloc.courant{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-doux)}
+.eb-tete{display:flex;align-items:center;gap:10px}
+.eb-tete .picto.mini{flex:0 0 auto}
+.eb-id{flex:1;min-width:0}
+.eb-id h3{margin:0;font-size:15px;font-weight:700;letter-spacing:-.015em;line-height:1.25}
+.eb-etat{font-size:11.5px;color:var(--texte-2)}
+.exo-bloc.courant .eb-etat{color:var(--accent);font-weight:600}
+.eb-tete .ellipse{flex:0 0 32px;height:32px;border-radius:50%;background:var(--surface-2);
+  color:var(--texte-2);font-size:14px;letter-spacing:.06em;display:grid;place-items:center}
+.eb-repos{display:inline-flex;align-items:center;gap:5px;margin-top:9px;padding:4px 10px;
+  border-radius:99px;background:var(--accent-doux);color:var(--accent);
+  font-size:11.5px;font-weight:600}
+.eb-repos i{font-style:normal}
+
+.tab-series{width:100%;border-collapse:collapse;margin-top:9px}
+.tab-series th{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--texte-3);font-weight:600;text-align:center;padding:0 2px 5px}
+.tab-series td{padding:3px 2px;text-align:center;vertical-align:middle}
+.tab-series .col-n{width:34px;font-family:var(--mono);font-size:13px;font-weight:600;
+  color:var(--texte-2)}
+.tab-series .col-p{font-family:var(--mono);font-size:11.5px;color:var(--texte-3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:92px}
+.tab-series .col-s{width:62px}
+.tab-series .col-v{width:40px}
+.tab-series input{padding:7px 2px;text-align:center;font-family:var(--mono);font-size:14.5px;
+  font-weight:600;border-radius:var(--r-s);background:var(--surface-2);border:1px solid transparent;
+  font-variant-numeric:tabular-nums;-moz-appearance:textfield}
+.tab-series input::-webkit-outer-spin-button,
+.tab-series input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.col-vide{color:var(--texte-3)}
+.tab-series tr.active input{background:#fff;border-color:var(--accent)}
+.tab-series tr.active .col-n{color:var(--accent);font-weight:700}
+.tab-series tr.faite td{background:var(--valide-doux)}
+.tab-series tr.faite:first-child td:first-child{border-top-left-radius:var(--r-s)}
+.tab-series tr.faite input{background:transparent;color:var(--texte-2)}
+.tab-series tr.faite .col-n{color:var(--valide)}
+.coche{width:32px;height:32px;border-radius:9px;background:var(--surface-2);color:var(--texte-3);
+  font-size:15px;font-weight:700;display:grid;place-items:center;margin:0 auto}
+.coche[disabled]{opacity:.4}
+.tab-series tr.active .coche{background:var(--accent);color:#fff}
+.coche.ok{background:var(--valide);color:#fff}
+.eb-ajout{width:100%;margin-top:8px;padding:8px;border-radius:var(--r-s);background:var(--surface-2);
+  color:var(--texte-2);font-size:12.5px;font-weight:600}
+.exo-bloc .notes{margin-top:10px}
+
+/* Le cadran reste collé en bas : la séance peut toujours se
+   conduire à la voix, sans chercher le bouton dans le tableau. */
+.pilote-bas{position:sticky;bottom:-28px;z-index:6;
+  margin:14px -16px -28px;padding:10px 16px calc(28px + 4px);
+  background:var(--surface);border-top:1px solid var(--filet)}
+.pilote-bas .pilote{margin:0}
+
 /* ------------------------------------------------------------
    Grille des séances : trois colonnes, pour embrasser tout le
    catalogue sans défiler. Le nom reste prioritaire, les deux
@@ -626,6 +697,11 @@ select.molette:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accen
     box-shadow:0 24px 60px rgba(20,23,28,.16),0 2px 8px rgba(20,23,28,.06)}
   #entete{padding-top:16px}
   #vue{padding:18px 18px 28px}
+  /* La gouttière passe à 18 px : les éléments collants du tableau
+     de séance doivent déborder d'autant, sinon un liseré de fond
+     apparaît derrière eux au défilement. */
+  .bandeau-seance{top:-18px;margin:-18px -18px 14px;padding:12px 18px 11px}
+  .pilote-bas{margin:14px -18px -28px;padding:10px 18px 32px}
   #barre{padding-bottom:6px}
   .ligne:hover,.item:hover{border-color:var(--accent);cursor:pointer}
   .bouton:hover{filter:brightness(.97)}
@@ -1502,6 +1578,18 @@ const DB = {
     }
     return null;
   },
+  /* La MÊME série, la dernière fois que cet exercice a été travaillé,
+     toutes séances confondues. C'est la référence de la colonne
+     « Précédent ». Aucun repli sur une autre série : montrer la
+     série 2 en face de la série 4 mentirait sur la comparaison. */
+  precedentSerie(exerciceId,numeroSerie){
+    for(let i=DB.journal.length-1;i>=0;i--){
+      const ser=(DB.journal[i].series||[]).filter(s=>s.exerciceId===exerciceId);
+      if(!ser.length) continue;
+      return ser.find(s=>s.numeroSerie===numeroSerie)||null;
+    }
+    return null;
+  },
 
   idLibre(prefixe,nom,liste){
     let base = prefixe+slug(nom), id=base, n=2;
@@ -2197,6 +2285,7 @@ const Seance = {
         else b[k]=DB.reglageBloc(exo,b,k);
       });
     });
+    this._preparerLignes();
     this._preparerSaisie(); Ecran.prendre(); ongletCourant='seance'; edition=null;
     this.annonces=[];
     this.etat='pret';
@@ -2216,12 +2305,64 @@ const Seance = {
     this.active=s.active; this.iBloc=iBloc; this.iSerie=iSerie; this.progressions=[];
     /* on ne relance jamais un chrono tout seul au chargement */
     this.etat = (s.etat==='recup-termine') ? 'recup-termine' : 'pret';
-    this._preparerSaisie();
+    this._preparerSaisie(); this._preparerLignes();
     return true;
   },
   persister(){
     if(!this.active){ Store.effacer('seanceEnCours'); return; }
     Store.ecrire('seanceEnCours',{active:this.active,iBloc:this.iBloc,iSerie:this.iSerie,etat:this.etat});
+  },
+
+  /* Une ligne par série. La charge et les répétitions se saisissent
+     série par série, comme sur le tableau : on part de ce que le
+     moteur propose, l'utilisateur corrige à la main. */
+  _preparerLignes(){
+    if(!this.active) return;
+    this.active.blocs.forEach(b=>{
+      const exo=DB.exercice(b.exerciceId);
+      if(!Array.isArray(b.lignes)) b.lignes=[];
+      while(b.lignes.length<b.nbSeries)
+        b.lignes.push({kg:(b.lestageKg==null?null:b.lestageKg),
+                       reps:DB.proposition(exo,b), fait:false});
+      if(b.lignes.length>b.nbSeries) b.lignes.length=b.nbSeries;
+    });
+  },
+  ligne(iBloc,numero){
+    const b=this.active&&this.active.blocs[iBloc];
+    return (b&&b.lignes)?b.lignes[numero-1]:null;
+  },
+  /* Saisie libre dans une cellule. On n'appelle pas rendre() : le
+     doigt est encore dans le champ, le redessiner le viderait. */
+  saisirLigne(iBloc,numero,champ,valeur,facteur){
+    const l=this.ligne(iBloc,numero); if(!l) return;
+    if(valeur===''||valeur==null){ l[champ]=null; }
+    else{
+      const v=parseFloat(String(valeur).replace(',','.'));
+      l[champ]=isNaN(v)?null:Math.max(0,v)*(facteur||1);
+    }
+    this.persister();
+  },
+  ajouterSerie(iBloc){
+    const b=this.active&&this.active.blocs[iBloc]; if(!b) return;
+    b.nbSeries++; this._preparerLignes(); this.persister(); rendre();
+  },
+  /* La coche du tableau. Elle ne vaut que pour la série courante :
+     cocher une série qu'on n'a pas faite n'aurait aucun sens. Elle
+     reprend la charge et les répétitions de la ligne, puis rend la
+     main au moteur — récupération, décompte vocal et « GO » restent
+     exactement ce qu'ils étaient, donc on peut toujours finir une
+     séance sans toucher l'écran. */
+  validerLigne(iBloc,numero){
+    if(iBloc!==this.iBloc||numero!==this.iSerie) return;
+    const b=this._bloc(), l=this.ligne(iBloc,numero);
+    if(l){
+      if(l.reps!=null) this.repsSaisies=l.reps;
+      b.lestageKg=(l.kg==null||l.kg===0)?null:l.kg;
+    }
+    if(this.etat==='effort') this.effortEcoule=Chrono.ecouleSec();
+    else if(this.etat!=='saisie') this.effortEcoule=this.effortEcoule||0;
+    Chrono.arreter();
+    this.validerSerie();
   },
 
   _bloc(){ return this.active.blocs[this.iBloc]; },
@@ -2276,6 +2417,19 @@ const Seance = {
       effortSec:Math.round(this.effortEcoule), recupSec:0, ts:new Date().toISOString()
     });
     b.derniereSaisie=this.repsSaisies;
+    const lf=b.lignes&&b.lignes[this.iSerie-1];
+    if(lf){
+      lf.fait=true; lf.reps=this.repsSaisies; lf.kg=b.lestageKg;
+      /* Ce qui vient d'être soulevé devient la proposition pour les
+         séries suivantes du même exercice — celles qu'on n'a pas
+         encore touchées. Une ligne déjà corrigée à la main reste
+         telle quelle. */
+      for(let k=this.iSerie;k<b.lignes.length;k++){
+        const sv=b.lignes[k];
+        if(sv.fait) continue;
+        sv.kg=b.lestageKg; sv.reps=this.repsSaisies;
+      }
+    }
     const derniereSerie=this.iSerie>=b.nbSeries, dernierBloc=!this._blocSuivant();
     if(derniereSerie&&dernierBloc){ this._terminer(); return; }
     const recup = derniereSerie ? (b.recupFinSec||b.recupSerieSec) : b.recupSerieSec;
@@ -2465,6 +2619,12 @@ function toast(msg){
    aucun bouton détruit sous le doigt.
    ------------------------------------------------------------ */
 function rafraichirCadran(){
+  /* La durée du bandeau suit le même battement que le cadran. */
+  const bd=document.getElementById('bs-duree');
+  if(bd && Seance.active){
+    const t=mmss((Date.now()-new Date(Seance.active.debut))/1000);
+    if(bd.textContent!==t) bd.textContent=t;
+  }
   const cadran=document.getElementById('cadran');
   const etat=etatCadran();
   /* La pastille de la fiche en surcouche lit le même état : c'est ce
@@ -2615,6 +2775,10 @@ function rendre(){
        dessous reste montée, donc le retour ne coûte rien et le cadran
        continue de tourner. */
     v.innerHTML = html;
+    /* Le tableau peut être plus long que l'écran : après chaque
+       redessin, la série en cours revient sous les yeux. */
+    const act=v.querySelector('.tab-series tr.active');
+    if(act) act.scrollIntoView({block:'center'});
     const sur=document.getElementById('surcouche');
     if(sur) sur.innerHTML = ficheModale?modaleFiche():(repartModale?modaleRepartition():'');
     if(carte) colorierCorps();
@@ -2972,6 +3136,105 @@ function vueSeanceEnCours(){
 
   const b=Seance._bloc(), exo=Seance._exo();
   if(!b||!exo){ Seance.abandonner(); return vueListeSeances(); }
+  return vueSeanceTableau();
+}
+
+/* ------------------------------------------------------------
+   LE TABLEAU DE SÉANCE.
+
+   Toute la séance tient dans une seule liste : un bloc par
+   exercice, une ligne par série, colonnes Série / Précédent / KG /
+   Rép. / coche. La saisie est libre — on tape la charge et les
+   répétitions quand on veut, on ajoute une série, on corrige une
+   ligne déjà faite.
+
+   Le moteur, lui, n'a pas changé. La coche de la série courante
+   appelle validerSerie() comme avant : récupération, décompte
+   vocal, « GO » et enchaînement automatique sont intacts, et le
+   cadran reste en bas de l'écran. On peut donc toujours traverser
+   une séance entière sans jamais toucher l'écran, le tableau
+   n'étant là que pour ceux qui veulent reprendre la main.
+   ------------------------------------------------------------ */
+function vueSeanceTableau(){
+  const a=Seance.active, prog=Seance.progression();
+  const volume=a.series.reduce((v,s)=>v+((s.lestageKg||0)*(s.repsRealisees||0)),0);
+  const ecoule=Math.round((Date.now()-new Date(a.debut))/1000);
+
+  const bandeau='<div class="bandeau-seance">'+
+    '<div class="bs-stat"><span class="bs-lb">Durée</span>'+
+      '<span class="bs-v" id="bs-duree">'+mmss(ecoule)+'</span></div>'+
+    '<div class="bs-stat"><span class="bs-lb">Volume</span>'+
+      '<span class="bs-v">'+(volume?nbCourt(Math.round(volume))+' kg':'\u2014')+'</span></div>'+
+    '<div class="bs-stat"><span class="bs-lb">Séries</span>'+
+      '<span class="bs-v">'+prog.faites+'/'+prog.total+'</span></div></div>';
+
+  const blocs=a.blocs.map((bl,i)=>{
+    const exo=DB.exercice(bl.exerciceId); if(!exo) return '';
+    const parTemps=exo.modeEffort==='temps';
+    const enMin=saisieEnMinutes(exo);
+    const kgUtile=reglagesUtiles(exo).indexOf('lestageKg')>=0;
+    const courant=(i===Seance.iBloc);
+    const faites=(bl.lignes||[]).filter(l=>l.fait).length;
+
+    const lignes=(bl.lignes||[]).map((l,j)=>{
+      const num=j+1;
+      const p=DB.precedentSerie(bl.exerciceId,num);
+      /* On ne rappelle une charge que là où la charge se règle :
+         afficher « 25 kg » en face d'un exercice sans lestage
+         inviterait à comparer deux choses différentes. */
+      const prec = p
+        ? (parTemps ? dureeLisible(p.repsRealisees)
+                    : ((kgUtile&&p.lestageKg?lestageLisible(p.lestageKg)+' \u00D7 ':'')+p.repsRealisees))
+        : '\u2014';
+      const actif = courant && num===Seance.iSerie && !l.fait;
+      const vReps = l.reps==null ? '' : (enMin?Math.round(l.reps/60):l.reps);
+      return '<tr class="'+(l.fait?'faite':'')+(actif?' active':'')+'">'+
+        '<td class="col-n">'+num+'</td>'+
+        '<td class="col-p">'+esc(prec)+'</td>'+
+        (kgUtile?'<td class="col-s"><input type="number" inputmode="decimal" step="0.5" min="0" value="'+
+          (l.kg==null?'':l.kg)+'" data-ligne="'+i+'.'+num+'.kg.1" '+
+          'aria-label="Charge, série '+num+'"></td>':'')+
+        '<td class="col-s"><input type="number" inputmode="numeric" step="1" min="0" value="'+
+          vReps+'" data-ligne="'+i+'.'+num+'.reps.'+(enMin?60:1)+'" '+
+          'aria-label="'+(parTemps?'Durée':'Répétitions')+', série '+num+'"></td>'+
+        '<td class="col-v"><button class="coche'+(l.fait?' ok':'')+'"'+
+          (actif?' data-valider-ligne="'+i+'.'+num+'"':' disabled')+
+          ' aria-label="Valider la série '+num+'">\u2713</button></td></tr>';
+    }).join('');
+
+    return '<section class="exo-bloc'+(courant?' courant':'')+'">'+
+      '<div class="eb-tete">'+pictoLien(exo,'mini',false)+
+        '<div class="eb-id"><h3>'+esc(exo.nom)+'</h3>'+
+        '<span class="eb-etat">'+faites+'/'+bl.nbSeries+' terminée'+(bl.nbSeries>1?'s':'')+'</span></div>'+
+        '<button class="ellipse" data-fiche="'+esc(exo.id)+'" aria-label="Fiche : '+esc(exo.nom)+'">\u2026</button>'+
+      '</div>'+
+      (courant&&bl.recupSerieSec>0
+        ?'<div class="eb-repos"><i aria-hidden="true">\u23F1</i> Repos '+
+          dureeLisible(bl.recupSerieSec)+'</div>':'')+
+      '<table class="tab-series"><thead><tr>'+
+        '<th class="col-n">Série</th><th class="col-p">Précédent</th>'+
+        (kgUtile?'<th class="col-s">KG</th>':'')+
+        '<th class="col-s">'+(parTemps?(enMin?'Min':'Sec'):'Rép.')+'</th>'+
+        '<th class="col-v"></th></tr></thead><tbody>'+lignes+'</tbody></table>'+
+      '<button class="eb-ajout" data-ajout-serie="'+i+'">+ Ajouter une série</button>'+
+      (courant?champNotes(exo,'Ajouter des notes'):'')+
+      '</section>';
+  }).join('');
+
+  const bs=Seance._blocSuivant();
+  return bandeau+blocs+
+    '<div class="rangee" style="margin-top:14px">'+
+    (bs?'<button class="bouton discret" data-act="passer-exo">Passer l\u2019exercice</button>':'')+
+    '<button class="bouton discret" data-act="terminer">Terminer la séance</button></div>'+
+    '<div class="pilote-bas">'+piloteHTML()+'</div>';
+}
+
+/* Conservé : l'ancien écran guidé, une série à la fois. Il n'est
+   plus appelé mais reste la référence du comportement attendu du
+   cadran, et permet de revenir en arrière sans rien réécrire. */
+function vueSeanceGuidee(){
+  const a=Seance.active;
+  const b=Seance._bloc(), exo=Seance._exo();
   const prog=Seance.progression(), parTemps=exo.modeEffort==='temps';
   const unite=parTemps?'s':'reps';
 
@@ -4658,6 +4921,12 @@ document.addEventListener('input',ev=>{
     }
     return;
   }
+  const lg=ev.target.closest('[data-ligne]');
+  if(lg && Seance.active){
+    const p=lg.dataset.ligne.split('.');
+    Seance.saisirLigne(parseInt(p[0],10),parseInt(p[1],10),p[2],lg.value,parseInt(p[3],10));
+    return;
+  }
   const el=ev.target.closest('[data-champ]');
   if(el&&edition){
     let v=el.value;
@@ -4739,6 +5008,11 @@ document.addEventListener('click',ev=>{
       }
       rendre(); return;
     }
+    const vl=c('[data-valider-ligne]');
+    if(vl){ const p=vl.dataset.validerLigne.split('.');
+      Seance.validerLigne(parseInt(p[0],10),parseInt(p[1],10)); return; }
+    const as=c('[data-ajout-serie]');
+    if(as){ Seance.ajouterSerie(parseInt(as.dataset.ajoutSerie,10)); return; }
     const ouvreRepart=c('[data-repart]');
     if(ouvreRepart){ repartModale=ouvreRepart.dataset.repart; rendre(); return; }
     const fermeFiche=c('[data-act="fermer-fiche"]');
