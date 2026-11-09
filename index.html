@@ -769,11 +769,28 @@ function noterPanne(err){
   try{ rendre(); }catch(e){}
 }
 window.addEventListener('error', e => {
-  dernierePanne = (e.message||'Erreur inconnue') + '\n' + (e.filename||'') + ':' + (e.lineno||'');
+  /* Une image ou un script qui ne se charge pas n'est pas une panne
+     de l'application : l'événement porte alors une cible et aucun
+     message. L'afficher bloquait tout l'écran pour un fichier
+     manquant. */
+  if(e && e.target && e.target!==window && e.target.tagName) return;
+  /* Safari masque les erreurs en « Script error. » dès qu'il juge le
+     script d'une autre origine — ce qui arrive quand la page est
+     servie par le service worker. On va alors chercher la pile dans
+     e.error, seul endroit où elle survit. */
+  const err=e&&e.error;
+  const msg=(err&&err.message)||e.message||'Erreur inconnue';
+  const ou=(err&&err.stack)
+    ? err.stack.split('\n').slice(0,3).join('\n')
+    : ((e.filename||'source masquée')+':'+(e.lineno||'?'));
+  dernierePanne = msg+'\n'+ou;
   try{ rendre(); }catch(_){}
 });
 window.addEventListener('unhandledrejection', e => {
-  dernierePanne = 'Promesse rejetée : ' + (e.reason && e.reason.message ? e.reason.message : e.reason);
+  const r=e&&e.reason;
+  dernierePanne = 'Promesse rejetée : '+((r&&r.message)?r.message:String(r))+
+    '\n'+((r&&r.stack)?r.stack.split('\n').slice(0,2).join('\n'):'');
+  try{ rendre(); }catch(_){}
 });
 
 /* ============================================================
@@ -2795,10 +2812,12 @@ function noterPanneSansBoucle(err){
 function vuePanne(){
   return '<div class="panne"><h2>Quelque chose a cassé</h2>'+
     '<p style="margin:0;font-size:13.5px">Voici le message exact, à me transmettre tel quel.</p>'+
-    '<pre>'+esc(dernierePanne)+'\n\nonglet='+ongletCourant+
+    '<pre>'+esc(dernierePanne)+'\n\nversion='+VERSION+' onglet='+ongletCourant+
     ' unite='+uniteCharge+'/'+uniteCarto+' filtre='+filtreCharge+
     ' journal='+DB.journal.length+'</pre>'+
     '<button class="bouton discret" data-act="oublier-panne">Continuer quand même</button>'+
+    '<button class="bouton discret" style="margin-top:8px" data-act="forcer-maj">'+
+    'Recharger en vidant le cache</button>'+
     '<button class="bouton danger" style="margin-top:8px" data-act="reset">Réinitialiser toutes les données</button></div>';
 }
 function vueBientot(titre,quoi,lot){
@@ -5257,7 +5276,7 @@ document.addEventListener('click',ev=>{
 /* Le mode « écran d'accueil » n'existe que pour une page servie en
    http(s). Sur un fichier ouvert localement (file://), iOS ne propose
    pas l'option et refuse les service workers : on n'essaie même pas. */
-const VERSION = 'v47 \u00B7 8 novembre 2026';
+const VERSION = 'v50 \u00B7 9 novembre 2026';
 const SERVI = location.protocol==='http:' || location.protocol==='https:';
 if(SERVI && 'serviceWorker' in navigator){
   window.addEventListener('load',()=>{
@@ -5301,9 +5320,22 @@ function forcerMiseAJour(){
   setTimeout(fini,2500);   /* filet, si une promesse ne revient jamais */
 }
 
-DB.charger();
-Voix.init();
-if(Seance.reprendre()){
+/* Chaque étape du démarrage est nommée : si l'une casse, le panneau
+   dit laquelle, et les suivantes s'exécutent quand même. Sans cela
+   une seule exception laissait l'application sur un écran mort sans
+   rien dire de l'endroit où elle avait échoué. */
+function etape(nom,fn){
+  try{ return fn(); }
+  catch(err){
+    dernierePanne='Démarrage \u2014 '+nom+'\n'+
+      ((err&&err.message)||String(err))+'\n'+
+      ((err&&err.stack)?(err.stack.split('\n')[1]||''):'');
+    return undefined;
+  }
+}
+etape('chargement des données',()=>DB.charger());
+etape('synthèse vocale',()=>Voix.init());
+if(etape('reprise de séance',()=>Seance.reprendre())){
   ongletCourant='seance';
   setTimeout(()=>toast('Séance reprise là où tu l’avais laissée.'),400);
 }
