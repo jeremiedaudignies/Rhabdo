@@ -240,6 +240,33 @@ details.reglages[open] summary::after{content:"\2013"}
 .rangee > *{flex:1}
 
 /* --- listes et bibliothèque --- */
+/* ------------------------------------------------------------
+   Grille des séances : trois colonnes, pour embrasser tout le
+   catalogue sans défiler. Le nom reste prioritaire, les deux
+   actions restent atteignables au pouce.
+   ------------------------------------------------------------ */
+.grille-seances{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.tuile{display:flex;flex-direction:column;justify-content:space-between;gap:9px;
+  background:var(--surface);border:1px solid var(--filet);border-radius:var(--r-m);
+  padding:11px 10px 10px;box-shadow:var(--ombre);min-height:148px}
+.tuile h3{margin:0 0 4px;font-size:14.5px;font-weight:700;letter-spacing:-.015em;
+  line-height:1.2;hyphens:auto;overflow-wrap:anywhere}
+.tuile-meta{font-size:11px;color:var(--texte-2);line-height:1.25}
+.tuile-cats{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px}
+.tuile-cats i{width:7px;height:7px;border-radius:50%;display:block}
+.pt-haut{background:var(--haut)} .pt-bas{background:var(--bas)}
+.pt-abdo{background:var(--abdo)} .pt-etirement{background:var(--etirement)}
+.pt-course{background:var(--accent)} .pt-echauffement{background:var(--texte-3)}
+.tuile-bas{display:flex;flex-direction:column;gap:5px}
+.tuile-go{width:100%;padding:9px 4px;border-radius:99px;background:var(--accent);color:#fff;
+  font-size:12.5px;font-weight:700}
+.tuile-rangee{display:flex;gap:5px}
+.tuile-rangee button{flex:1;padding:8px 4px;border-radius:99px;background:var(--surface-2);
+  color:var(--texte-2);font-size:11.5px;font-weight:600;white-space:nowrap}
+.tuile-rangee .ellipse{flex:0 0 32px;font-size:14px;letter-spacing:.06em}
+@media (max-width:359px){
+  .grille-seances{grid-template-columns:repeat(2,1fr)}
+}
 .item{background:var(--surface);border:1px solid var(--filet);border-radius:var(--r-m);padding:15px;
   margin-bottom:10px;box-shadow:var(--ombre)}
 .item h3{margin:0 0 3px;font-weight:700;font-size:17px;letter-spacing:-.015em}
@@ -2631,22 +2658,33 @@ function vueListeSeances(){
       '<button data-reporter="'+p.id+'">Reporter</button>'+
       '<button data-suppr-p="'+p.id+'">Supprimer</button></div></div>';
   }).join('');
+
+  /* Grille de trois colonnes : toutes les séances d'un coup d'œil.
+     Le détail de la répartition musculaire passe derrière le bouton
+     « … », faute de place en colonne étroite. */
   const lm=DB.modeles.map(m=>{
     const n=(m.blocs||[]).length;
     const series=(m.blocs||[]).reduce((s,b)=>s+b.nbSeries,0);
-    return '<div class="item">'+
-      '<h3>'+esc(m.nom)+
-      '</h3>'+
-      '<div class="quand">'+(n? n+' exercice'+(n>1?'s':'')+' \u00B7 '+series+' séries'
-        : 'Aucun exercice — à compléter')+'</div>'+
-      pastillesSeance(m)+
-      '<div class="cmds">'+(n?'<button class="go" data-go="'+m.id+'">Débuter</button>':'')+
+    const cats=DB.categoriesModele(m).filter(c=>c!=='echauffement');
+    return '<div class="tuile">'+
+      '<div class="tuile-haut">'+
+      '<h3>'+esc(m.nom)+'</h3>'+
+      '<div class="tuile-meta">'+(n? n+' exo'+(n>1?'s':'')+' \u00B7 '+series+' séries'
+        : 'À compléter')+'</div>'+
+      (cats.length?'<div class="tuile-cats">'+cats.map(c=>
+        '<i class="pt-'+c+'" title="'+CATEGORIES[c]+'"></i>').join('')+'</div>':'')+
+      '</div>'+
+      '<div class="tuile-bas">'+
+      (n?'<button class="tuile-go" data-go="'+m.id+'">Débuter</button>':'')+
+      '<div class="tuile-rangee">'+
       '<button data-planifier="'+m.id+'">Planifier</button>'+
-      (n?'<button class="ellipse" data-repart="'+m.id+'" aria-label="Détail de la répartition">\u2026</button>':'')+
-      '</div></div>';
+      (n?'<button class="ellipse" data-repart="'+m.id+'" aria-label="Répartition musculaire">\u2026</button>':'')+
+      '</div></div></div>';
   }).join('');
-  return (planif.length?'<p class="etiquette">À faire</p>'+lp:'')+
-    (planif.length?'<div style="height:24px"></div>':'')+lm;
+
+  return (planif.length?'<p class="etiquette">À faire</p>'+lp+'<div style="height:22px"></div>':'')+
+    '<p class="etiquette">Toutes les séances \u00B7 '+DB.modeles.length+'</p>'+
+    '<div class="grille-seances">'+lm+'</div>';
 }
 
 /* ---------- lot 3 et 4 : bibliothèque ---------- */
