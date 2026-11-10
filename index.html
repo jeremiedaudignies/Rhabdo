@@ -1326,6 +1326,7 @@ const DB = {
     this.journal = Store.lire('journal',[])||[];
     this.reglages = Object.assign({ voix:true, bips:true, ecranAllume:true,
       enchainementAuto:true, seancesParSemaine:2, semainesCarto:4, objectifDefaut:'Force maximale',
+      poidsCorps:75,
       }, Store.lire('reglages',{})||{});
     /* Décompte volontairement sobre : un rappel à une minute, puis le
        dernier compte à rebours. Imposé par le code et non lu depuis le
@@ -1603,6 +1604,22 @@ const DB = {
      toutes séances confondues. C'est la référence de la colonne
      « Précédent ». Aucun repli sur une autre série : montrer la
      série 2 en face de la série 4 mentirait sur la comparaison. */
+  /* Ce qui a réellement été déplacé sur une série, en kilos.
+     Une charge négative est une assistance par élastique : le corps
+     est tiré vers le haut, donc la charge vraiment vaincue vaut le
+     poids du sportif moins la force de l'élastique. Une charge
+     positive reste ce qu'elle est, et le poids du corps seul n'est
+     pas compté, comme avant.
+     N'est utilisé que pour les métriques de volume : les records et
+     les propositions de charge gardent la valeur brute, sans quoi
+     l'application proposerait 60 kg là où il faut un élastique. */
+  chargeEffective(lestageKg){
+    const kg=Number(lestageKg);
+    if(!Number.isFinite(kg)||kg===0) return 0;
+    if(kg>0) return kg;
+    const corps=Number(DB.reglages&&DB.reglages.poidsCorps);
+    return Math.max(0,(Number.isFinite(corps)&&corps>0?corps:75)+kg);
+  },
   precedentSerie(exerciceId,numeroSerie){
     for(let i=DB.journal.length-1;i>=0;i--){
       const ser=(DB.journal[i].series||[]).filter(s=>s.exerciceId===exerciceId);
@@ -3183,9 +3200,8 @@ function vueSeanceEnCours(){
    ------------------------------------------------------------ */
 function vueSeanceTableau(){
   const a=Seance.active, prog=Seance.progression();
-  /* Une charge négative est une assistance, pas un poids soulevé :
-     elle ne doit ni ajouter ni retrancher du volume. */
-  const volume=a.series.reduce((v,s)=>v+(Math.max(0,s.lestageKg||0)*(s.repsRealisees||0)),0);
+  const volume=a.series.reduce((v,s)=>
+    v+(DB.chargeEffective(s.lestageKg)*(s.repsRealisees||0)),0);
   const ecoule=Math.round((Date.now()-new Date(a.debut))/1000);
 
   const bandeau='<div class="bandeau-seance">'+
@@ -3548,7 +3564,7 @@ function detailSeries(a){
       if(parTemps) sec+=r; else reps+=r;
       sec += parTemps ? 0 : (s.effortSec||0);
       if(s.lestageKg!=null && (maxi==null || s.lestageKg>maxi)) maxi=s.lestageKg;
-      if(!parTemps && s.lestageKg>0) tonnage += r*s.lestageKg;
+      if(!parTemps) tonnage += r*DB.chargeEffective(s.lestageKg);
     });
     const tot=[g.series.length+' série'+(g.series.length>1?'s':'')];
     if(reps) tot.push(reps+' rép.');
@@ -4021,7 +4037,9 @@ function sauverExo(){
   if(!d.zone1.length){ toast('Choisis au moins un groupe musculaire prioritaire.'); return; }
   ['objSeries','objReps'].forEach(k=>d[k]=Math.max(0,parseInt(d[k],10)||0));
   d.conseilProgression=String(d.conseilProgression||'').trim();
-  d.lestageKg=(d.lestageKg===''||d.lestageKg==null)?null:Math.max(0,parseFloat(d.lestageKg)||0);
+  /* Mêmes bornes qu'en séance : négatif = élastique. */
+  d.lestageKg=(d.lestageKg===''||d.lestageKg==null)
+    ? null : Math.min(300,Math.max(-60,parseFloat(d.lestageKg)||0));
   d.repsInitiales = (d.repsInitiales==null||d.repsInitiales==='') ? null : Math.max(0,parseInt(d.repsInitiales,10)||0);
   if(!d.id) d.id=DB.idLibre('exo-',d.nom,DB.exercices);
   const i=DB.exercices.findIndex(x=>x.id===d.id);
@@ -4875,6 +4893,13 @@ function vueParametres(){
       'La série suivante démarre seule à la fin de la récupération. Décoche si tu as besoin de te mettre en position, notamment en gainage.')+
     bascule('ecranAllume','Garder l’écran allumé','Empêche la mise en veille tant qu’une séance est en cours.')+
     '</div>'+
+    '<p class="etiquette" style="margin-top:20px">Sportif</p><div class="carte">'+
+    '<div class="opt"><div class="co"><b>Poids de corps</b>'+
+    '<span>Sert à chiffrer les séries assistées par élastique : la charge '+
+    'vaincue vaut ce poids moins la force de l\u2019élastique.</span></div>'+
+    '<input type="number" inputmode="numeric" min="25" max="250" '+
+    'data-reglage="poidsCorps" value="'+(r.poidsCorps||75)+'"></div>'+
+    '</div>'+
     '<p class="etiquette" style="margin-top:20px">Objectifs</p><div class="carte">'+
     '<div class="opt"><div class="co"><b>Entraînements par semaine</b>'+
     '<span>Seuil qui valide une semaine dans votre série d’activités.</span></div>'+
@@ -5290,7 +5315,7 @@ document.addEventListener('click',ev=>{
 /* Le mode « écran d'accueil » n'existe que pour une page servie en
    http(s). Sur un fichier ouvert localement (file://), iOS ne propose
    pas l'option et refuse les service workers : on n'essaie même pas. */
-const VERSION = 'v52 \u00B7 10 novembre 2026';
+const VERSION = 'v53 \u00B7 10 novembre 2026';
 const SERVI = location.protocol==='http:' || location.protocol==='https:';
 if(SERVI && 'serviceWorker' in navigator){
   window.addEventListener('load',()=>{
