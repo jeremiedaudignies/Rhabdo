@@ -288,6 +288,16 @@ details.reglages[open] summary::after{content:"\2013"}
 .tab-series .col-p{font-family:var(--mono);font-size:11px;color:var(--texte-3);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:84px}
 .tab-series .col-s{width:62px}
+.tab-series .col-kg{width:90px}
+.cell-kg{display:flex;align-items:center;gap:3px}
+.cell-kg input{flex:1;min-width:0}
+/* ± : bascule entre charge ajoutée et charge assistée par élastique.
+   Le pavé décimal d'iOS n'offre pas de touche moins. */
+.signe{flex:0 0 24px;height:30px;border-radius:var(--r-s);background:var(--surface-2);
+  color:var(--texte-3);font-size:13px;font-weight:700;display:grid;place-items:center}
+.signe.actif{background:var(--valide-doux);color:var(--valide)}
+.tab-series tr.active .signe{background:#fff;border:1px solid var(--filet)}
+.tab-series tr.active .signe.actif{background:var(--valide-doux);border-color:var(--valide)}
 .tab-series .col-v{width:40px}
 .tab-series .col-x{width:26px}
 .retirer{width:24px;height:24px;border-radius:50%;color:var(--texte-3);font-size:15px;
@@ -346,6 +356,8 @@ details.reglages[open] summary::after{content:"\2013"}
 .tuile-bas{display:flex;flex-direction:column;gap:5px}
 .tuile-go{width:100%;padding:9px 4px;border-radius:99px;background:var(--accent);color:#fff;cursor:pointer;
   font-size:12.5px;font-weight:700}
+.tuile-second{width:100%;padding:8px 4px;border-radius:99px;background:var(--accent-doux);
+  color:var(--accent);font-size:12px;font-weight:700;cursor:pointer}
 .tuile-rangee{display:flex;gap:5px}
 .tuile-rangee button{flex:1;padding:8px 4px;border-radius:99px;background:var(--surface-2);
   color:var(--texte-2);font-size:11.5px;font-weight:600;white-space:nowrap}
@@ -778,11 +790,6 @@ select.molette:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accen
    0. FILET DE SÉCURITÉ
    ============================================================ */
 let dernierePanne = null;
-function noterPanne(err){
-  dernierePanne = (err && err.message ? err.message : String(err)) + '\n' +
-    (err && err.stack ? (err.stack.split('\n')[1] || '') : '');
-  try{ rendre(); }catch(e){}
-}
 window.addEventListener('error', e => {
   /* Une image ou un script qui ne se charge pas n'est pas une panne
      de l'application : l'événement porte alors une cible et aucun
@@ -860,9 +867,6 @@ const GROUPES = {
    des exercices qu'elle contient. « Mixte » n'existe donc plus. */
 const CATEGORIES = { echauffement:'Échauffement', course:'Course à pied', haut:'Haut', bas:'Bas',
   abdo:'Abdominaux', gainage:'Gainage', etirement:'Étirements' };
-/* Ces trois catégories se comptent en secondes tenues, pas en
-   répétitions : c'est ce qui décide de l'unité par défaut. */
-const CATEGORIES_DUREE = ['echauffement','course','gainage','etirement'];
 const CAT_EXO = CATEGORIES;
 
 const slug = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'')
@@ -3060,12 +3064,6 @@ function vuePanne(){
     'Recharger en vidant le cache</button>'+
     '<button class="bouton danger" style="margin-top:8px" data-act="reset">Réinitialiser toutes les données</button></div>';
 }
-function vueBientot(titre,quoi,lot){
-  return '<div class="vide"><div class="gros">\u{1F6E0}</div>'+
-    '<p style="font-weight:800;font-size:20px;color:var(--texte);letter-spacing:-.02em">'+titre+'</p>'+
-    '<p style="max-width:32ch;margin:6px auto 14px">'+quoi+'</p><span class="pastille mixte">'+lot+'</span></div>';
-}
-
 /* ---------- page 5 : liste des séances à réaliser ---------- */
 function vueListeSeances(){
   const planif=DB.planifiees.filter(p=>p.statut==='planifiee')
@@ -3151,6 +3149,7 @@ function listeSeances(){
       '</div>'+
       '<div class="tuile-bas">'+
       '<button class="tuile-go" data-editer-s="'+m.id+'">Modifier</button>'+
+      (n?'<button class="tuile-second" data-partager-s="'+m.id+'">Partager</button>':'')+
       '<div class="tuile-rangee">'+
       '<button data-dupliquer-s="'+m.id+'">Dupliquer</button>'+
       (n?'<button class="ellipse" data-repart="'+m.id+'" aria-label="Répartition musculaire">\u2026</button>':'')+
@@ -3170,31 +3169,9 @@ function listeSeances(){
       : '<div class="vide"><p>Aucune séance. Crée la première.</p></div>');
 }
 
-/* Part de chaque groupe musculaire dans les séries d'une séance.
-   Renvoie une liste triée, du plus sollicité au moins sollicité. */
-function repartitionSeance(m){
-  const compte={}; let total=0;
-  (m.blocs||[]).forEach(b=>{
-    const e=DB.exercice(b.exerciceId);
-    if(!e || e.categorie==='echauffement' || e.categorie==='etirement') return;
-    total += b.nbSeries;
-    (e.zone1||[]).forEach(g=>{ compte[g]=(compte[g]||0)+b.nbSeries; });
-    (e.zone2||[]).forEach(g=>{ compte[g]=(compte[g]||0)+b.nbSeries*0.5; });
-  });
-  if(!total) return [];
-  return Object.keys(compte)
-    .map(g=>({g, pct:Math.round(compte[g]/total*100)}))
-    .filter(x=>x.pct>=5)       /* le détail complet est dans la modale */
-    .sort((a,b)=>b.pct-a.pct);
-}
 /* À quelle colonne appartient chaque groupe musculaire. */
 const COL_HAUT = ['pectoraux','dos','epaules','triceps','biceps'];
 const COL_BAS  = ['fessiers','quadriceps','ischios','mollets','hanche','abdo'];
-/* Noms raccourcis : trois colonnes sur un écran de téléphone ne
-   laissent pas la place à « Ischio-jambiers ». */
-const GROUPES_COURTS = {abdo:'Abdos', ischios:'Ischios', quadriceps:'Quadriceps'};
-const nomCourt = g => GROUPES_COURTS[g] || GROUPES[g];
-
 /* Part de chaque grande famille dans le total des séries. Les trois
    font 100 %. */
 function partsFamilles(m){
@@ -3214,17 +3191,6 @@ function partsFamilles(m){
   return {prep:a, haut:b, bas:100-a-b};
 }
 
-/* Y a-t-il de l'échauffement, des étirements dans cette séance ? */
-function preparationSeance(m){
-  const out={chauffe:false, etire:false};
-  (m.blocs||[]).forEach(b=>{
-    const e=DB.exercice(b.exerciceId); if(!e) return;
-    if(e.categorie==='echauffement'||e.categorie==='course') out.chauffe=true;
-    if(e.categorie==='etirement') out.etire=true;
-  });
-  return out;
-}
-
 /* Résumé d'une ligne, pour les vues qui n'ont pas la place de la
    grille : bibliothèque et planning. */
 function resumeSeance(m){
@@ -3235,23 +3201,6 @@ function resumeSeance(m){
   if(f.haut) bouts.push(f.haut+'\u2009% haut');
   if(f.bas)  bouts.push(f.bas+'\u2009% bas');
   return bouts.join(' \u00B7 ');
-}
-function pastillesSeance(m){
-  const r=repartitionSeance(m), f=partsFamilles(m);
-  if(!f) return '<p class="aide" style="margin:8px 0 0">Aucun exercice — à compléter.</p>';
-  const prep=preparationSeance(m);
-  const colonne=(titre,pct,contenu)=>
-    '<div class="col"><span class="tete">'+titre+'<b>'+pct+'\u2009%</b></span>'+contenu+'</div>';
-  const badges=liste=>r.filter(x=>liste.indexOf(x.g)>=0).slice(0,5)
-    .map(x=>'<span class="p"><b>'+x.pct+'\u2009%</b> '+nomCourt(x.g)+'</span>').join('');
-  return '<div class="repart">'+
-    colonne('Préparation', f.prep,
-      (prep.chauffe?'<span class="p">Échauffement</span>':'')+
-      (prep.etire?'<span class="p">Étirements</span>':'')+
-      (!prep.chauffe&&!prep.etire?'<span class="p muet">\u2014</span>':''))+
-    colonne('Haut', f.haut, badges(COL_HAUT)||'<span class="p muet">\u2014</span>')+
-    colonne('Bas / gainage', f.bas, badges(COL_BAS)||'<span class="p muet">\u2014</span>')+
-    '</div>';
 }
 function vueEditeur(){ return edition.type==='exo'?editeurExercice():editeurSeance(); }
 
@@ -3486,10 +3435,14 @@ function vueSeanceTableau(){
       return '<tr class="'+(l.fait?'faite':'')+(actif?' active':'')+'">'+
         '<td class="col-n">'+num+'</td>'+
         '<td class="col-p">'+esc(prec)+'</td>'+
-        (kgUtile?'<td class="col-s"><input type="number" step="0.5" value="'+
+        (kgUtile?'<td class="col-s col-kg"><div class="cell-kg">'+
+          '<button class="signe'+(l.kg<0?' actif':'')+'" data-signe="1" '+
+          'aria-label="Basculer en charge assistée (élastique), série '+num+'" '+
+          'title="Élastique">\u00B1</button>'+
+          '<input type="number" inputmode="decimal" step="0.5" value="'+
           (l.kg==null?'':l.kg)+'" data-ligne="'+i+'.'+num+'.kg.1" '+
           'class="'+(l.kg<0?'elastique':'')+'" '+
-          'aria-label="Charge, série '+num+' (négatif = élastique)"></td>':'')+
+          'aria-label="Charge, série '+num+'"></div></td>':'')+
         '<td class="col-s"><input type="number" inputmode="numeric" step="1" min="0" value="'+
           vReps+'" data-ligne="'+i+'.'+num+'.reps.'+(enMin?60:1)+'" '+
           'aria-label="'+(parTemps?'Durée':'Répétitions')+', série '+num+'"></td>'+
@@ -3546,70 +3499,6 @@ function vueSeanceTableau(){
     '<div class="pilote-bas">'+piloteHTML()+'</div>';
 }
 
-/* Conservé : l'ancien écran guidé, une série à la fois. Il n'est
-   plus appelé mais reste la référence du comportement attendu du
-   cadran, et permet de revenir en arrière sans rien réécrire. */
-function vueSeanceGuidee(){
-  const a=Seance.active;
-  const b=Seance._bloc(), exo=Seance._exo();
-  const prog=Seance.progression(), parTemps=exo.modeEffort==='temps';
-  const unite=parTemps?'s':'reps';
-
-  /* Correction 5 : « Exercice suivant » désigne bien l'exercice
-     suivant, jamais la prochaine série de l'exercice en cours. */
-  const bs=Seance._blocSuivant();
-  const exoSuivant = bs ? (DB.exercice(bs.exerciceId)||{nom:'?'}) : null;
-  const restantes = b.nbSeries - Seance.iSerie;
-  const vignetteSuite = exoSuivant ? pictoLien(exoSuivant,'mini',true) : '';
-  const ligneSuite = exoSuivant
-    ? 'Exercice suivant : <b>'+esc(exoSuivant.nom)+'</b>'
-    : 'Dernier exercice de la séance';
-
-  /* Le geste principal est passé dans l'anneau : il ne reste ici que
-     les échappatoires — mettre en pause, corriger un compte. */
-  let action='';
-  if(Seance.etat==='effort'){
-    action='<div class="rangee">'+
-      (parTemps?'<button class="bouton discret" data-act="pause">'+(Chrono.enPause()?'Reprendre':'Pause')+'</button>':'')+
-      '<button class="bouton discret" data-act="finSerie">Autre nombre</button></div>';
-  } else if(Seance.etat==='saisie'){
-    /* Correction 4 : l'objectif est un cadre à gauche du compteur,
-       de même hauteur que les commandes. */
-    const c=Seance.repsSaisies<b.nbReps?'sous-objectif':Seance.repsSaisies>b.nbReps?'sur-objectif':'';
-    const enMin=saisieEnMinutes(exo);
-    action='<div class="carte">'+
-      '<p class="rappel-obj">'+(parTemps?(enMin?'Durée réalisée':'Temps tenu'):'Répétitions réalisées')+'</p>'+
-      '<div class="saisie-rangee">'+
-      '<div class="objectif-box"><span class="lb">Objectif</span><span class="nb">'+
-        valeurSaisieAffichee(exo,b.nbReps)+'</span></div>'+
-      '<button class="rond" data-act="reps-" aria-label="Retirer">\u2212</button>'+
-      '<span class="val '+c+'">'+valeurSaisieAffichee(exo,Seance.repsSaisies)+'</span>'+
-      '<button class="rond" data-act="reps+" aria-label="Ajouter">+</button></div>'+
-      '<p class="rappel-obj">'+(parTemps?(enMin?'minutes':'secondes'):'répétitions')+'</p></div>';
-  } else if(Seance.etat==='recup'){
-    action='<button class="bouton discret" data-act="pause">'+
-      (Chrono.enPause()?'Reprendre':'Pause')+'</button>';
-  }
-
-  return '<div class="avancement">'+
-    '<div class="fil"><span>Exercice '+(Seance.iBloc+1)+' sur '+a.blocs.length+'</span>'+
-    '<span>'+prog.pct+' %</span></div>'+
-    '<div class="jauge"><i style="width:'+prog.pct+'%"></i></div></div>'+
-    '<div class="exo-tete">'+pictoLien(exo,'grand',true)+'<div style="min-width:0">'+
-    '<h2 class="exo-nom">'+esc(exo.nom)+'</h2>'+
-    '<p class="exo-meta">'+lignesMuscles(exo)+'</p></div></div>'+
-    blocObjectif(exo,true)+
-    reglagesSerie(exo,b)+
-    (exo.remarque?'<p class="aide" style="margin-top:10px">'+esc(exo.remarque)+'</p>':'')+
-    piloteHTML()+
-    (action?'<div class="zone-action">'+action+'</div>':'')+
-    champNotes(exo)+
-    '<div class="suite">'+vignetteSuite+'<span>'+ligneSuite+'</span></div>'+
-    '<div class="rangee" style="margin-top:14px">'+
-    (bs?'<button class="bouton discret" data-act="passer-exo">Passer l’exercice</button>':'')+
-    '<button class="bouton discret" data-act="terminer">Terminer la séance</button></div>';
-}
-
 /* Plus aucun exercice ne se règle par l'écartement : la liste reste,
    vide, pour que la mécanique tienne si le besoin réapparaît. */
 const ECARTEMENT_UTILE = [];
@@ -3657,15 +3546,6 @@ function direQuantite(exo,v){
 /* Ce que vise l'exercice et comment il progresse. Affiché en clair
    pendant la séance : c'est au moment de lancer la série qu'on a
    besoin de savoir ce qui déclenche le palier suivant. */
-/* Le conseil de progression, plus les deux charges de référence.
-   Un échauffement ou un étirement n'a rien à charger : on n'affiche
-   rien plutôt qu'une phrase vide. */
-function blocProgression(exo,b){
-  if(exo.categorie==='echauffement' || exo.categorie==='course') return '';
-  const c=(exo.conseilProgression||'').trim();
-  return c?'<div class="bloc-prog"><b>Progression :</b> '+esc(c)+'</div>':'';
-}
-
 /* Les deux charges qui situent la série : celle de la dernière fois,
    et le record. Affiché seulement là où le lestage a un sens — inutile
    sur un étirement ou un Pallof press — et seulement s'il y a
@@ -3688,25 +3568,6 @@ const MOIS_COURT=['janv.','févr.','mars','avr.','mai','juin',
 function dateCourte(iso){
   const d=new Date(iso);
   return isNaN(d)?'':d.getDate()+' '+MOIS_COURT[d.getMonth()];
-}
-
-/* Écartement, hauteur, lestage : ouverts quand on s'apprête à lancer
-   une série, repliés pendant l'effort et la récupération, où les
-   toucher n'aurait plus de sens. */
-function reglagesSerie(exo,b){
-  const utiles=reglagesUtiles(exo);
-  if(!utiles.length) return '';
-  const corps =
-    (utiles.indexOf('ecartementCm')>=0?reglageHTML('Écartement','ecartementCm',b.ecartementCm,'cm',1):'')+
-    (utiles.indexOf('hauteurCm')>=0?reglageHTML('Hauteur','hauteurCm',b.hauteurCm,'cm',1,AIDE_HAUTEUR):'')+
-    chargesReference(exo)+
-    (utiles.indexOf('lestageKg')>=0?reglageLestage(b.lestageKg,
-      b.reglagesRepris
-        ? 'Repris du maximum de ta dernière séance sur cet exercice. Ajuste avant de lancer : la valeur part avec la série.'
-        : 'Premier passage : valeurs du modèle. Ce que tu régleras ici servira de point de départ la prochaine fois.'):'');
-  if(Seance.etat==='pret')
-    return '<div class="reglages reglages-vifs">'+corps+'</div>';
-  return '<details class="reglages"><summary>Réglages de l’exercice</summary>'+corps+'</details>';
 }
 
 /* Le lestage a son propre affichage : rien saisi = poids du corps. */
@@ -4378,9 +4239,6 @@ function serieDansUnite(s,unite){ return uniteSerie(s)===unite; }
 /* catégories proposées aux filtres, étirements compris */
 const CATS_STAT=[['tous','Tout'],['haut','Haut du corps'],['bas','Bas du corps'],
                  ['abdo','Abdominaux'],['gainage','Gainage'],['etirement','Étirements']];
-/* unité naturelle d'une catégorie : les étirements se lisent en durée */
-function uniteNaturelle(cat){ return CATEGORIES_DUREE.indexOf(cat)>=0?'temps':'reps'; }
-
 /* bilan d'une séance archivée, chaque unité de son côté */
 function bilanSeance(a){
   let reps=0, sec=0, atteints=0;
@@ -5108,9 +4966,14 @@ function vueCorrigerSeance(){
     const lignes=g.lignes.map((l,j)=>{
       const vReps=l.s.repsRealisees==null?'':(enMin?Math.round(l.s.repsRealisees/60):l.s.repsRealisees);
       return '<tr><td class="col-n">'+(j+1)+'</td>'+
-        (kgUtile?'<td class="col-s"><input type="number" step="0.5" value="'+
+        (kgUtile?'<td class="col-s col-kg"><div class="cell-kg">'+
+          '<button class="signe'+(l.s.lestageKg<0?' actif':'')+'" data-signe="1" '+
+          'aria-label="Basculer en charge assistée (élastique), série '+(j+1)+'" '+
+          'title="Élastique">\u00B1</button>'+
+          '<input type="number" inputmode="decimal" step="0.5" value="'+
           (l.s.lestageKg==null?'':l.s.lestageKg)+'" data-corr="'+l.idx+'.lestageKg.1" '+
-          'aria-label="Charge, série '+(j+1)+'"></td>':'')+
+          'class="'+(l.s.lestageKg<0?'elastique':'')+'" '+
+          'aria-label="Charge, série '+(j+1)+'"></div></td>':'')+
         '<td class="col-s"><input type="number" step="1" min="0" value="'+vReps+'" '+
           'data-corr="'+l.idx+'.repsRealisees.'+(enMin?60:1)+'" '+
           'aria-label="'+(parTemps?'Durée':'Répétitions')+', série '+(j+1)+'"></td>'+
@@ -5573,6 +5436,8 @@ document.addEventListener('click',ev=>{
     if(objBtn){ objectifChoisi[objBtn.dataset.exo]=objBtn.dataset.obj; rendre(); return; }
     const courbe=c('[data-courbe]');
     if(courbe){ exoCourbe=courbe.dataset.courbe; rendre(); return; }
+    const parS=c('[data-partager-s]');
+    if(parS){ partagerSeance(DB.modele(parS.dataset.partagerS)); return; }
     const dupS=c('[data-dupliquer-s]');
     if(dupS){
       const src=DB.modele(dupS.dataset.dupliquerS);
@@ -5608,6 +5473,25 @@ document.addEventListener('click',ev=>{
            repsRealisees:0, lestageKg:null, effortSec:0, recupSec:0,
            ts:new Date().toISOString()});
       rendre(); return;
+    }
+    const sg=c('[data-signe]');
+    if(sg){
+      /* Le pavé décimal d'iOS n'a pas de touche moins. Plutôt que
+         d'imposer le clavier complet pour saisir un élastique, le
+         bouton retourne le signe du champ, puis laisse l'événement
+         « input » ordinaire écrire dans le modèle : une seule
+         logique de saisie, pour la séance comme pour la correction. */
+      const ch=sg.parentNode.querySelector('input');
+      if(ch){
+        const v=parseFloat(String(ch.value).replace(',','.'));
+        if(!isNaN(v)&&v!==0){
+          ch.value=String(-v);
+          ch.dispatchEvent(new Event('input',{bubbles:true}));
+          ch.classList.toggle('elastique',-v<0);
+          sg.classList.toggle('actif',-v<0);
+        } else toast('Saisis d\u2019abord une charge, puis \u00B1 pour l\u2019élastique.');
+      }
+      return;
     }
     const rt=c('[data-rattraper]');
     if(rt){ const p=rt.dataset.rattraper.split('.');
@@ -5915,7 +5799,7 @@ document.addEventListener('click',ev=>{
 /* Le mode « écran d'accueil » n'existe que pour une page servie en
    http(s). Sur un fichier ouvert localement (file://), iOS ne propose
    pas l'option et refuse les service workers : on n'essaie même pas. */
-const VERSION = 'v57 \u00B7 13 novembre 2026';
+const VERSION = 'v58 \u00B7 13 novembre 2026';
 const SERVI = location.protocol==='http:' || location.protocol==='https:';
 if(SERVI && 'serviceWorker' in navigator){
   window.addEventListener('load',()=>{
