@@ -266,6 +266,12 @@ details.reglages[open] summary::after{content:"\2013"}
 .eb-id h3{margin:0;font-size:15px;font-weight:700;letter-spacing:-.015em;line-height:1.25}
 .eb-etat{font-size:11.5px;color:var(--texte-2)}
 .exo-bloc.courant .eb-etat{color:var(--accent);font-weight:600}
+.eb-outils{display:flex;align-items:center;gap:5px;flex:0 0 auto}
+.eb-fleche{width:28px;height:28px;border-radius:50%;background:var(--surface-2);
+  color:var(--texte-2);font-size:13px;display:grid;place-items:center}
+.ajout-exo{padding:12px;margin-bottom:0}
+.ajout-exo label{display:block;font-size:12.5px;font-weight:600;color:var(--texte-2);
+  margin-bottom:6px}
 .eb-tete .ellipse{flex:0 0 32px;height:32px;border-radius:50%;background:var(--surface-2);
   color:var(--texte-2);font-size:14px;letter-spacing:.06em;display:grid;place-items:center}
 .eb-repos{display:inline-flex;align-items:center;gap:5px;margin-top:9px;padding:4px 10px;
@@ -1620,13 +1626,18 @@ const DB = {
     const corps=Number(DB.reglages&&DB.reglages.poidsCorps);
     return Math.max(0,(Number.isFinite(corps)&&corps>0?corps:75)+kg);
   },
-  precedentSerie(exerciceId,numeroSerie){
+  /* Toutes les séries du dernier passage sur cet exercice, rangées
+     par numéro, toutes séances confondues. */
+  dernierPassage(exerciceId){
     for(let i=DB.journal.length-1;i>=0;i--){
       const ser=(DB.journal[i].series||[]).filter(s=>s.exerciceId===exerciceId);
-      if(!ser.length) continue;
-      return ser.find(s=>s.numeroSerie===numeroSerie)||null;
+      if(ser.length) return ser.slice().sort((a,b)=>(a.numeroSerie||0)-(b.numeroSerie||0));
     }
     return null;
+  },
+  precedentSerie(exerciceId,numeroSerie){
+    const p=DB.dernierPassage(exerciceId);
+    return p ? (p.find(s=>s.numeroSerie===numeroSerie)||null) : null;
   },
 
   idLibre(prefixe,nom,liste){
@@ -2323,6 +2334,7 @@ const Seance = {
         else b[k]=DB.reglageBloc(exo,b,k);
       });
     });
+    this._restaurerDernierPassage();
     this._preparerLignes();
     this._preparerSaisie(); Ecran.prendre(); ongletCourant='seance'; edition=null;
     this.annonces=[];
@@ -2343,7 +2355,12 @@ const Seance = {
     this.active=s.active; this.iBloc=iBloc; this.iSerie=iSerie; this.progressions=[];
     /* on ne relance jamais un chrono tout seul au chargement */
     this.etat = (s.etat==='recup-termine') ? 'recup-termine' : 'pret';
-    this._preparerSaisie(); this._preparerLignes();
+    /* Une séance déjà en cours ne se redimensionne pas sous les
+       doigts : on se contente de retrouver la recommandation. */
+    this.active.blocs.forEach(b=>{
+      if(!b.reco) b.reco={series:b.nbSeries, reps:b.nbReps};
+    });
+    this._preparerLignes(); this._preparerSaisie();
     return true;
   },
   persister(){
@@ -2354,6 +2371,44 @@ const Seance = {
   /* Une ligne par série. La charge et les répétitions se saisissent
      série par série, comme sur le tableau : on part de ce que le
      moteur propose, l'utilisateur corrige à la main. */
+  /* Au démarrage, chaque exercice repart tel qu'il a été encodé la
+     dernière fois : même nombre de séries, mêmes charges, mêmes
+     répétitions. Ce que la routine recommande n'est pas perdu pour
+     autant — il passe en sous-titre, où l'écart se voit. */
+  _restaurerDernierPassage(){
+    if(!this.active) return;
+    this.active.blocs.forEach(b=>{
+      b.reco={series:b.nbSeries, reps:b.nbReps};
+      const passe=DB.dernierPassage(b.exerciceId);
+      if(passe&&passe.length) b.nbSeries=passe.length;
+    });
+  },
+  /* Réordonner la séance en cours. Ce qui est derrière le moteur
+     reste figé : remonter un exercice déjà fait le ferait rejouer,
+     et les séries enregistrées pointent sur leur rang. */
+  deplacerBloc(i,sens){
+    const a=this.active&&this.active.blocs; if(!a) return;
+    const j=i+sens;
+    if(j<0||j>=a.length) return;
+    if(i<=this.iBloc||j<=this.iBloc){
+      toast('Les exercices déjà entamés ne se déplacent plus.'); return;
+    }
+    const t=a[i]; a[i]=a[j]; a[j]=t;
+    (this.active.series||[]).forEach(s=>{
+      if(s.indexBloc===i) s.indexBloc=j; else if(s.indexBloc===j) s.indexBloc=i;
+    });
+    this.persister(); rendre();
+  },
+  ajouterExercice(exerciceId){
+    const exo=DB.exercice(exerciceId);
+    if(!exo||!this.active){ toast('Choisis d\u2019abord un exercice.'); return; }
+    const se=exo.objSeries||3, rp=exo.objReps||10;
+    this.active.blocs.push({exerciceId:exo.id, nbSeries:se, nbReps:rp,
+      recupSerieSec:60, recupFinSec:120, repsInitiales:null,
+      reco:{series:se, reps:rp}});
+    this._preparerLignes(); this.persister(); rendre();
+    toast(exo.nom+' ajouté en fin de séance.');
+  },
   _preparerLignes(){
     if(!this.active) return;
     this.active.blocs.forEach(b=>{
@@ -2428,8 +2483,15 @@ const Seance = {
     if(b.ecartementCm===undefined) b.ecartementCm=exo.ecartementCm;
     if(b.hauteurCm===undefined) b.hauteurCm=exo.hauteurCm;
     if(b.lestageKg===undefined) b.lestageKg=exo.lestageKg||0;
-    /* la saisie de la série précédente devient la proposition par défaut */
-    this.repsSaisies = (b.derniereSaisie!=null) ? b.derniereSaisie : b.nbReps;
+    /* La ligne du tableau fait foi : c'est elle que l'utilisateur a
+       sous les yeux et qu'il a pu corriger. Le cadran et l'annonce
+       vocale doivent dire la même chose qu'elle, sans quoi l'écran
+       propose 5 répétitions pendant que la voix en annonce 8. À
+       défaut de ligne, on retombe sur la saisie précédente. */
+    const l=this.ligne(this.iBloc,this.iSerie);
+    if(l&&l.reps!=null) this.repsSaisies=l.reps;
+    else this.repsSaisies=(b.derniereSaisie!=null)?b.derniereSaisie:b.nbReps;
+    if(l&&l.kg!=null) b.lestageKg=l.kg;
   },
 
   demarrerSerie(){
@@ -3087,13 +3149,19 @@ function editeurExercice(){
     (edition.nouveau?'':'<button class="bouton danger" style="margin-top:8px" data-act="suppr-exo">Supprimer cet exercice</button>');
 }
 
-/* --- page 4 : création / modification de séance --- */
-function editeurSeance(){
-  const d=edition.data;
-  const optExos=Object.keys(CAT_EXO).map(cat=>
+/* La bibliothèque entière en <option>, groupée par catégorie :
+   servie à l'éditeur de séance comme au tableau en cours. */
+function optionsExercices(){
+  return Object.keys(CAT_EXO).map(cat=>
     '<optgroup label="'+CAT_EXO[cat]+'">'+
     DB.exercices.filter(e=>e.categorie===cat).sort((a,b)=>a.nom.localeCompare(b.nom,'fr'))
       .map(e=>'<option value="'+e.id+'">'+esc(e.nom)+'</option>').join('')+'</optgroup>').join('');
+}
+
+/* --- page 4 : création / modification de séance --- */
+function editeurSeance(){
+  const d=edition.data;
+  const optExos=optionsExercices();
 
   /* Durée d'une série en deux molettes : minutes, puis secondes
      bornées à 59. On écrit toujours un total en secondes. */
@@ -3233,7 +3301,12 @@ function vueSeanceTableau(){
     const enMin=saisieEnMinutes(exo);
     const kgUtile=reglagesUtiles(exo).indexOf('lestageKg')>=0;
     const courant=(i===Seance.iBloc);
-    const faites=(bl.lignes||[]).filter(l=>l.fait).length;
+    /* Le sous-titre dit ce que la routine recommande. Le nombre de
+       séries, lui, a été restauré du dernier passage : l'écart se
+       lit donc d'un coup d'œil entre le sous-titre et le tableau. */
+    const reco=bl.reco||{series:bl.nbSeries, reps:bl.nbReps};
+    const recoTxt='Recommandé : '+reco.series+' \u00D7 '+
+      (parTemps?dureeLisible(reco.reps):reco.reps);
 
     const lignes=(bl.lignes||[]).map((l,j)=>{
       const num=j+1;
@@ -3265,8 +3338,14 @@ function vueSeanceTableau(){
     return '<section class="exo-bloc'+(courant?' courant':'')+'">'+
       '<div class="eb-tete">'+pictoLien(exo,'mini',false)+
         '<div class="eb-id"><h3>'+esc(exo.nom)+'</h3>'+
-        '<span class="eb-etat">'+faites+'/'+bl.nbSeries+' terminée'+(bl.nbSeries>1?'s':'')+'</span></div>'+
+        '<span class="eb-etat">'+esc(recoTxt)+'</span></div>'+
+        '<div class="eb-outils">'+
+        (i>Seance.iBloc+1
+          ?'<button class="eb-fleche" data-bloc-haut="'+i+'" aria-label="Monter '+esc(exo.nom)+'">\u2191</button>':'')+
+        (i>Seance.iBloc && i<a.blocs.length-1
+          ?'<button class="eb-fleche" data-bloc-bas="'+i+'" aria-label="Descendre '+esc(exo.nom)+'">\u2193</button>':'')+
         '<button class="ellipse" data-fiche="'+esc(exo.id)+'" aria-label="Fiche : '+esc(exo.nom)+'">\u2026</button>'+
+        '</div>'+
       '</div>'+
       /* La note écrite la dernière fois se lit sur tous les
          exercices, pas seulement celui en cours : enfouie en bas de
@@ -3286,7 +3365,13 @@ function vueSeanceTableau(){
   }).join('');
 
   const bs=Seance._blocSuivant();
-  return bandeau+blocs+
+  const ajout='<div class="carte ajout-exo">'+
+    '<label>Ajouter un exercice en fin de séance</label>'+
+    '<select id="choixExoSeance"><option value="">Choisir\u2026</option>'+
+    optionsExercices()+'</select>'+
+    '<button class="bouton discret" style="margin-top:10px" data-act="ajouter-exo-seance">'+
+    '+ Ajouter</button></div>';
+  return bandeau+blocs+ajout+
     '<div class="rangee" style="margin-top:14px">'+
     (bs?'<button class="bouton discret" data-act="passer-exo">Passer l\u2019exercice</button>':'')+
     '<button class="bouton discret" data-act="terminer">Terminer la séance</button></div>'+
@@ -5081,6 +5166,10 @@ document.addEventListener('click',ev=>{
       }
       rendre(); return;
     }
+    const bh=c('[data-bloc-haut]');
+    if(bh){ Seance.deplacerBloc(parseInt(bh.dataset.blocHaut,10),-1); return; }
+    const bb=c('[data-bloc-bas]');
+    if(bb){ Seance.deplacerBloc(parseInt(bb.dataset.blocBas,10),+1); return; }
     const vl=c('[data-valider-ligne]');
     if(vl){ const p=vl.dataset.validerLigne.split('.');
       Seance.validerLigne(parseInt(p[0],10),parseInt(p[1],10)); return; }
@@ -5287,6 +5376,11 @@ document.addEventListener('click',ev=>{
                                : 'Séance ajoutée au '+dates[0].toLocaleDateString('fr-FR')+'.');
           break;
         }
+        case 'ajouter-exo-seance': {
+          const sel=document.getElementById('choixExoSeance');
+          if(!sel||!sel.value){ toast('Choisis d’abord un exercice.'); break; }
+          Seance.ajouterExercice(sel.value); break;
+        }
         case 'ajouter-bloc': {
           const sel=document.getElementById('choixExo');
           if(!sel||!sel.value){ toast('Choisis d’abord un exercice.'); break; }
@@ -5330,7 +5424,7 @@ document.addEventListener('click',ev=>{
 /* Le mode « écran d'accueil » n'existe que pour une page servie en
    http(s). Sur un fichier ouvert localement (file://), iOS ne propose
    pas l'option et refuse les service workers : on n'essaie même pas. */
-const VERSION = 'v54 \u00B7 13 novembre 2026';
+const VERSION = 'v55 \u00B7 13 novembre 2026';
 const SERVI = location.protocol==='http:' || location.protocol==='https:';
 if(SERVI && 'serviceWorker' in navigator){
   window.addEventListener('load',()=>{
