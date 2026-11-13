@@ -813,7 +813,7 @@ window.addEventListener('unhandledrejection', e => {
    ============================================================ */
 const Store = (() => {
   const P='rhabdo_v1_', memoire={};
-  let dispo=true;
+  let dispo=true, alerteStockage=false;
   try{ localStorage.setItem(P+'t','1'); localStorage.removeItem(P+'t'); }catch(e){ dispo=false; }
   return {
     get dispo(){ return dispo; },
@@ -825,7 +825,15 @@ const Store = (() => {
     },
     ecrire(cle,val){
       const brut=JSON.stringify(val);
-      try{ dispo ? localStorage.setItem(P+cle,brut) : (memoire[cle]=brut); }catch(e){ memoire[cle]=brut; }
+      try{ dispo ? localStorage.setItem(P+cle,brut) : (memoire[cle]=brut); }
+      catch(e){
+        /* Stockage plein ou refusé : la valeur survit en mémoire le
+           temps de la session, mais elle sera perdue à la fermeture.
+           Le taire revenait à perdre une séance sans rien dire. */
+        memoire[cle]=brut;
+        if(!alerteStockage){ alerteStockage=true;
+          try{ toast('Stockage plein : exporte une sauvegarde depuis les paramètres, sinon les dernières saisies seront perdues.'); }catch(_){} }
+      }
     },
     effacer(cle){ try{ dispo ? localStorage.removeItem(P+cle) : delete memoire[cle]; }catch(e){} },
     toutEffacer(){ ['exercices','modeles','planifiees','journal','reglages','seanceEnCours']
@@ -1335,6 +1343,11 @@ const DB = {
     this.migrerEchauffement();
     this.planifiees = Store.lire('planifiees',[])||[];
     this.journal = Store.lire('journal',[])||[];
+    /* Allègement des séances déjà enregistrées, une fois. */
+    if(this.journal.some(a=>a&&a.blocs)){
+      this.journal.forEach(a=>{ if(a) delete a.blocs; });
+      Store.ecrire('journal',this.journal);
+    }
     this.reglages = Object.assign({ voix:true, bips:true, ecranAllume:true,
       enchainementAuto:true, seancesParSemaine:2, semainesCarto:4, objectifDefaut:'Force maximale',
       poidsCorps:75,
@@ -1629,7 +1642,7 @@ const DB = {
     if(!Number.isFinite(kg)||kg===0) return 0;
     if(kg>0) return kg;
     const corps=Number(DB.reglages&&DB.reglages.poidsCorps);
-    return Math.max(0,(Number.isFinite(corps)&&corps>0?corps:75)+kg);
+    return Math.max(0,(Number.isFinite(corps)&&corps>=25?corps:75)+kg);
   },
   /* Toutes les séries du dernier passage sur cet exercice, rangées
      par numéro, toutes séances confondues. */
@@ -1747,7 +1760,7 @@ const Chrono = {
   enPause(){ return !!this.pauseDebut; },
   actif(){ return this.mode!=='repos'; },
   arreter(){
-    if(this.boucle) cancelAnimationFrame(this.boucle);
+    if(this.boucle) clearTimeout(this.boucle);
     this.boucle=null; this.mode='repos'; this.cibleSec=null;
     this.debutMs=0; this.pauseDebut=0; this.pauseMs=0;
   },
@@ -1760,9 +1773,14 @@ const Chrono = {
         if(reste<=0){ const fin=this.surFin; this.arreter(); if(fin) fin(); return; }
       }
       rafraichirCadran();
-      this.boucle=requestAnimationFrame(pas);
+      this.boucle=setTimeout(pas,125);
     };
-    this.boucle=requestAnimationFrame(pas);
+    /* Huit battements par seconde : l'affichage ne change qu'à la
+       seconde et l'anneau glisse par transition CSS. Soixante
+       rafraîchissements par seconde pendant une heure de séance
+       vidaient la batterie pour rien — et un minuteur continue de
+       battre là où requestAnimationFrame se fige, écran masqué. */
+    this.boucle=setTimeout(pas,125);
   },
   _annoncer(sec){
     if(sec<=0||this.annonces.has(sec)) return;
@@ -2359,13 +2377,21 @@ const Seance = {
     const iSerie=Math.min(Math.max(1,s.iSerie|0),blocs[iBloc].nbSeries);
     this.active=s.active; this.iBloc=iBloc; this.iSerie=iSerie; this.progressions=[];
     /* on ne relance jamais un chrono tout seul au chargement */
-    this.etat = (s.etat==='recup-termine') ? 'recup-termine' : 'pret';
+    this.etat = (s.etat==='recup-termine'||s.etat==='recup') ? 'recup-termine' : 'pret';
     /* Une séance déjà en cours ne se redimensionne pas sous les
        doigts : on se contente de retrouver la recommandation. */
     this.active.blocs.forEach(b=>{
       if(!b.reco) b.reco={series:b.nbSeries, reps:b.nbReps};
     });
-    this._preparerLignes(); this._preparerSaisie();
+    this._preparerLignes();
+    /* iOS ferme volontiers l'application en arrière-plan. Rouverte
+       pendant une récupération, elle repartait sur la série déjà
+       validée et l'enregistrait une seconde fois. Si la série
+       pointée est faite, on se place après elle. */
+    const lc=this.ligne(this.iBloc,this.iSerie);
+    if(this.etat==='pret' && lc && lc.fait) this.etat='recup-termine';
+    if(this.etat==='recup-termine' && !this.prochaine()) this.etat='pret';
+    this._preparerSaisie();
     return true;
   },
   persister(){
@@ -2495,6 +2521,14 @@ const Seance = {
        retirée, et ne dépasse jamais la dernière série restante. */
     if(iBloc===this.iBloc && this.iSerie>numero) this.iSerie--;
     if(iBloc===this.iBloc && this.iSerie>b.nbSeries) this.iSerie=b.nbSeries;
+    /* Si la série désormais pointée est déjà faite, l'exercice est
+       fini : sans cela le cadran proposait de la refaire et
+       l'enregistrait en double. */
+    const lc=this.ligne(this.iBloc,this.iSerie);
+    if(iBloc===this.iBloc && lc && lc.fait && this.etat==='pret'){
+      if(this._blocSuivant()){ this.iBloc++; this.iSerie=1; }
+      else if(this.active.series.length){ this._terminer(); return; }
+    }
     this._preparerSaisie(); this.persister(); rendre();
   },
   /* Décocher une série validée par erreur. Seule la dernière série
@@ -2513,9 +2547,28 @@ const Seance = {
     if(l) l.fait=false;
     Chrono.arreter();
     this.iBloc=iBloc; this.iSerie=numero; this.etat='pret';
-    this.aAnnoncer=false;
     this._preparerSaisie(); this.persister(); rendre();
     toast('Série décochée, à refaire.');
+  },
+  /* Une ligne restée ouverte sur un exercice déjà passé — série
+     ajoutée après coup, ou exercice sauté — se valide directement.
+     Elle s'enregistre sans chrono ni récupération, et sans déplacer
+     le moteur : c'est un rattrapage, pas une série en cours. Sans
+     cela la ligne était là, mais rien ne permettait de la cocher. */
+  rattraperLigne(iBloc,numero){
+    const b=this.active&&this.active.blocs[iBloc], l=this.ligne(iBloc,numero);
+    const exo=b&&DB.exercice(b.exerciceId);
+    if(!b||!l||!exo||l.fait||iBloc>=this.iBloc) return;
+    this.active.series.push({
+      exerciceId:b.exerciceId, indexBloc:iBloc, numeroSerie:numero,
+      exerciceNom:exo.nom, exercicePicto:clePicto(exo), exerciceCategorie:exo.categorie,
+      repsObjectif:b.nbReps, repsRealisees:l.reps==null?0:l.reps,
+      ecartementCm:b.ecartementCm, hauteurCm:b.hauteurCm,
+      lestageKg:(l.kg==null||l.kg===0)?null:l.kg,
+      effortSec:0, recupSec:0, ts:new Date().toISOString()
+    });
+    l.fait=true;
+    this.persister(); rendre();
   },
   ajouterSerie(iBloc){
     const b=this.active&&this.active.blocs[iBloc]; if(!b) return;
@@ -2575,9 +2628,13 @@ const Seance = {
   terminerEtValider(){
     this.effortEcoule=Chrono.ecouleSec(); Chrono.arreter();
     const exo=this._exo(), b=this._bloc();
+    /* Valider au cadran ou à la coche doit enregistrer la même
+       chose. Le cadran reprenait la saisie de la série précédente et
+       écrasait ce qui venait d'être tapé dans la ligne. */
+    const l=this.ligne(this.iBloc,this.iSerie);
     this.repsSaisies = exo.modeEffort==='temps'
       ? Math.round(this.effortEcoule)
-      : ((b.derniereSaisie!=null) ? b.derniereSaisie : b.nbReps);
+      : ((l&&l.reps!=null) ? l.reps : ((b.derniereSaisie!=null) ? b.derniereSaisie : b.nbReps));
     this.validerSerie();
   },
   _versSaisie(){
@@ -2591,6 +2648,10 @@ const Seance = {
   },
   validerSerie(){
     const b=this._bloc();
+    /* La charge vient toujours de la ligne, quel que soit le bouton
+       qui valide. */
+    const lv=this.ligne(this.iBloc,this.iSerie);
+    if(lv&&!lv.fait) b.lestageKg=(lv.kg==null||lv.kg===0)?null:lv.kg;
     this.active.series.push({
       exerciceId:b.exerciceId, indexBloc:this.iBloc, numeroSerie:this.iSerie,
       exerciceNom:this._exo().nom, exercicePicto:clePicto(this._exo()), exerciceCategorie:this._exo().categorie,
@@ -2726,7 +2787,11 @@ const Seance = {
     const a=this.active;
     a.fin=new Date().toISOString();
     a.dureeSec=Math.round((new Date(a.fin)-new Date(a.debut))/1000);
-    DB.journal.push(a); DB.sauver('journal');
+    /* Le journal ne garde que les séries : les blocs et leurs lignes
+       de saisie ne servent qu'au tableau en cours, et pesaient près
+       d'un tiers de chaque séance dans un stockage limité. */
+    const entree=Object.assign({},a); delete entree.blocs;
+    DB.journal.push(entree); DB.sauver('journal');
     const p=DB.planifiees.find(p=>p.modeleId===a.modeleId&&p.statut==='planifiee');
     if(p){ p.statut='realisee'; DB.sauver('planifiees'); }
     this.etat='termine'; Store.effacer('seanceEnCours');
@@ -2935,6 +3000,7 @@ function piloteHTML(){
 /* ============================================================
    7. VUES
    ============================================================ */
+let derniereLigneCentree=null;
 function rendre(){
   const enCours = ongletCourant==='seance' && Seance.active;
   const m = METAS[ongletCourant]||METAS.accueil;
@@ -2963,9 +3029,15 @@ function rendre(){
     /* Le tableau peut être plus long que l'écran : après chaque
        redessin, la série en cours revient sous les yeux. */
     const act=v.querySelector('.tab-series tr.active');
-    if(act) act.scrollIntoView({block:'center'});
+    /* …mais seulement quand elle change. Recentrer à chaque redessin
+       arrachait l'écran des doigts dès qu'on ajoutait une série ou
+       déplaçait un exercice plus bas dans la séance. */
+    const cleActive=(Seance.active&&act)?Seance.active.id+'|'+Seance.iBloc+'|'+Seance.iSerie:null;
+    if(act && cleActive!==derniereLigneCentree) act.scrollIntoView({block:'center'});
+    derniereLigneCentree=cleActive;
     const sur=document.getElementById('surcouche');
-    if(sur) sur.innerHTML = ficheModale?modaleFiche():(repartModale?modaleRepartition():'');
+    if(sur) sur.innerHTML = importRecu?modaleImport()
+      :(ficheModale?modaleFiche():(repartModale?modaleRepartition():''));
     if(carte) colorierCorps();
   }catch(err){
     noterPanneSansBoucle(err);
@@ -3084,7 +3156,15 @@ function listeSeances(){
       (n?'<button class="ellipse" data-repart="'+m.id+'" aria-label="Répartition musculaire">\u2026</button>':'')+
       '</div></div></div>';
   }).join('');
-  return '<button class="ajout" data-nouvelle-seance="1">+ Créer une séance</button>'+
+  const importer = ecranImport
+    ? '<div class="carte ajout-exo" style="margin-bottom:12px"><label>Coller le lien reçu</label>'+
+      '<textarea id="lienImport" rows="3" placeholder="https://…#s=…" '+
+      'autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>'+
+      '<div class="barre-form" style="margin-top:10px">'+
+      '<button class="bouton discret" data-act="fermer-import">Annuler</button>'+
+      '<button class="bouton principal" data-act="lire-import">Importer</button></div></div>'
+    : '<button class="ajout" style="margin-top:-4px" data-act="ouvrir-import">Importer une séance reçue</button>';
+  return '<button class="ajout" data-nouvelle-seance="1">+ Créer une séance</button>'+importer+
     (DB.modeles.length
       ? '<div class="grille-seances">'+lm+'</div>'
       : '<div class="vide"><p>Aucune séance. Crée la première.</p></div>');
@@ -3318,7 +3398,9 @@ function editeurSeance(){
     '<button class="bouton discret" style="margin-top:10px" data-act="ajouter-bloc">+ Ajouter à la séance</button></div>'+
     '<div class="barre-form"><button class="bouton discret" data-act="annuler-edition">Annuler</button>'+
     '<button class="bouton principal" data-act="sauver-seance">Enregistrer</button></div>'+
-    (edition.nouveau?'':'<button class="bouton danger" style="margin-top:8px" data-act="suppr-seance">Supprimer cette séance</button>');
+    (edition.nouveau?'':'<button class="bouton discret" style="margin-top:8px" data-act="partager-modele">'+
+      'Partager cette séance</button>'+
+      '<button class="bouton danger" style="margin-top:8px" data-act="suppr-seance">Supprimer cette séance</button>');
 }
 
 /* ============================================================
@@ -3413,7 +3495,8 @@ function vueSeanceTableau(){
           'aria-label="'+(parTemps?'Durée':'Répétitions')+', série '+num+'"></td>'+
         '<td class="col-v"><button class="coche'+(l.fait?' ok':'')+'"'+
           (actif?' data-valider-ligne="'+i+'.'+num+'"'
-               :(l.fait?' data-devalider="'+i+'.'+num+'"':' disabled'))+
+               :(l.fait?' data-devalider="'+i+'.'+num+'"'
+               :(i<Seance.iBloc?' data-rattraper="'+i+'.'+num+'"':' disabled')))+
           ' aria-label="'+(l.fait?'Décocher':'Valider')+' la série '+num+'">\u2713</button></td>'+
         '<td class="col-x"><button class="retirer" data-suppr-ligne="'+i+'.'+num+'" '+
           'aria-label="Retirer la série '+num+'">\u00D7</button></td></tr>';
@@ -5184,6 +5267,184 @@ function vueParametres(){
     '<p class="aide" style="margin-top:16px;text-align:center">RHABDO \u00B7 données conservées sur cet appareil uniquement</p>';
 }
 
+/* ============================================================
+   PARTAGE D'UNE SÉANCE ENTRE DEUX TÉLÉPHONES
+   ------------------------------------------------------------
+   Pas de serveur : la séance voyage entière dans un lien. Elle
+   est réduite à ses blocs, plus la définition des exercices qui
+   n'existent pas dans le catalogue livré, puis encodée après le
+   « #s= » de l'adresse de l'application.
+
+   Deux façons de la recevoir, parce qu'une application posée sur
+   l'écran d'accueil d'un iPhone ne partage pas son stockage avec
+   Safari : ouvrir le lien, ou le coller dans Bibliothèque ›
+   Séances › Importer.
+
+   Ce qui arrive vient d'un autre téléphone, donc de n'importe
+   où : rien n'est repris tel quel. Chaque champ est retypé, borné
+   et filtré avant d'entrer dans la bibliothèque.
+   ============================================================ */
+const MARQUE_PARTAGE='#s=';
+let importRecu=null;      /* séance décodée, en attente de confirmation */
+let ecranImport=false;    /* champ « coller un lien » de la bibliothèque */
+
+function versBase64Url(texte){
+  let bin=''; new TextEncoder().encode(texte).forEach(o=>{ bin+=String.fromCharCode(o); });
+  return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function depuisBase64Url(code){
+  const b=code.replace(/-/g,'+').replace(/_/g,'/');
+  const bin=atob(b+'='.repeat((4-b.length%4)%4));
+  return new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0)));
+}
+function codeSeance(m){
+  const livres=exercicesParDefaut().map(e=>e.id);
+  const court=(t,max)=>String(t==null?'':t).slice(0,max);
+  const blocs=[], perso=[];
+  (m.blocs||[]).forEach(b=>{
+    const e=DB.exercice(b.exerciceId); if(!e) return;
+    blocs.push([b.exerciceId,b.nbSeries,b.nbReps,b.recupSerieSec,b.recupFinSec,
+      b.repsInitiales==null?null:b.repsInitiales, b.ecartementCm==null?null:b.ecartementCm,
+      b.hauteurCm==null?null:b.hauteurCm, b.lestageKg==null?null:b.lestageKg]);
+    if(livres.indexOf(e.id)<0 && !perso.some(x=>x.i===e.id))
+      perso.push({i:e.id,n:court(e.nom,60),c:e.categorie,m:e.modeEffort,
+        z:e.zone1||[],y:e.zone2||[],s:e.objSeries,r:e.objReps,l:e.lestageKg==null?null:e.lestageKg,
+        d:court(e.description,400),e:court(e.execution,400),k:court(e.erreurs,400),
+        p:court(e.conseilProgression,300),g:court(e.picto,40)});
+  });
+  return versBase64Url(JSON.stringify({v:1,n:court(m.nom,60),b:blocs,x:perso}));
+}
+function lienSeance(m){
+  return location.origin+location.pathname+MARQUE_PARTAGE+codeSeance(m);
+}
+
+/* Décode un lien, un message entier contenant le lien, ou le code
+   seul. Renvoie la séance prête à importer, ou lève une erreur
+   lisible. */
+function lireSeancePartagee(texte){
+  texte=String(texte||'').trim();
+  const t=/[#?&]s=([A-Za-z0-9_-]+)/.exec(texte);
+  const code=t?t[1]:(/^[A-Za-z0-9_-]{16,}$/.test(texte)?texte:null);
+  if(!code) throw new Error('Aucune séance trouvée dans ce texte.');
+  let o;
+  try{ o=JSON.parse(depuisBase64Url(code)); }
+  catch(e){ throw new Error('Lien incomplet ou abîmé : recopie-le en entier.'); }
+  if(!o||o.v!==1||!Array.isArray(o.b)) throw new Error('Ce lien ne vient pas de Rhabdo, ou d’une version trop récente.');
+
+  const idOk=id=>typeof id==='string'&&/^exo-[a-z0-9-]{1,80}$/.test(id);
+  const borne=(v,min,max,def)=>(typeof v==='number'&&Number.isFinite(v))?Math.min(max,Math.max(min,v)):def;
+  const ouNul=(v,min,max)=>(v==null||v==='')?null:borne(v,min,max,null);
+  const texteSur=(v,max)=>String(v==null?'':v).replace(/[\u0000-\u0008\u000B-\u001F]/g,'').slice(0,max);
+  const groupes=l=>(Array.isArray(l)?l:[]).filter(g=>Object.prototype.hasOwnProperty.call(GROUPES,g)).slice(0,12);
+
+  const perso={};
+  (Array.isArray(o.x)?o.x:[]).slice(0,40).forEach(x=>{
+    if(!x||!idOk(x.i)||!texteSur(x.n,60).trim()) return;
+    const mode=x.m==='temps'?'temps':'reps';
+    perso[x.i]={ id:x.i, nom:texteSur(x.n,60).trim(),
+      categorie:Object.prototype.hasOwnProperty.call(CATEGORIES,x.c)?x.c:'haut',
+      zone1:groupes(x.z), zone2:groupes(x.y), modeEffort:mode,
+      ecartementCm:null, hauteurCm:null, lestageKg:ouNul(x.l,-60,300),
+      objSeries:Math.round(borne(x.s,1,20,3)), objReps:Math.round(borne(x.r,1,7200,mode==='temps'?30:10)),
+      repsInitiales:null, conseilProgression:texteSur(x.p,300), commentaire:'', remarque:'',
+      description:texteSur(x.d,400), execution:texteSur(x.e,400), erreurs:texteSur(x.k,400),
+      sourceLabel:'', sourceUrl:'',
+      picto:Object.prototype.hasOwnProperty.call(PICTOS,x.g)?x.g:'' };
+  });
+
+  const livres=exercicesParDefaut();
+  const blocs=[], nouveaux=[]; let ignores=0;
+  o.b.slice(0,40).forEach(b=>{
+    if(!Array.isArray(b)||!idOk(b[0])){ ignores++; return; }
+    const id=b[0];
+    if(!DB.exercice(id) && !nouveaux.some(e=>e.id===id)){
+      /* Exercice inconnu ici : d'abord la définition jointe au lien,
+         sinon celle du catalogue si elle avait été supprimée. */
+      const def=perso[id]||livres.filter(e=>e.id===id)[0];
+      if(!def){ ignores++; return; }
+      nouveaux.push(def);
+    }
+    blocs.push({exerciceId:id,
+      nbSeries:Math.round(borne(b[1],1,20,3)), nbReps:Math.round(borne(b[2],1,7200,10)),
+      recupSerieSec:Math.round(borne(b[3],0,900,60)), recupFinSec:Math.round(borne(b[4],0,900,120)),
+      repsInitiales:ouNul(b[5],1,7200), ecartementCm:ouNul(b[6],0,300),
+      hauteurCm:ouNul(b[7],0,300), lestageKg:ouNul(b[8],-60,300)});
+  });
+  if(!blocs.length) throw new Error('La séance reçue ne contient aucun exercice utilisable.');
+  return {nom:texteSur(o.n,60).trim()||'Séance reçue', blocs, nouveaux, ignores};
+}
+
+function partagerSeance(m){
+  if(!m||!(m.blocs||[]).length){ toast('Cette séance est vide : rien à partager.'); return; }
+  const lien=lienSeance(m);
+  const message='Séance Rhabdo « '+m.nom+' ». Ouvre ce lien pour l’ajouter, '+
+    'ou colle-le dans Bibliothèque › Séances › Importer :';
+  const copier=()=>{
+    const fini=()=>toast('Lien copié. Colle-le dans un message.');
+    if(navigator.clipboard&&navigator.clipboard.writeText)
+      navigator.clipboard.writeText(message+'\n'+lien).then(fini)
+        .catch(()=>prompt('Copie ce lien :',lien));
+    else prompt('Copie ce lien :',lien);
+  };
+  if(typeof navigator.share==='function'){
+    navigator.share({title:'Séance Rhabdo',text:message,url:lien})
+      .catch(err=>{ if(!err||err.name!=='AbortError') copier(); });
+  } else copier();
+}
+
+/* Un lien de partage ouvert dans le navigateur : on décode, on
+   demande confirmation, et on retire le code de l'adresse pour
+   qu'un rechargement ne repropose pas l'import. */
+function examinerAdresse(){
+  if(location.hash.indexOf(MARQUE_PARTAGE)!==0) return;
+  const brut=location.hash;
+  try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
+  try{ importRecu=lireSeancePartagee(brut); }
+  catch(err){ toast(err.message); }
+}
+function confirmerImport(){
+  const r=importRecu; if(!r) return;
+  r.nouveaux.forEach(e=>{ if(!DB.exercice(e.id)) DB.exercices.push(e); });
+  if(r.nouveaux.length) DB.sauver('exercices');
+  let nom=r.nom;
+  if(DB.modeles.some(m=>m.nom===nom)) nom+=' (reçue)';
+  DB.modeles.push({id:DB.idLibre('seance-',nom,DB.modeles), nom, blocs:r.blocs});
+  DB.sauver('modeles');
+  importRecu=null; ecranImport=false;
+  ecranParams=false; detailSeanceId=null; edition=null;
+  ongletCourant='biblio'; sousOnglet='seances'; rendre();
+  toast('« '+nom+' » ajoutée à tes séances.');
+}
+function modaleImport(){
+  const r=importRecu;
+  const series=r.blocs.reduce((t,b)=>t+b.nbSeries,0);
+  const nomExo=id=>{ const e=DB.exercice(id)||r.nouveaux.filter(x=>x.id===id)[0]; return e?e.nom:id; };
+  const modeExo=id=>{ const e=DB.exercice(id)||r.nouveaux.filter(x=>x.id===id)[0]; return e?e.modeEffort:'reps'; };
+  const lignes=r.blocs.map(b=>
+    '<div class="l"><div><b>'+esc(nomExo(b.exerciceId))+'</b>'+
+    (r.nouveaux.some(x=>x.id===b.exerciceId)?'<span class="z">nouvel exercice, ajouté à ta bibliothèque</span>':'')+
+    '</div><span class="q">'+b.nbSeries+' × '+
+    (modeExo(b.exerciceId)==='temps'?dureeLisible(b.nbReps):b.nbReps)+'</span></div>').join('');
+  return '<div class="modale" role="dialog" aria-modal="true" aria-label="Séance reçue">'+
+    '<div class="modale-fond" data-act="refuser-import"></div>'+
+    '<div class="modale-feuille">'+
+      '<div class="modale-tete"><div style="flex:1;min-width:0">'+
+        '<h2 class="exo-nom">'+esc(r.nom)+'</h2>'+
+        '<p class="exo-meta">Séance reçue · '+r.blocs.length+' exercice'+(r.blocs.length>1?'s':'')+
+        ' · '+series+' séries</p></div>'+
+        '<button class="rond" data-act="refuser-import" aria-label="Fermer">×</button></div>'+
+      '<div class="modale-corps">'+
+        '<div class="carte detail-exos">'+lignes+'</div>'+
+        (r.ignores?'<p class="aide" style="margin-top:10px">'+r.ignores+' exercice'+(r.ignores>1?'s':'')+
+          ' du lien n’ont pas pu être repris.</p>':'')+
+      '</div>'+
+      '<div class="modale-pied"><div class="barre-form">'+
+        '<button class="bouton discret" data-act="refuser-import">Annuler</button>'+
+        '<button class="bouton principal" data-act="confirmer-import">Ajouter</button>'+
+      '</div></div>'+
+    '</div></div>';
+}
+
 function exporterSauvegarde(){
   try{
     const blob=new Blob([Store.exporter()],{type:'application/json'});
@@ -5348,6 +5609,9 @@ document.addEventListener('click',ev=>{
            ts:new Date().toISOString()});
       rendre(); return;
     }
+    const rt=c('[data-rattraper]');
+    if(rt){ const p=rt.dataset.rattraper.split('.');
+      Seance.rattraperLigne(parseInt(p[0],10),parseInt(p[1],10)); return; }
     const dv=c('[data-devalider]');
     if(dv){ const p=dv.dataset.devalider.split('.');
       Seance.devaliderLigne(parseInt(p[0],10),parseInt(p[1],10)); return; }
@@ -5606,11 +5870,29 @@ document.addEventListener('click',ev=>{
         }
         case 'suppr-seance': {
           const d=edition.data;
+          if(!confirm('Supprimer définitivement la séance « '+d.nom+' » ?')) break;
           DB.modeles=DB.modeles.filter(x=>x.id!==d.id);
           DB.planifiees=DB.planifiees.filter(p=>p.modeleId!==d.id);
           DB.sauver('modeles'); DB.sauver('planifiees');
           edition=null; sousOnglet='seances'; rendre(); toast('Séance supprimée.'); break;
         }
+        case 'partager-modele': {
+          /* On partage ce qui est enregistré, pas un brouillon en
+             cours de modification. */
+          const m=DB.modele(edition&&edition.data&&edition.data.id);
+          if(m) partagerSeance(m); else toast('Enregistre d\u2019abord la séance.');
+          break;
+        }
+        case 'ouvrir-import': ecranImport=true; rendre(); break;
+        case 'fermer-import': ecranImport=false; rendre(); break;
+        case 'lire-import': {
+          const z=document.getElementById('lienImport');
+          try{ importRecu=lireSeancePartagee(z?z.value:''); rendre(); }
+          catch(err){ toast(err.message); }
+          break;
+        }
+        case 'confirmer-import': confirmerImport(); break;
+        case 'refuser-import': importRecu=null; rendre(); break;
         case 'oublier-panne': dernierePanne=null; rendre(); break;
         case 'reset':
           if(!confirm('Effacer définitivement tous les exercices, séances et l’historique ?')) break;
@@ -5622,8 +5904,8 @@ document.addEventListener('click',ev=>{
       }
       return;
     }
-    if(c('#btnParams')){ ecranParams=true; detailSeanceId=null; edition=null; rendre(); return; }
-    if(c('#btnProfil')){ ecranParams=true; detailSeanceId=null; edition=null; rendre(); return; }
+    if(c('#btnParams')||c('#btnProfil')){
+      ecranParams=true; detailSeanceId=null; edition=null; correction=null; rendre(); return; }
   }catch(err){ noterPanneSansBoucle(err); rendre(); }
 });
 
@@ -5633,7 +5915,7 @@ document.addEventListener('click',ev=>{
 /* Le mode « écran d'accueil » n'existe que pour une page servie en
    http(s). Sur un fichier ouvert localement (file://), iOS ne propose
    pas l'option et refuse les service workers : on n'essaie même pas. */
-const VERSION = 'v56 \u00B7 13 novembre 2026';
+const VERSION = 'v57 \u00B7 13 novembre 2026';
 const SERVI = location.protocol==='http:' || location.protocol==='https:';
 if(SERVI && 'serviceWorker' in navigator){
   window.addEventListener('load',()=>{
@@ -5692,6 +5974,8 @@ function etape(nom,fn){
 }
 etape('chargement des données',()=>DB.charger());
 etape('synthèse vocale',()=>Voix.init());
+etape('lien de partage',()=>examinerAdresse());
+window.addEventListener('hashchange',()=>{ examinerAdresse(); if(importRecu) rendre(); });
 if(etape('reprise de séance',()=>Seance.reprendre())){
   ongletCourant='seance';
   setTimeout(()=>toast('Séance reprise là où tu l’avais laissée.'),400);
