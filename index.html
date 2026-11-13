@@ -2359,9 +2359,22 @@ const Seance = {
     this.active.blocs.forEach(b=>{
       const exo=DB.exercice(b.exerciceId);
       if(!Array.isArray(b.lignes)) b.lignes=[];
-      while(b.lignes.length<b.nbSeries)
-        b.lignes.push({kg:(b.lestageKg==null?null:b.lestageKg),
-                       reps:DB.proposition(exo,b), fait:false});
+      /* Chaque ligne repart de ce qui a été réellement encodé à ce
+         rang la dernière fois que l'exercice a été travaillé —
+         exactement ce que montre la colonne « Précédent ». Repartir
+         du maximum de la dernière séance proposait 38 kg sur les
+         trois séries alors que le passage réel était 30, 38, 34.
+         Faute d'historique à ce rang, on retombe sur la proposition
+         du moteur. */
+      while(b.lignes.length<b.nbSeries){
+        const num=b.lignes.length+1;
+        const p=DB.precedentSerie(b.exerciceId,num);
+        if(p) b.lignes.push({kg:(p.lestageKg==null?null:p.lestageKg),
+                             reps:(p.repsRealisees==null?DB.proposition(exo,b):p.repsRealisees),
+                             fait:false, histo:true});
+        else  b.lignes.push({kg:(b.lestageKg==null?null:b.lestageKg),
+                             reps:DB.proposition(exo,b), fait:false});
+      }
       if(b.lignes.length>b.nbSeries) b.lignes.length=b.nbSeries;
     });
   },
@@ -2462,12 +2475,14 @@ const Seance = {
     if(lf){
       lf.fait=true; lf.reps=this.repsSaisies; lf.kg=b.lestageKg;
       /* Ce qui vient d'être soulevé devient la proposition pour les
-         séries suivantes du même exercice — celles qu'on n'a pas
-         encore touchées. Une ligne déjà corrigée à la main reste
-         telle quelle. */
+         séries suivantes — mais seulement celles qui n'ont rien à
+         proposer d'elles-mêmes. Une ligne restaurée depuis le
+         dernier passage garde sa valeur : l'écraser reviendrait à
+         reproposer le même poids partout, ce qu'on cherche
+         justement à éviter. */
       for(let k=this.iSerie;k<b.lignes.length;k++){
         const sv=b.lignes[k];
-        if(sv.fait) continue;
+        if(sv.fait||sv.histo) continue;
         sv.kg=b.lestageKg; sv.reps=this.repsSaisies;
       }
     }
@@ -5315,7 +5330,7 @@ document.addEventListener('click',ev=>{
 /* Le mode « écran d'accueil » n'existe que pour une page servie en
    http(s). Sur un fichier ouvert localement (file://), iOS ne propose
    pas l'option et refuse les service workers : on n'essaie même pas. */
-const VERSION = 'v53 \u00B7 10 novembre 2026';
+const VERSION = 'v54 \u00B7 13 novembre 2026';
 const SERVI = location.protocol==='http:' || location.protocol==='https:';
 if(SERVI && 'serviceWorker' in navigator){
   window.addEventListener('load',()=>{
