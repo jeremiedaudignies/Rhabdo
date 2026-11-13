@@ -285,10 +285,15 @@ details.reglages[open] summary::after{content:"\2013"}
 .tab-series td{padding:3px 2px;text-align:center;vertical-align:middle}
 .tab-series .col-n{width:34px;font-family:var(--mono);font-size:13px;font-weight:600;
   color:var(--texte-2)}
-.tab-series .col-p{font-family:var(--mono);font-size:11.5px;color:var(--texte-3);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:92px}
+.tab-series .col-p{font-family:var(--mono);font-size:11px;color:var(--texte-3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:84px}
 .tab-series .col-s{width:62px}
 .tab-series .col-v{width:40px}
+.tab-series .col-x{width:26px}
+.retirer{width:24px;height:24px;border-radius:50%;color:var(--texte-3);font-size:15px;
+  display:grid;place-items:center;margin:0 auto}
+.tab-series tr.faite .retirer{color:var(--valide)}
+.coche[data-devalider]{opacity:1}
 .tab-series input{padding:7px 2px;text-align:center;font-family:var(--mono);font-size:14.5px;
   font-weight:600;border-radius:var(--r-s);background:var(--surface-2);border:1px solid transparent;
   font-variant-numeric:tabular-nums;-moz-appearance:textfield}
@@ -339,7 +344,7 @@ details.reglages[open] summary::after{content:"\2013"}
 .pt-abdo{background:var(--abdo)} .pt-etirement{background:var(--etirement)}
 .pt-course{background:var(--accent)} .pt-echauffement{background:var(--texte-3)}
 .tuile-bas{display:flex;flex-direction:column;gap:5px}
-.tuile-go{width:100%;padding:9px 4px;border-radius:99px;background:var(--accent);color:#fff;
+.tuile-go{width:100%;padding:9px 4px;border-radius:99px;background:var(--accent);color:#fff;cursor:pointer;
   font-size:12.5px;font-weight:700}
 .tuile-rangee{display:flex;gap:5px}
 .tuile-rangee button{flex:1;padding:8px 4px;border-radius:99px;background:var(--surface-2);
@@ -2439,6 +2444,14 @@ const Seance = {
   },
   /* Saisie libre dans une cellule. On n'appelle pas rendre() : le
      doigt est encore dans le champ, le redessiner le viderait. */
+  /* L'enregistrement d'une série validée, s'il existe. C'est lui
+     qui part dans l'historique : corriger la ligne sans le corriger
+     laisserait l'erreur dans le journal. */
+  _enregistrement(iBloc,numero){
+    const b=this.active&&this.active.blocs[iBloc]; if(!b) return null;
+    return (this.active.series||[]).find(s=>
+      s.exerciceId===b.exerciceId && s.indexBloc===iBloc && s.numeroSerie===numero)||null;
+  },
   saisirLigne(iBloc,numero,champ,valeur,facteur){
     const l=this.ligne(iBloc,numero); if(!l) return;
     if(valeur===''||valeur==null){ l[champ]=null; }
@@ -2449,7 +2462,60 @@ const Seance = {
          répétitions, elles, ne descendent pas sous zéro. */
       l[champ]=isNaN(v)?null:(champ==='kg'?v:Math.max(0,v))*(facteur||1);
     }
+    /* Série déjà validée : la correction suit jusque dans la série
+       enregistrée, sinon le tableau afficherait une valeur et
+       l'historique en garderait une autre. */
+    if(l.fait){
+      const e=this._enregistrement(iBloc,numero);
+      if(e){
+        if(champ==='kg') e.lestageKg=l.kg;
+        else e.repsRealisees=l.reps;
+      }
+    }
     this.persister();
+  },
+  /* Retirer une série de l'exercice. Si elle était validée, son
+     enregistrement part avec elle et les suivantes se renumérotent,
+     faute de quoi l'historique garderait un trou. */
+  supprimerLigne(iBloc,numero){
+    const b=this.active&&this.active.blocs[iBloc]; if(!b||!b.lignes) return;
+    if(b.lignes.length<=1){ toast('Un exercice garde au moins une série.'); return; }
+    const l=b.lignes[numero-1]; if(!l) return;
+    if(iBloc===this.iBloc && numero===this.iSerie && !l.fait && this.etat!=='pret'){
+      toast('Impossible pendant la série en cours.'); return;
+    }
+    b.lignes.splice(numero-1,1);
+    b.nbSeries=b.lignes.length;
+    this.active.series=(this.active.series||[]).filter(s=>
+      !(s.exerciceId===b.exerciceId && s.indexBloc===iBloc && s.numeroSerie===numero));
+    (this.active.series||[]).forEach(s=>{
+      if(s.exerciceId===b.exerciceId && s.indexBloc===iBloc && s.numeroSerie>numero) s.numeroSerie--;
+    });
+    /* Le moteur recule d'un cran s'il pointait derrière la ligne
+       retirée, et ne dépasse jamais la dernière série restante. */
+    if(iBloc===this.iBloc && this.iSerie>numero) this.iSerie--;
+    if(iBloc===this.iBloc && this.iSerie>b.nbSeries) this.iSerie=b.nbSeries;
+    this._preparerSaisie(); this.persister(); rendre();
+  },
+  /* Décocher une série validée par erreur. Seule la dernière série
+     enregistrée peut l'être : revenir plus loin en arrière voudrait
+     dire rejouer tout ce qui suit. */
+  devaliderLigne(iBloc,numero){
+    const ser=this.active&&this.active.series;
+    if(!ser||!ser.length) return;
+    const d=ser[ser.length-1];
+    const b=this.active.blocs[iBloc];
+    if(!b||d.indexBloc!==iBloc||d.numeroSerie!==numero||d.exerciceId!==b.exerciceId){
+      toast('Seule la dernière série validée peut être décochée.'); return;
+    }
+    ser.pop();
+    const l=this.ligne(iBloc,numero);
+    if(l) l.fait=false;
+    Chrono.arreter();
+    this.iBloc=iBloc; this.iSerie=numero; this.etat='pret';
+    this.aAnnoncer=false;
+    this._preparerSaisie(); this.persister(); rendre();
+    toast('Série décochée, à refaire.');
   },
   ajouterSerie(iBloc){
     const b=this.active&&this.active.blocs[iBloc]; if(!b) return;
@@ -2881,6 +2947,7 @@ function rendre(){
   try{
     let carte=false, html;
     if(dernierePanne) html=vuePanne();
+    else if(correction) html=vueCorrigerSeance();
     else if(detailSeanceId) html=vueDetailSeance();
     else if(ecranParams) html=vueParametres();
     else if(vueSpecialeHisto) html=vueHistorique();
@@ -2995,18 +3062,32 @@ function listeExercices(){
       : '<div class="vide"><p>Aucun exercice dans ce filtre.</p></div>');
 }
 function listeSeances(){
-  const liste=DB.modeles;
+  /* Même grille de trois colonnes que l'onglet Séance : tout le
+     catalogue d'un coup d'œil. Seules les actions changent, la
+     bibliothèque servant à modifier et non à démarrer. */
+  const lm=DB.modeles.map(m=>{
+    const n=(m.blocs||[]).length;
+    const series=(m.blocs||[]).reduce((s,b)=>s+b.nbSeries,0);
+    const cats=DB.categoriesModele(m).filter(c=>c!=='echauffement');
+    return '<div class="tuile">'+
+      '<div class="tuile-haut" data-editer-s="'+m.id+'">'+
+      '<h3>'+esc(m.nom)+'</h3>'+
+      '<div class="tuile-meta">'+(n? n+' exo'+(n>1?'s':'')+' \u00B7 '+series+' séries'
+        : 'À compléter')+'</div>'+
+      (cats.length?'<div class="tuile-cats">'+cats.map(c=>
+        '<i class="pt-'+c+'" title="'+CATEGORIES[c]+'"></i>').join('')+'</div>':'')+
+      '</div>'+
+      '<div class="tuile-bas">'+
+      '<button class="tuile-go" data-editer-s="'+m.id+'">Modifier</button>'+
+      '<div class="tuile-rangee">'+
+      '<button data-dupliquer-s="'+m.id+'">Dupliquer</button>'+
+      (n?'<button class="ellipse" data-repart="'+m.id+'" aria-label="Répartition musculaire">\u2026</button>':'')+
+      '</div></div></div>';
+  }).join('');
   return '<button class="ajout" data-nouvelle-seance="1">+ Créer une séance</button>'+
-    (liste.length ? liste.map(m=>{
-      const n=(m.blocs||[]).length;
-      const series=(m.blocs||[]).reduce((s,b)=>s+b.nbSeries,0);
-      return '<div class="ligne"><div class="txt" data-editer-s="'+m.id+'"><b>'+esc(m.nom)+'</b><span>'+
-        (n? n+' exercice'+(n>1?'s':'')+' \u00B7 '+series+' séries<br>'+resumeSeance(m)
-          : 'vide')+
-        '</span></div>'+
-        '<button class="mini-btn" data-dupliquer-s="'+m.id+'" aria-label="Dupliquer">\u29C9</button>'+
-        '<span class="fleche" data-editer-s="'+m.id+'">\u203A</span></div>';
-    }).join('') : '<div class="vide"><p>Aucune séance. Crée la première.</p></div>');
+    (DB.modeles.length
+      ? '<div class="grille-seances">'+lm+'</div>'
+      : '<div class="vide"><p>Aucune séance. Crée la première.</p></div>');
 }
 
 /* Part de chaque groupe musculaire dans les séries d'une séance.
@@ -3331,8 +3412,11 @@ function vueSeanceTableau(){
           vReps+'" data-ligne="'+i+'.'+num+'.reps.'+(enMin?60:1)+'" '+
           'aria-label="'+(parTemps?'Durée':'Répétitions')+', série '+num+'"></td>'+
         '<td class="col-v"><button class="coche'+(l.fait?' ok':'')+'"'+
-          (actif?' data-valider-ligne="'+i+'.'+num+'"':' disabled')+
-          ' aria-label="Valider la série '+num+'">\u2713</button></td></tr>';
+          (actif?' data-valider-ligne="'+i+'.'+num+'"'
+               :(l.fait?' data-devalider="'+i+'.'+num+'"':' disabled'))+
+          ' aria-label="'+(l.fait?'Décocher':'Valider')+' la série '+num+'">\u2713</button></td>'+
+        '<td class="col-x"><button class="retirer" data-suppr-ligne="'+i+'.'+num+'" '+
+          'aria-label="Retirer la série '+num+'">\u00D7</button></td></tr>';
     }).join('');
 
     return '<section class="exo-bloc'+(courant?' courant':'')+'">'+
@@ -3358,7 +3442,8 @@ function vueSeanceTableau(){
         '<th class="col-n">Série</th><th class="col-p">Précédent</th>'+
         (kgUtile?'<th class="col-s">KG</th>':'')+
         '<th class="col-s">'+(parTemps?(enMin?'Min':'Sec'):'Rép.')+'</th>'+
-        '<th class="col-v"></th></tr></thead><tbody>'+lignes+'</tbody></table>'+
+        '<th class="col-v"></th><th class="col-x"></th></tr></thead><tbody>'+
+        lignes+'</tbody></table>'+
       '<button class="eb-ajout" data-ajout-serie="'+i+'">+ Ajouter une série</button>'+
       (courant?champNotes(exo,'Ajouter des notes'):'')+
       '</section>';
@@ -4164,6 +4249,10 @@ function sauverSeance(){
    LOT 6 — STATISTIQUES : calculs
    ============================================================ */
 let ecranParams=false, detailSeanceId=null, moisAffiche=null, jourSelectionne=null;
+/* Brouillon de correction d'une séance déjà enregistrée. On
+   travaille sur une copie : tant qu'on n'enregistre pas, le journal
+   n'est pas touché, et « Annuler » rend vraiment la main. */
+let correction=null;
 let vueSpecialeHisto=false, filtreHisto='tous', limiteHisto=25, periodeHisto='3m';
 let planif=null;   /* écran de planification : {modeleId,date,mode,jours,occurrences} */
 let periodeCharge='3m', filtreCharge='tous', semainesJournal=3, uniteCharge='reps', uniteCarto='reps';
@@ -4903,8 +4992,69 @@ function vueDetailSeance(){
     (bil.sec?'<p class="aide" style="margin-top:8px;text-align:center">Échauffement, étirements '+
       'et gainage non comptabilisés</p>':'')+
     boutonPartage(a)+detailSeries(a)+
-    '<button class="bouton danger" style="margin-top:20px" data-suppr-seance-journal="'+a.id+'">'+
+    '<button class="bouton discret" style="margin-top:14px" data-act="corriger-seance">'+
+    'Corriger les séries</button>'+
+    '<button class="bouton danger" style="margin-top:8px" data-suppr-seance-journal="'+a.id+'">'+
     'Supprimer cette séance de l\u2019historique</button>';
+}
+
+/* ------------------------------------------------------------
+   CORRIGER UNE SÉANCE ENREGISTRÉE
+   Même tableau qu'en séance, mais sur l'historique : une erreur de
+   charge ou de répétitions se rattrape des jours plus tard, une
+   série encodée en trop se retire, une série oubliée s'ajoute.
+   Le journal n'est réécrit qu'à l'enregistrement.
+   ------------------------------------------------------------ */
+function vueCorrigerSeance(){
+  const parExo=[];
+  correction.series.forEach((s,idx)=>{
+    let g=parExo.find(x=>x.id===s.exerciceId);
+    if(!g){ g={id:s.exerciceId, indexBloc:Number(s.indexBloc)||0, lignes:[]}; parExo.push(g); }
+    g.indexBloc=Math.min(g.indexBloc, Number(s.indexBloc)||0);
+    g.lignes.push({s, idx});
+  });
+  parExo.sort((a,b)=>a.indexBloc-b.indexBloc);
+
+  const blocs=parExo.map(g=>{
+    const exo=DB.exercice(g.id);
+    const nom=exo?exo.nom:'Exercice supprimé';
+    const parTemps=!!exo&&exo.modeEffort==='temps';
+    const enMin=saisieEnMinutes(exo);
+    const kgUtile=!exo||reglagesUtiles(exo).indexOf('lestageKg')>=0;
+    g.lignes.sort((a,b)=>(a.s.numeroSerie||0)-(b.s.numeroSerie||0));
+    const lignes=g.lignes.map((l,j)=>{
+      const vReps=l.s.repsRealisees==null?'':(enMin?Math.round(l.s.repsRealisees/60):l.s.repsRealisees);
+      return '<tr><td class="col-n">'+(j+1)+'</td>'+
+        (kgUtile?'<td class="col-s"><input type="number" step="0.5" value="'+
+          (l.s.lestageKg==null?'':l.s.lestageKg)+'" data-corr="'+l.idx+'.lestageKg.1" '+
+          'aria-label="Charge, série '+(j+1)+'"></td>':'')+
+        '<td class="col-s"><input type="number" step="1" min="0" value="'+vReps+'" '+
+          'data-corr="'+l.idx+'.repsRealisees.'+(enMin?60:1)+'" '+
+          'aria-label="'+(parTemps?'Durée':'Répétitions')+', série '+(j+1)+'"></td>'+
+        '<td class="col-x"><button class="retirer" data-corr-suppr="'+l.idx+'" '+
+          'aria-label="Retirer la série '+(j+1)+'">\u00D7</button></td></tr>';
+    }).join('');
+    return '<section class="exo-bloc">'+
+      '<div class="eb-tete">'+(exo?pictoLien(exo,'mini',false):'')+
+      '<div class="eb-id"><h3>'+esc(nom)+'</h3>'+
+      '<span class="eb-etat">'+g.lignes.length+' série'+(g.lignes.length>1?'s':'')+'</span></div></div>'+
+      '<table class="tab-series"><thead><tr><th class="col-n">Série</th>'+
+      (kgUtile?'<th class="col-s">KG</th>':'')+
+      '<th class="col-s">'+(parTemps?(enMin?'Min':'Sec'):'Rép.')+'</th>'+
+      '<th class="col-x"></th></tr></thead><tbody>'+lignes+'</tbody></table>'+
+      '<button class="eb-ajout" data-corr-ajout="'+esc(g.id)+'">+ Ajouter une série</button>'+
+      '</section>';
+  }).join('');
+
+  return '<button class="retour" data-act="annuler-correction">\u2039 Annuler</button>'+
+    '<h2 style="font-weight:800;font-size:22px;letter-spacing:-.02em;margin:0 0 2px">'+
+    esc(correction.nom)+'</h2>'+
+    '<p style="color:var(--texte-2);margin:0 0 14px;font-size:13.5px">Corriger les séries '+
+    'enregistrées. Rien n\u2019est modifié tant que tu n\u2019enregistres pas.</p>'+
+    (blocs||'<div class="vide"><p>Aucune série à corriger.</p></div>')+
+    '<div class="barre-form" style="margin-top:16px">'+
+    '<button class="bouton discret" data-act="annuler-correction">Annuler</button>'+
+    '<button class="bouton principal" data-act="enregistrer-correction">Enregistrer</button></div>';
 }
 
 /* ============================================================
@@ -5079,6 +5229,16 @@ document.addEventListener('input',ev=>{
     }
     return;
   }
+  const cc=ev.target.closest('[data-corr]');
+  if(cc&&correction){
+    const p=cc.dataset.corr.split('.'), sr=correction.series[parseInt(p[0],10)];
+    if(sr){
+      const v=parseFloat(String(cc.value).replace(',','.'));
+      if(cc.value===''||isNaN(v)) sr[p[1]]=(p[1]==='lestageKg')?null:0;
+      else sr[p[1]]=(p[1]==='lestageKg'?v:Math.max(0,v))*parseInt(p[2],10);
+    }
+    return;
+  }
   const lg=ev.target.closest('[data-ligne]');
   if(lg && Seance.active){
     const p=lg.dataset.ligne.split('.');
@@ -5170,6 +5330,30 @@ document.addEventListener('click',ev=>{
     if(bh){ Seance.deplacerBloc(parseInt(bh.dataset.blocHaut,10),-1); return; }
     const bb=c('[data-bloc-bas]');
     if(bb){ Seance.deplacerBloc(parseInt(bb.dataset.blocBas,10),+1); return; }
+    const cs=c('[data-corr-suppr]');
+    if(cs&&correction){
+      const i=parseInt(cs.dataset.corrSuppr,10);
+      if(correction.series.length<=1){ toast('Garde au moins une série.'); return; }
+      correction.series.splice(i,1); rendre(); return;
+    }
+    const cj=c('[data-corr-ajout]');
+    if(cj&&correction){
+      const id=cj.dataset.corrAjout;
+      const mm=correction.series.filter(x=>x.exerciceId===id);
+      const d=mm[mm.length-1];
+      correction.series.push(d
+        ? Object.assign({},d,{numeroSerie:(d.numeroSerie||mm.length)+1})
+        : {exerciceId:id, indexBloc:0, numeroSerie:1, repsObjectif:0,
+           repsRealisees:0, lestageKg:null, effortSec:0, recupSec:0,
+           ts:new Date().toISOString()});
+      rendre(); return;
+    }
+    const dv=c('[data-devalider]');
+    if(dv){ const p=dv.dataset.devalider.split('.');
+      Seance.devaliderLigne(parseInt(p[0],10),parseInt(p[1],10)); return; }
+    const sl=c('[data-suppr-ligne]');
+    if(sl){ const p=sl.dataset.supprLigne.split('.');
+      Seance.supprimerLigne(parseInt(p[0],10),parseInt(p[1],10)); return; }
     const vl=c('[data-valider-ligne]');
     if(vl){ const p=vl.dataset.validerLigne.split('.');
       Seance.validerLigne(parseInt(p[0],10),parseInt(p[1],10)); return; }
@@ -5199,6 +5383,7 @@ document.addEventListener('click',ev=>{
 
     const onglet=c('#barre button');
     if(onglet){ ecranParams=false; detailSeanceId=null; jourSelectionne=null; planif=null;
+      correction=null;
       vueSpecialeHisto=false; ficheModale=null; repartModale=null;
       aller(onglet.dataset.onglet); return; }
 
@@ -5355,6 +5540,30 @@ document.addEventListener('click',ev=>{
         case 'plus-histo':     limiteHisto+=25; rendre(); break;
         case 'fermer-params':  ecranParams=false; rendre(); break;
         case 'fermer-detail':  detailSeanceId=null; rendre(); break;
+        case 'corriger-seance': {
+          const a=DB.journal.find(x=>x.id===detailSeanceId);
+          if(!a){ toast('Séance introuvable.'); break; }
+          correction={id:a.id, nom:a.nom, series:JSON.parse(JSON.stringify(a.series||[]))};
+          rendre(); break;
+        }
+        case 'annuler-correction': correction=null; rendre(); break;
+        case 'enregistrer-correction': {
+          const a=DB.journal.find(x=>x.id===correction.id);
+          if(!a){ correction=null; rendre(); toast('Séance introuvable.'); break; }
+          /* Renumérotation par exercice : une suppression au milieu
+             laisserait sinon un trou dans les numéros de série. */
+          const parExo={};
+          correction.series
+            .sort((x,y)=>((Number(x.indexBloc)||0)-(Number(y.indexBloc)||0))
+                       ||((x.numeroSerie||0)-(y.numeroSerie||0)))
+            .forEach(sr=>{
+              const k=sr.exerciceId+'|'+sr.indexBloc;
+              parExo[k]=(parExo[k]||0)+1; sr.numeroSerie=parExo[k];
+            });
+          a.series=correction.series;
+          DB.sauver('journal');
+          correction=null; rendre(); toast('Séance corrigée.'); break;
+        }
         case 'exporter':       exporterSauvegarde(); break;
         case 'importer': {
           const f=document.getElementById('fichierImport');
@@ -5424,7 +5633,7 @@ document.addEventListener('click',ev=>{
 /* Le mode « écran d'accueil » n'existe que pour une page servie en
    http(s). Sur un fichier ouvert localement (file://), iOS ne propose
    pas l'option et refuse les service workers : on n'essaie même pas. */
-const VERSION = 'v55 \u00B7 13 novembre 2026';
+const VERSION = 'v56 \u00B7 13 novembre 2026';
 const SERVI = location.protocol==='http:' || location.protocol==='https:';
 if(SERVI && 'serviceWorker' in navigator){
   window.addEventListener('load',()=>{
