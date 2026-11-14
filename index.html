@@ -920,6 +920,16 @@ Object.assign(FICHES_EXERCICES, {
  'rowing-landmine':{picto:'landmine-row',description:'Tirage horizontal à la barre montée en landmine, buste penché. Permet de charger le dos bien au-delà d’une haltère, avec un appui plus stable pour le bas du dos qu’un rowing barre classique.',execution:'Placez-vous à cheval sur la barre, buste penché et dos plat. Tirez la barre vers le nombril en abaissant d’abord les omoplates, puis redescendez bras tendus sans arrondir le dos.',erreurs:'Se redresser pour arracher la charge, arrondir le haut du dos, tirer uniquement avec les bras ou lâcher la descente.',sourceLabel:'',sourceUrl:''}
 });
 
+/* --- Fiches des mini séances 1/2 et 2/2 (novembre 2026) --------- */
+Object.assign(FICHES_EXERCICES, {
+ 'developpe-incline-halteres':{picto:'bench-press',description:'Poussée sur banc incliné à 30°, une haltère dans chaque main. Déplace le travail vers le haut des pectoraux et le faisceau antérieur de l’épaule, avec une amplitude plus libre qu’à la barre.',execution:'Banc incliné à 30°, omoplates serrées, pieds au sol. Descendez les haltères au niveau du haut de la poitrine, coudes à environ 45° du buste, puis poussez en les rapprochant légèrement en haut, sans les cogner.',erreurs:'Incliner le banc au-delà de 45° (l’épaule prend le relais), laisser les coudes s’ouvrir à 90°, décoller les omoplates ou lâcher les haltères en fin de série au lieu de les ramener sur les cuisses.',sourceLabel:'',sourceUrl:''},
+ 'developpe-militaire-barre':{picto:'overhead-press',description:'Poussée verticale debout, barre partant des clavicules. Le mouvement de force de référence pour les épaules et les triceps, qui oblige tout le tronc à rester gainé.',execution:'Barre dans le rack à hauteur de clavicules, prise un peu plus large que les épaules. Fessiers et abdominaux serrés, poussez la barre à la verticale en reculant la tête, puis passez la tête sous la barre une fois le front dépassé. Redescendez sous contrôle jusqu’aux clavicules.',erreurs:'Cambrer le bas du dos pour finir la poussée, pousser la barre en avant du visage au lieu de la verticale, fléchir les genoux pour s’aider ou relâcher les fessiers.',sourceLabel:'',sourceUrl:''},
+ 'tirage-horizontal':{picto:'db-row',description:'Tirage à la poulie basse, assis ou en appui, poignée ramenée vers le nombril. Travaille l’épaisseur du dos et rééquilibre les poussées horizontales.',execution:'Poulie réglée en bas, buste droit, légère flexion des genoux. Tirez la poignée vers le bas du ventre en serrant les omoplates en fin de mouvement, coudes près du corps, puis laissez revenir les bras tendus sans arrondir le dos.',erreurs:'Tirer avec le buste en se balançant d’avant en arrière, hausser les épaules, arrondir le dos au retour ou tirer vers la poitrine plutôt que vers le nombril.',sourceLabel:'',sourceUrl:''},
+ 'triceps-poulie-corde':{picto:'triceps-overhead',description:'Extension des coudes à la poulie haute avec la corde. Isole le triceps, dont la force conditionne le verrouillage des développés.',execution:'Poulie réglée en haut, corde saisie mains en position neutre, coudes collés aux flancs. Étendez complètement les coudes en écartant les mains en bas, marquez une seconde, puis remontez lentement jusqu’à l’angle droit.',erreurs:'Laisser les coudes avancer ou s’écarter du corps, se pencher pour pousser avec le poids du buste, ou couper l’amplitude en haut.',sourceLabel:'',sourceUrl:''},
+ 'souleve-de-terre':{picto:'deadlift-rdl',description:'Soulevé de la barre depuis le sol jusqu’à la station debout. L’exercice de force le plus complet de la chaîne postérieure : fessiers, ischio-jambiers, dos et préhension.',execution:'Barre au-dessus du milieu du pied, tibias à quelques centimètres. Saisissez la barre juste à l’extérieur des jambes, dos plat, poitrine sortie, épaules au-dessus de la barre. Poussez le sol avec les jambes en gardant la barre contre le corps, puis finissez en verrouillant les hanches. Redescendez par le même chemin.',erreurs:'Arrondir le bas du dos, laisser la barre s’éloigner des jambes, monter les hanches avant les épaules, hyper-cambrer en fin de mouvement ou rebondir la barre au sol entre les répétitions.',sourceLabel:'',sourceUrl:''},
+ 'curl-biceps-poulie':{picto:'biceps-curl',description:'Flexion des coudes à la poulie basse. La tension reste constante sur toute l’amplitude, contrairement à l’haltère qui se relâche en haut.',execution:'Poulie réglée en bas, poignée en supination, coudes collés aux flancs. Fléchissez les coudes jusqu’en haut sans avancer les épaules, puis redescendez lentement jusqu’aux bras presque tendus.',erreurs:'Balancer le buste pour monter la charge, avancer les coudes, ou relâcher d’un coup en descente.',sourceLabel:'',sourceUrl:''}
+});
+
 const _fabriqueExoBrut=(nom,cat,z1,z2,mode,extra)=>Object.assign({
     id:'exo-'+slug(nom), nom, categorie:cat, zone1:z1, zone2:z2||[], modeEffort:mode||'reps',
     ecartementCm:null, hauteurCm:null, lestageKg:null,   /* null = poids du corps */
@@ -1083,6 +1093,19 @@ function exercicesRenfo(){
       {objSeries:4,objReps:8,lestageKg:10,evolPlus:0,evolLestageKg:2.5}),
     e('Face pull','haut',['epaules'],['dos'],'reps',
       {objSeries:3,objReps:15,evolPlus:1}),
+    /* --- ajoutés pour les mini séances 1/2 et 2/2 ---------------- */
+    e('Développé incliné haltères','haut',['pectoraux'],['epaules','triceps'],'reps',
+      {objSeries:3,objReps:6,lestageKg:16,evolPlus:0,evolLestageKg:2}),
+    e('Développé militaire barre','haut',['epaules'],['triceps','pectoraux'],'reps',
+      {objSeries:4,objReps:8,lestageKg:20,evolPlus:0,evolLestageKg:2.5}),
+    e('Tirage horizontal','haut',['dos'],['biceps','epaules'],'reps',
+      {objSeries:3,objReps:6,lestageKg:20,evolPlus:0,evolLestageKg:2.5}),
+    e('Triceps poulie corde','haut',['triceps'],[],'reps',
+      {objSeries:3,objReps:12,lestageKg:10,evolPlus:0,evolLestageKg:2.5}),
+    e('Curl biceps poulie','haut',['biceps'],[],'reps',
+      {objSeries:3,objReps:12,lestageKg:10,evolPlus:0,evolLestageKg:2.5}),
+    e('Soulevé de terre','bas',['ischios','fessiers'],['dos','quadriceps'],'reps',
+      {objSeries:3,objReps:5,lestageKg:40,evolPlus:0,evolLestageKg:2.5}),
 
     /* --- préparation et retour au calme (lot du 25 août) --------- */
     e('Mobilisation épaules','echauffement',['epaules'],['dos'],'reps',
@@ -1282,6 +1305,58 @@ function modelesRenfo(){
       b('Pompes larges',2,10,45,55)
     ]),
 
+    /* ===== MINI SÉANCES 1/2 ET 2/2 — OBJECTIF FORCE ==============
+       Quatre séances tracées par Jérém, deux pour le haut et deux
+       pour le bas, chiffrées pour la force et non le volume.
+
+       Repères suivis (ACSM 2009, NSCA ; Rønnestad & Mujika 2014
+       pour le coureur) :
+       - mouvement principal : 3 à 4 séries de 4 à 5 répétitions,
+         lourd, une à deux gardées en réserve, 3 min de repos — c'est
+         la charge et non la fatigue qui fait la force ;
+       - mouvements secondaires : 3 séries de 5 à 6, 2 à 2,5 min ;
+       - sauts avant les charges lourdes, sur jambes fraîches, peu de
+         répétitions et récupération complète : la qualité prime ;
+       - nordic curl en faible volume, aussi efficace qu'un volume
+         élevé pour la force excentrique des ischio-jambiers ;
+       - mollets lourds et lents, pour la raideur du tendon d'Achille.
+       Les annotations de Jérém sont reprises telles quelles :
+       militaire 4 x 8, biceps et triceps 3 x 12. */
+    m('Mini Haut 1/2',5,[
+      b('D\u00E9velopp\u00E9 inclin\u00E9 halt\u00E8res',3,6,120,90),
+      b('D\u00E9velopp\u00E9 couch\u00E9',4,5,180,120),
+      b('Traction pronation large',4,5,150,120),
+      b('Rowing landmine',3,6,120,90),
+      b('Dips',3,6,120,90),
+      b('Relev\u00E9 de genoux suspendu',3,8,60,60)
+    ]),
+    m('Mini Haut 2/2',5,[
+      b('D\u00E9velopp\u00E9 militaire barre',4,8,150,120),
+      b('Pompes serr\u00E9es',3,8,90,90),
+      b('Traction supination serr\u00E9e',4,5,150,120),
+      b('Tirage horizontal',3,6,120,90),
+      b('\u00C9l\u00E9vations lat\u00E9rales',3,10,75,60),
+      b('Face pull',3,12,60,60)
+    ]),
+    m('Mini Bas 1/2',5,[
+      b('Charni\u00E8re de hanche au b\u00E2ton',2,8,30,45,H),
+      b('Sauts verticaux',3,4,90,90),
+      b('Demi-squat barre',4,5,180,120),
+      b('Fente bulgare',3,6,120,90),
+      b('Mollets debout jambe tendue',4,8,90,75),
+      b('Pallof press',3,8,45,60),
+      b('Triceps poulie corde',3,12,60,60)
+    ]),
+    m('Mini Bas 2/2',5,[
+      b('Charni\u00E8re de hanche au b\u00E2ton',2,8,30,45,H),
+      b('Sauts verticaux',3,4,90,90),
+      b('Soulev\u00E9 de terre',3,5,180,120),
+      b('Curl biceps poulie',3,12,60,75),
+      b('Hip thrust',4,6,120,90),
+      b('Nordic curl',3,4,120,90),
+      b('Curl-up McGill',3,10,40,45)
+    ]),
+
     /* ===== PRÉPARATION ET RETOUR AU CALME =======================
        Deux séances courtes, à encadrer la course. Avant : dynamique
        et maintiens brefs. Après : maintiens longs. */
@@ -1371,9 +1446,19 @@ const DB = {
   },
   /* Les exercices livrés après coup s'ajoutent sans toucher au reste :
      un exercice retouché à la main garde ses réglages. */
+  /* Ce que l'utilisateur a supprimé de lui-même. Sans cette liste,
+     une séance ou un exercice livré par défaut revenait au
+     rechargement suivant, puisqu'il « manquait ». */
+  retires(){ return Array.isArray(this.reglages.retires)?this.reglages.retires:[]; },
+  retirer(id){
+    const r=this.retires();
+    if(r.indexOf(id)<0){ r.push(id); this.reglages.retires=r; Store.ecrire('reglages',this.reglages); }
+  },
   ajouterExercicesManquants(){
     let touche=false;
+    const retires=this.retires();
     exercicesParDefaut().forEach(ref=>{
+      if(retires.indexOf(ref.id)>=0) return;
       if(!this.exercices.some(e=>e.id===ref.id)){ this.exercices.push(ref); touche=true; }
     });
     if(touche) Store.ecrire('exercices',this.exercices);
@@ -1397,7 +1482,9 @@ const DB = {
      pour ne pas effacer une séance retouchée à la main. */
   ajouterSeancesManquantes(){
     let touche=false;
+    const retires=this.retires();
     modelesRenfo().forEach(ref=>{
+      if(retires.indexOf(ref.id)>=0) return;
       if(!this.modeles.some(m=>m.id===ref.id)){ this.modeles.push(ref); touche=true; }
     });
     /* Les deux mini séances sont livrées corrigées : la première
@@ -5750,12 +5837,14 @@ document.addEventListener('click',ev=>{
           const d=edition.data, u=DB.modelesUtilisant(d.id);
           if(u.length){ toast('Impossible : utilisé dans '+u.map(m=>m.nom).join(', ')+'.'); break; }
           DB.exercices=DB.exercices.filter(x=>x.id!==d.id);
+          DB.retirer(d.id);
           DB.sauver('exercices'); edition=null; rendre(); toast('Exercice supprimé.'); break;
         }
         case 'suppr-seance': {
           const d=edition.data;
           if(!confirm('Supprimer définitivement la séance « '+d.nom+' » ?')) break;
           DB.modeles=DB.modeles.filter(x=>x.id!==d.id);
+          DB.retirer(d.id);
           DB.planifiees=DB.planifiees.filter(p=>p.modeleId!==d.id);
           DB.sauver('modeles'); DB.sauver('planifiees');
           edition=null; sousOnglet='seances'; rendre(); toast('Séance supprimée.'); break;
